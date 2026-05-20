@@ -569,7 +569,7 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
 
         Args:
             mask (Optional[numpy ndarray or rasterio Band object]): Must evaluate to
-                bool (rasterio.bool_ or rasterio.uint8). Values of False or 0 will be
+                bool (``rasterio.bool_`` or ``rasterio.uint8``). Values of False or 0 will be
                 excluded from feature generation. Note well that this is the inverse
                 sense from Numpy's, where a mask value of True indicates invalid data
                 in an array. If source is a Numpy masked array and mask is None, the
@@ -603,7 +603,7 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
         Args:
             filename (str): The output file name to write to.
             mask (numpy ndarray or rasterio Band object, optional): Must evaluate to
-                bool (rasterio.bool_ or rasterio.uint8). Values of False or 0 will be
+                bool (``rasterio.bool_`` or ``rasterio.uint8``). Values of False or 0 will be
                 excluded from feature generation. Note well that this is the inverse
                 sense from Numpy's, where a mask value of True indicates invalid data
                 in an array. If source is a Numpy masked array and mask is None, the

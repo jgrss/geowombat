@@ -1,0 +1,1563 @@
+
+
+<!DOCTYPE html>
+
+
+<html lang="en" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+
+    <title>geowombat.ml package</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../_static/styles/theme.css?digest=12da95d707ffb74b382d" rel="stylesheet" />
+<link href="../_static/styles/bootstrap.css?digest=12da95d707ffb74b382d" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=12da95d707ffb74b382d" rel="stylesheet" />
+
+  
+  <link href="../_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=12da95d707ffb74b382d" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.1.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" href="../_static/styles/sphinx-book-theme.css?digest=14f4ca6b54d191a8c7657f6c759bf11a5fb86285" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/copybutton.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/custom.css" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=12da95d707ffb74b382d" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=12da95d707ffb74b382d" />
+
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script src="../_static/sphinx_highlight.js"></script>
+    <script src="../_static/clipboard.min.js"></script>
+    <script src="../_static/copybutton.js"></script>
+    <script src="../_static/scripts/sphinx-book-theme.js?digest=5a5c038af52cf7bc1a1ec88eea08e6366ee68824"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'api/geowombat.ml';</script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__primary"
+          id="__primary"/>
+  <label class="overlay overlay-primary" for="__primary"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__secondary"
+          id="__secondary"/>
+  <label class="overlay overlay-secondary" for="__secondary"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search..."
+         aria-label="Search..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+  
+    <nav class="bd-header navbar navbar-expand-lg bd-navbar">
+    </nav>
+  
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      <div class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+  
+
+<a class="navbar-brand logo" href="../index.html">
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../_static/logo.png" class="logo__image only-light" alt="GeoWombat"/>
+    <script>document.write(`<img src="../_static/logo.png" class="logo__image only-dark" alt="GeoWombat"/>`);</script>
+  
+  
+</a></div>
+        <div class="sidebar-primary-item"><nav class="bd-links" id="bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        <p aria-level="2" class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../install.html">Installing GeoWombat</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../quick-overview.html">Quick overview</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../tutorial.html">Tutorial</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-1"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../tutorial-why.html">Why GeoWombat?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tutorial-open.html">Opening rasters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tutorial-edit.html">Editing rasters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tutorial-config.html">Configuration manager</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tutorial-gw.html">GeoWombat DataArray accessor</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tutorial-crs.html">Coordinate Reference Systems</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tutorial-plot.html">Plotting raster data</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../examples.html">Examples</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-2"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../io.html">Raster I/O</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../io-distributed.html">Distributed processing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../extraction.html">Data extraction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../band-math.html">Band math</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../apply.html">User functions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../ml.html">Machine learning</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../dl.html">Deep learning classifiers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../object-detection.html">Object detection</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../moving.html">Moving windows</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../radiometry.html">Radiometry</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../coreg.html">Co-registration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tasks.html">Pipeline tasks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../web.html">Accessing STAC Catalogs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../external.html">External examples</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../gpu.html">Time series processes on the GPU</a></li>
+</ul>
+</li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Changes</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../changelog.html">Changelog</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../issues.html">Issues</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Reference</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../api.html">API reference</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-3"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="geowombat.core.geoxarray.GeoWombatAccessor.html">GeoWombat DataArray (DataArray.gw)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="geowombat.load.html">load</a></li>
+<li class="toctree-l2"><a class="reference internal" href="geowombat.extract.html">extract</a></li>
+<li class="toctree-l2"><a class="reference internal" href="geowombat.sample.html">sample</a></li>
+<li class="toctree-l2"><a class="reference internal" href="geowombat.calc_area.html">calc_area</a></li>
+<li class="toctree-l2"><a class="reference internal" href="geowombat.subset.html">subset</a></li>
+<li class="toctree-l2"><a class="reference internal" href="geowombat.clip.html">clip</a></li>
+<li class="toctree-l2"><a class="reference internal" href="geowombat.clip_by_polygon.html">clip_by_polygon</a></li>
+<li class="toctree-l2"><a class="reference internal" href="geowombat.mask.html">mask</a></li>
+<li class="toctree-l2"><a class="reference internal" href="geowombat.replace.html">replace</a></li>
+<li class="toctree-l2"><a class="reference internal" href="geowombat.recode.html">recode</a></li>
+<li class="toctree-l2"><a class="reference internal" href="geowombat.coregister.html">coregister</a></li>
+<li class="toctree-l2"><a class="reference internal" href="geowombat.polygons_to_points.html">polygons_to_points</a></li>
+<li class="toctree-l2"><a class="reference internal" href="geowombat.apply.html">apply</a></li>
+<li class="toctree-l2"><a class="reference internal" href="geowombat.transform_crs.html">transform_crs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="geowombat.save.html">save</a></li>
+<li class="toctree-l2"><a class="reference internal" href="geowombat.to_raster.html">to_raster</a></li>
+<li class="toctree-l2"><a class="reference internal" href="geowombat.to_netcdf.html">to_netcdf</a></li>
+<li class="toctree-l2"><a class="reference internal" href="geowombat.to_vrt.html">to_vrt</a></li>
+<li class="toctree-l2"><a class="reference internal" href="geowombat.array_to_polygon.html">array_to_polygon</a></li>
+<li class="toctree-l2"><a class="reference internal" href="geowombat.polygon_to_array.html">polygon_to_array</a></li>
+<li class="toctree-l2"><a class="reference internal" href="geowombat.moving.html">moving</a></li>
+<li class="toctree-l2"><a class="reference internal" href="geowombat.norm_diff.html">norm_diff</a></li>
+<li class="toctree-l2"><a class="reference internal" href="geowombat.avi.html">avi</a></li>
+<li class="toctree-l2"><a class="reference internal" href="geowombat.evi.html">evi</a></li>
+<li class="toctree-l2"><a class="reference internal" href="geowombat.evi2.html">evi2</a></li>
+<li class="toctree-l2"><a class="reference internal" href="geowombat.kndvi.html">kndvi</a></li>
+<li class="toctree-l2"><a class="reference internal" href="geowombat.nbr.html">nbr</a></li>
+<li class="toctree-l2"><a class="reference internal" href="geowombat.ndvi.html">ndvi</a></li>
+<li class="toctree-l2"><a class="reference internal" href="geowombat.wi.html">wi</a></li>
+<li class="toctree-l2"><a class="reference internal" href="geowombat.tasseled_cap.html">tasseled_cap</a></li>
+<li class="toctree-l2"><a class="reference internal" href="geowombat.coords_to_indices.html">coords_to_indices</a></li>
+<li class="toctree-l2"><a class="reference internal" href="geowombat.indices_to_coords.html">indices_to_coords</a></li>
+<li class="toctree-l2"><a class="reference internal" href="geowombat.bounds_to_coords.html">bounds_to_coords</a></li>
+<li class="toctree-l2"><a class="reference internal" href="geowombat.lonlat_to_xy.html">lonlat_to_xy</a></li>
+<li class="toctree-l2"><a class="reference internal" href="geowombat.xy_to_lonlat.html">xy_to_lonlat</a></li>
+<li class="toctree-l2"><a class="reference internal" href="geowombat.open.html">open</a></li>
+<li class="toctree-l2"><a class="reference internal" href="geowombat.series.html">series</a></li>
+<li class="toctree-l2"><a class="reference internal" href="geowombat.TimeModulePipeline.html">TimeModulePipeline</a></li>
+<li class="toctree-l2"><a class="reference internal" href="geowombat.TimeModule.html">TimeModule</a></li>
+<li class="toctree-l2"><a class="reference internal" href="geowombat.core.stac.composite_stac.html">composite_stac</a></li>
+<li class="toctree-l2"><a class="reference internal" href="geowombat.core.stac.merge_stac.html">merge_stac</a></li>
+<li class="toctree-l2"><a class="reference internal" href="geowombat.core.stac.open_stac.html">open_stac</a></li>
+<li class="toctree-l2"><a class="reference internal" href="geowombat.core.stac.STACCollectionURLNames.html">STACCollectionURLNames</a></li>
+<li class="toctree-l2"><a class="reference internal" href="geowombat.core.stac.STACCollections.html">STACCollections</a></li>
+<li class="toctree-l2"><a class="reference internal" href="geowombat.core.stac.STACNames.html">STACNames</a></li>
+<li class="toctree-l2"><a class="reference internal" href="geowombat.core.stac.StrEnum.html">StrEnum</a></li>
+<li class="toctree-l2"><a class="reference internal" href="geowombat.ml.fit.html">fit</a></li>
+<li class="toctree-l2"><a class="reference internal" href="geowombat.ml.fit_predict.html">fit_predict</a></li>
+<li class="toctree-l2"><a class="reference internal" href="geowombat.ml.predict.html">predict</a></li>
+<li class="toctree-l2"><a class="reference internal" href="geowombat.ml.TabNetClassifier.html">TabNetClassifier</a></li>
+<li class="toctree-l2"><a class="reference internal" href="geowombat.ml.LTAEClassifier.html">LTAEClassifier</a></li>
+<li class="toctree-l2"><a class="reference internal" href="geowombat.ml.TorchGeoClassifier.html">TorchGeoClassifier</a></li>
+<li class="toctree-l2"><a class="reference internal" href="geowombat.detect.boxes_from_polygons.html">boxes_from_polygons</a></li>
+<li class="toctree-l2"><a class="reference internal" href="geowombat.detect.build_dataset.html">build_dataset</a></li>
+<li class="toctree-l2"><a class="reference internal" href="geowombat.detect.build_yolo_dataset.html">build_yolo_dataset</a></li>
+<li class="toctree-l2"><a class="reference internal" href="geowombat.detect.detection_accuracy.html">detection_accuracy</a></li>
+<li class="toctree-l2"><a class="reference internal" href="geowombat.detect.export_for_review.html">export_for_review</a></li>
+<li class="toctree-l2"><a class="reference internal" href="geowombat.detect.fit.html">fit</a></li>
+<li class="toctree-l2"><a class="reference internal" href="geowombat.detect.fit_predict.html">fit_predict</a></li>
+<li class="toctree-l2"><a class="reference internal" href="geowombat.detect.plot_detections.html">plot_detections</a></li>
+<li class="toctree-l2"><a class="reference internal" href="geowombat.detect.predict.html">predict</a></li>
+<li class="toctree-l2"><a class="reference internal" href="geowombat.detect.recompute_from_review.html">recompute_from_review</a></li>
+<li class="toctree-l2"><a class="reference internal" href="geowombat.detect.SAMRefiner.html">SAMRefiner</a></li>
+<li class="toctree-l2"><a class="reference internal" href="geowombat.detect.TorchGeoDetector.html">TorchGeoDetector</a></li>
+<li class="toctree-l2"><a class="reference internal" href="geowombat.detect.YOLODetector.html">YOLODetector</a></li>
+<li class="toctree-l2"><a class="reference internal" href="geowombat.radiometry.landsat_pixel_angles.html">landsat_pixel_angles</a></li>
+<li class="toctree-l2"><a class="reference internal" href="geowombat.radiometry.sentinel_pixel_angles.html">sentinel_pixel_angles</a></li>
+<li class="toctree-l2"><a class="reference internal" href="geowombat.radiometry.BRDF.html">BRDF</a></li>
+<li class="toctree-l2"><a class="reference internal" href="geowombat.radiometry.Topo.html">Topo</a></li>
+<li class="toctree-l2"><a class="reference internal" href="geowombat.radiometry.LinearAdjustments.html">LinearAdjustments</a></li>
+<li class="toctree-l2"><a class="reference internal" href="geowombat.radiometry.RadTransforms.html">RadTransforms</a></li>
+<li class="toctree-l2"><a class="reference internal" href="geowombat.radiometry.DOS.html">DOS</a></li>
+<li class="toctree-l2"><a class="reference internal" href="geowombat.radiometry.SixS.html">SixS</a></li>
+<li class="toctree-l2"><a class="reference internal" href="geowombat.radiometry.QAMasker.html">QAMasker</a></li>
+<li class="toctree-l2"><a class="reference internal" href="geowombat.radiometry.QABits.html">QABits</a></li>
+<li class="toctree-l2"><a class="reference internal" href="geowombat.radiometry.SCLValues.html">SCLValues</a></li>
+<li class="toctree-l2"><a class="reference internal" href="geowombat.radiometry.HLSFmaskBits.html">HLSFmaskBits</a></li>
+</ul>
+</li>
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><label class="sidebar-toggle primary-toggle btn btn-sm" for="__primary" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</label></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+<a href="https://github.com/jgrss/geowombat" target="_blank"
+   class="btn btn-sm btn-source-repository-button"
+   title="Source repository"
+   data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fab fa-github"></i>
+  </span>
+
+</a>
+
+
+
+
+
+
+<div class="dropdown dropdown-download-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Download this page">
+    <i class="fas fa-download"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="../_sources/api/geowombat.ml.rst" target="_blank"
+   class="btn btn-sm btn-download-source-button dropdown-item"
+   title="Download source file"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file"></i>
+  </span>
+<span class="btn__text-container">.rst</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li>
+<button onclick="window.print()"
+  class="btn btn-sm btn-download-pdf-button dropdown-item"
+  title="Print to PDF"
+  data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file-pdf"></i>
+  </span>
+<span class="btn__text-container">.pdf</span>
+</button>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button"
+  title="Fullscreen mode"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+
+<script>
+document.write(`
+  <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
+    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
+    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
+  </button>
+`);
+</script>
+
+<script>
+document.write(`
+  <button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+  </button>
+`);
+</script>
+<label class="sidebar-toggle secondary-toggle btn btn-sm" for="__secondary"title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</label>
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1>geowombat.ml package</h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+            <div>
+                <h2> Contents </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#submodules">Submodules</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-geowombat.ml.classifiers">geowombat.ml.classifiers module</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#geowombat.ml.classifiers.Classifiers"><code class="docutils literal notranslate"><span class="pre">Classifiers</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#geowombat.ml.classifiers.Classifiers.fit"><code class="docutils literal notranslate"><span class="pre">Classifiers.fit()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#geowombat.ml.classifiers.Classifiers.fit_predict"><code class="docutils literal notranslate"><span class="pre">Classifiers.fit_predict()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#geowombat.ml.classifiers.Classifiers.predict"><code class="docutils literal notranslate"><span class="pre">Classifiers.predict()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#geowombat.ml.classifiers.ClassifiersMixin"><code class="docutils literal notranslate"><span class="pre">ClassifiersMixin</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#geowombat.ml.classifiers.ClassifiersMixin.add_categorical"><code class="docutils literal notranslate"><span class="pre">ClassifiersMixin.add_categorical()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#geowombat.ml.classifiers.ClassifiersMixin.classes_"><code class="docutils literal notranslate"><span class="pre">ClassifiersMixin.classes_</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-geowombat.ml.transformers">geowombat.ml.transformers module</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#geowombat.ml.transformers.BaseTransformer"><code class="docutils literal notranslate"><span class="pre">BaseTransformer</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#geowombat.ml.transformers.BaseTransformer.fit"><code class="docutils literal notranslate"><span class="pre">BaseTransformer.fit()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#geowombat.ml.transformers.BaseTransformer.transform"><code class="docutils literal notranslate"><span class="pre">BaseTransformer.transform()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#geowombat.ml.transformers.Featurizer_GW"><code class="docutils literal notranslate"><span class="pre">Featurizer_GW</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#geowombat.ml.transformers.Stackerizer"><code class="docutils literal notranslate"><span class="pre">Stackerizer</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#geowombat.ml.transformers.featurize_gw"><code class="docutils literal notranslate"><span class="pre">featurize_gw()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#geowombat.ml.transformers.is_dataarray"><code class="docutils literal notranslate"><span class="pre">is_dataarray()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#geowombat.ml.transformers.is_dataset"><code class="docutils literal notranslate"><span class="pre">is_dataset()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#geowombat.ml.transformers.stackerizer"><code class="docutils literal notranslate"><span class="pre">stackerizer()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-geowombat.ml">Module contents</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#geowombat.ml.LTAEClassifier"><code class="docutils literal notranslate"><span class="pre">LTAEClassifier</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#geowombat.ml.LTAEClassifier.fit"><code class="docutils literal notranslate"><span class="pre">LTAEClassifier.fit()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#geowombat.ml.LTAEClassifier.predict"><code class="docutils literal notranslate"><span class="pre">LTAEClassifier.predict()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#geowombat.ml.TabNetClassifier"><code class="docutils literal notranslate"><span class="pre">TabNetClassifier</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#geowombat.ml.TabNetClassifier.fit"><code class="docutils literal notranslate"><span class="pre">TabNetClassifier.fit()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#geowombat.ml.TabNetClassifier.predict"><code class="docutils literal notranslate"><span class="pre">TabNetClassifier.predict()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#geowombat.ml.TorchGeoClassifier"><code class="docutils literal notranslate"><span class="pre">TorchGeoClassifier</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#geowombat.ml.TorchGeoClassifier.expected_bands"><code class="docutils literal notranslate"><span class="pre">TorchGeoClassifier.expected_bands</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#geowombat.ml.TorchGeoClassifier.fit"><code class="docutils literal notranslate"><span class="pre">TorchGeoClassifier.fit()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#geowombat.ml.TorchGeoClassifier.predict"><code class="docutils literal notranslate"><span class="pre">TorchGeoClassifier.predict()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#geowombat.ml.fit"><code class="docutils literal notranslate"><span class="pre">fit()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#geowombat.ml.fit_predict"><code class="docutils literal notranslate"><span class="pre">fit_predict()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#geowombat.ml.predict"><code class="docutils literal notranslate"><span class="pre">predict()</span></code></a></li>
+</ul>
+</li>
+</ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article" role="main">
+                  
+  <section id="geowombat-ml-package">
+<h1>geowombat.ml package<a class="headerlink" href="#geowombat-ml-package" title="Permalink to this heading">#</a></h1>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this heading">#</a></h2>
+</section>
+<section id="module-geowombat.ml.classifiers">
+<span id="geowombat-ml-classifiers-module"></span><h2>geowombat.ml.classifiers module<a class="headerlink" href="#module-geowombat.ml.classifiers" title="Permalink to this heading">#</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="geowombat.ml.classifiers.Classifiers">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">geowombat.ml.classifiers.</span></span><span class="sig-name descname"><span class="pre">Classifiers</span></span><a class="reference internal" href="../_modules/geowombat/ml/classifiers.html#Classifiers"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geowombat.ml.classifiers.Classifiers" title="Permalink to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#geowombat.ml.classifiers.ClassifiersMixin" title="geowombat.ml.classifiers.ClassifiersMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">ClassifiersMixin</span></code></a></p>
+<dl class="field-list simple">
+<dt class="field-odd">Attributes<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>classes_</strong></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Methods</p>
+<table class="autosummary longtable table autosummary">
+<tbody>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">add_categorical</span></code>(data, labels, col[, ...])</p></td>
+<td><p>Adds numeric categorical data to array based on polygon col values.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#geowombat.ml.classifiers.Classifiers.fit" title="geowombat.ml.classifiers.Classifiers.fit"><code class="xref py py-obj docutils literal notranslate"><span class="pre">fit</span></code></a>(data, clf[, labels, col, targ_name, ...])</p></td>
+<td><p>Fits a classifier given class labels.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#geowombat.ml.classifiers.Classifiers.fit_predict" title="geowombat.ml.classifiers.Classifiers.fit_predict"><code class="xref py py-obj docutils literal notranslate"><span class="pre">fit_predict</span></code></a>(data, clf[, labels, col, ...])</p></td>
+<td><p>Fits a classifier given class labels and predicts on a DataArray.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#geowombat.ml.classifiers.Classifiers.predict" title="geowombat.ml.classifiers.Classifiers.predict"><code class="xref py py-obj docutils literal notranslate"><span class="pre">predict</span></code></a>(data, X, clf[, targ_name, ...])</p></td>
+<td><p>Predicts on a DataArray using a fitted classifier.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py method">
+<dt class="sig sig-object py" id="geowombat.ml.classifiers.Classifiers.fit">
+<span class="sig-name descname"><span class="pre">fit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">clf</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">labels</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">col</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">targ_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'targ'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">targ_dim_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'sample'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">temporal_mode</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'panel'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/geowombat/ml/classifiers.html#Classifiers.fit"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geowombat.ml.classifiers.Classifiers.fit" title="Permalink to this definition">#</a></dt>
+<dd><p>Fits a classifier given class labels.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>DataArray</em>) – The data to predict on.</p></li>
+<li><p><strong>clf</strong> (<em>object</em>) – The classifier or classification pipeline.</p></li>
+<li><p><strong>labels</strong> (<em>Optional</em><em>[</em><em>str</em><em> | </em><em>Path</em><em> | </em><em>GeoDataFrame</em><em>]</em>) – Class labels as polygon geometry.</p></li>
+<li><p><strong>col</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – The column in <code class="docutils literal notranslate"><span class="pre">labels</span></code> you want to assign values from.
+If <code class="docutils literal notranslate"><span class="pre">None</span></code>, creates a binary raster.</p></li>
+<li><p><strong>targ_name</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – The target name.</p></li>
+<li><p><strong>targ_dim_name</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – The target coordinate name.</p></li>
+<li><p><strong>temporal_mode</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – How to handle time-dimensioned data.
+<code class="docutils literal notranslate"><span class="pre">'panel'</span></code> — each pixel-time is an independent sample (B features);
+output has time dimension with per-time predictions.
+<code class="docutils literal notranslate"><span class="pre">'flatten'</span></code> — flatten time into band (T*B features per pixel);
+output has no time dimension, one prediction per pixel.
+Ignored when data has no time dimension.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Tuple of <code class="docutils literal notranslate"><span class="pre">(X,</span> <span class="pre">Xna,</span> <span class="pre">clf)</span></code>, where <code class="docutils literal notranslate"><span class="pre">X</span></code> is the original <code class="docutils literal notranslate"><span class="pre">xarray.DataArray</span></code>
+augmented to accept a prediction dimension; <code class="docutils literal notranslate"><span class="pre">Xna</span></code> is a tuple
+<code class="docutils literal notranslate"><span class="pre">(xarray.DataArray,</span> <span class="pre">sklearn_xarray.Target)</span></code> of the reshaped feature data
+(with NAs removed for supervised classifiers, retained for unsupervised) and
+the target array (None for unsupervised); and <code class="docutils literal notranslate"><span class="pre">clf</span></code> is the fitted sklearn
+pipeline.</p>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">geowombat</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">gw</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">geowombat.data</span><span class="w"> </span><span class="kn">import</span> <span class="n">l8_224078_20200518</span><span class="p">,</span> <span class="n">l8_224078_20200518_polygons</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">geowombat.ml</span><span class="w"> </span><span class="kn">import</span> <span class="n">fit</span>
+<span class="gp">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">geopandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">gpd</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.pipeline</span><span class="w"> </span><span class="kn">import</span> <span class="n">Pipeline</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.preprocessing</span><span class="w"> </span><span class="kn">import</span> <span class="n">StandardScaler</span><span class="p">,</span> <span class="n">LabelEncoder</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.decomposition</span><span class="w"> </span><span class="kn">import</span> <span class="n">PCA</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.naive_bayes</span><span class="w"> </span><span class="kn">import</span> <span class="n">GaussianNB</span>
+<span class="gp">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">le</span> <span class="o">=</span> <span class="n">LabelEncoder</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">labels</span> <span class="o">=</span> <span class="n">gpd</span><span class="o">.</span><span class="n">read_file</span><span class="p">(</span><span class="n">l8_224078_20200518_polygons</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">labels</span><span class="p">[</span><span class="s1">&#39;lc&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">le</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">labels</span><span class="o">.</span><span class="n">name</span><span class="p">)</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">labels</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Use supervised classification pipeline</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">pl</span> <span class="o">=</span> <span class="n">Pipeline</span><span class="p">([(</span><span class="s1">&#39;scaler&#39;</span><span class="p">,</span> <span class="n">StandardScaler</span><span class="p">()),</span>
+<span class="gp">&gt;&gt;&gt; </span>               <span class="p">(</span><span class="s1">&#39;pca&#39;</span><span class="p">,</span> <span class="n">PCA</span><span class="p">()),</span>
+<span class="gp">&gt;&gt;&gt; </span>               <span class="p">(</span><span class="s1">&#39;clf&#39;</span><span class="p">,</span> <span class="n">GaussianNB</span><span class="p">())])</span>
+<span class="gp">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">l8_224078_20200518</span><span class="p">)</span> <span class="k">as</span> <span class="n">src</span><span class="p">:</span>
+<span class="gp">&gt;&gt;&gt; </span>  <span class="n">X</span><span class="p">,</span> <span class="n">Xy</span><span class="p">,</span> <span class="n">clf</span> <span class="o">=</span> <span class="n">fit</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="n">pl</span><span class="p">,</span> <span class="n">labels</span><span class="p">,</span> <span class="n">col</span><span class="o">=</span><span class="s1">&#39;lc&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Fit an unsupervised classifier</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cl</span> <span class="o">=</span> <span class="n">Pipeline</span><span class="p">([(</span><span class="s1">&#39;pca&#39;</span><span class="p">,</span> <span class="n">PCA</span><span class="p">()),</span>
+<span class="gp">&gt;&gt;&gt; </span>               <span class="p">(</span><span class="s1">&#39;cst&#39;</span><span class="p">,</span> <span class="n">KMeans</span><span class="p">())])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">l8_224078_20200518</span><span class="p">)</span> <span class="k">as</span> <span class="n">src</span><span class="p">:</span>
+<span class="gp">&gt;&gt;&gt; </span>   <span class="n">X</span><span class="p">,</span> <span class="n">Xy</span><span class="p">,</span> <span class="n">clf</span> <span class="o">=</span> <span class="n">fit</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="n">cl</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geowombat.ml.classifiers.Classifiers.fit_predict">
+<span class="sig-name descname"><span class="pre">fit_predict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">clf</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">labels</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">col</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">targ_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'targ'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">targ_dim_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'sample'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask_nodataval</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">temporal_mode</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'panel'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/geowombat/ml/classifiers.html#Classifiers.fit_predict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geowombat.ml.classifiers.Classifiers.fit_predict" title="Permalink to this definition">#</a></dt>
+<dd><p>Fits a classifier given class labels and predicts on a DataArray.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>DataArray</em>) – The data to predict on.</p></li>
+<li><p><strong>clf</strong> (<em>object</em>) – The classifier or classification pipeline.</p></li>
+<li><p><strong>labels</strong> (<em>optional</em><em>[</em><em>str</em><em> | </em><em>Path</em><em> | </em><em>GeoDataFrame</em><em>]</em>) – Class labels as polygon geometry.</p></li>
+<li><p><strong>col</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – The column in <code class="docutils literal notranslate"><span class="pre">labels</span></code> you want to assign values from.
+If <code class="docutils literal notranslate"><span class="pre">None</span></code>, creates a binary raster.</p></li>
+<li><p><strong>targ_name</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – The target name.</p></li>
+<li><p><strong>targ_dim_name</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – The target coordinate name.</p></li>
+<li><p><strong>mask_nodataval</strong> (<em>Optional</em><em>[</em><em>Bool</em><em>]</em>) – If true, data.attrs[“nodatavals”][0]
+are replaced with np.nan and the array is returned as type float</p></li>
+<li><p><strong>temporal_mode</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – How to handle time-dimensioned data.
+‘panel’ — each pixel-time is an independent sample.
+‘flatten’ — flatten time into band.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Predictions shaped (‘time’ x ‘band’ x ‘y’ x ‘x’)</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">xarray.DataArray</span></code></p>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">geowombat</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">gw</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">geowombat.data</span><span class="w"> </span><span class="kn">import</span> <span class="n">l8_224078_20200518</span><span class="p">,</span> <span class="n">l8_224078_20200518_polygons</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">geowombat.ml</span><span class="w"> </span><span class="kn">import</span> <span class="n">fit_predict</span>
+<span class="gp">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">geopandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">gpd</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.pipeline</span><span class="w"> </span><span class="kn">import</span> <span class="n">Pipeline</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.preprocessing</span><span class="w"> </span><span class="kn">import</span> <span class="n">StandardScaler</span><span class="p">,</span> <span class="n">LabelEncoder</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.decomposition</span><span class="w"> </span><span class="kn">import</span> <span class="n">PCA</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.naive_bayes</span><span class="w"> </span><span class="kn">import</span> <span class="n">GaussianNB</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.cluster</span><span class="w"> </span><span class="kn">import</span> <span class="n">KMeans</span>
+<span class="gp">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">le</span> <span class="o">=</span> <span class="n">LabelEncoder</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">labels</span> <span class="o">=</span> <span class="n">gpd</span><span class="o">.</span><span class="n">read_file</span><span class="p">(</span><span class="n">l8_224078_20200518_polygons</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">labels</span><span class="p">[</span><span class="s1">&#39;lc&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">le</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">labels</span><span class="o">.</span><span class="n">name</span><span class="p">)</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">labels</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Use a supervised classification pipeline</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">pl</span> <span class="o">=</span> <span class="n">Pipeline</span><span class="p">([(</span><span class="s1">&#39;scaler&#39;</span><span class="p">,</span> <span class="n">StandardScaler</span><span class="p">()),</span>
+<span class="gp">&gt;&gt;&gt; </span>               <span class="p">(</span><span class="s1">&#39;pca&#39;</span><span class="p">,</span> <span class="n">PCA</span><span class="p">()),</span>
+<span class="gp">&gt;&gt;&gt; </span>               <span class="p">(</span><span class="s1">&#39;clf&#39;</span><span class="p">,</span> <span class="n">GaussianNB</span><span class="p">())])</span>
+<span class="gp">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">l8_224078_20200518</span><span class="p">,</span> <span class="n">nodata</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> <span class="k">as</span> <span class="n">src</span><span class="p">:</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="n">y</span> <span class="o">=</span> <span class="n">fit_predict</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="n">pl</span><span class="p">,</span> <span class="n">labels</span><span class="p">,</span> <span class="n">col</span><span class="o">=</span><span class="s1">&#39;lc&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="n">y</span><span class="o">.</span><span class="n">sel</span><span class="p">(</span><span class="n">band</span><span class="o">=</span><span class="s1">&#39;targ&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">imshow</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Use an unsupervised classification pipeline</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cl</span> <span class="o">=</span> <span class="n">Pipeline</span><span class="p">([(</span><span class="s1">&#39;pca&#39;</span><span class="p">,</span> <span class="n">PCA</span><span class="p">()),</span>
+<span class="gp">&gt;&gt;&gt; </span>               <span class="p">(</span><span class="s1">&#39;cst&#39;</span><span class="p">,</span> <span class="n">KMeans</span><span class="p">())])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">l8_224078_20200518</span><span class="p">,</span> <span class="n">nodata</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> <span class="k">as</span> <span class="n">src</span><span class="p">:</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="n">y2</span> <span class="o">=</span> <span class="n">fit_predict</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="n">cl</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geowombat.ml.classifiers.Classifiers.predict">
+<span class="sig-name descname"><span class="pre">predict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">X</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">clf</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">targ_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'targ'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">targ_dim_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'sample'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask_nodataval</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">temporal_mode</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'panel'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/geowombat/ml/classifiers.html#Classifiers.predict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geowombat.ml.classifiers.Classifiers.predict" title="Permalink to this definition">#</a></dt>
+<dd><p>Predicts on a DataArray using a fitted classifier.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>DataArray</em>) – The data to predict on.</p></li>
+<li><p><strong>X</strong> (<em>DataArray</em>) – Data array generated by geowombat.ml.fit.</p></li>
+<li><p><strong>clf</strong> (<em>object</em>) – The classifier or classification pipeline.</p></li>
+<li><p><strong>targ_name</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – The target name.</p></li>
+<li><p><strong>targ_dim_name</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – The target coordinate name.</p></li>
+<li><p><strong>mask_nodataval</strong> (<em>Optional</em><em>[</em><em>Bool</em><em>]</em>) – If true, data.attrs[“nodatavals”][0]
+are replaced with np.nan and the array is returned as type float</p></li>
+<li><p><strong>temporal_mode</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – How to handle time-dimensioned data.
+‘panel’ — each pixel-time is an independent sample.
+‘flatten’ — flatten time into band.
+Must match the temporal_mode used in fit().</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Predictions shaped (‘time’ x ‘band’ x ‘y’ x ‘x’)</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">xarray.DataArray</span></code></p>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">geowombat</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">gw</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">geowombat.data</span><span class="w"> </span><span class="kn">import</span> <span class="n">l8_224078_20200518</span><span class="p">,</span> <span class="n">l8_224078_20200518_polygons</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">geowombat.ml</span><span class="w"> </span><span class="kn">import</span> <span class="n">fit</span><span class="p">,</span> <span class="n">predict</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">geopandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">gpd</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.pipeline</span><span class="w"> </span><span class="kn">import</span> <span class="n">Pipeline</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.preprocessing</span><span class="w"> </span><span class="kn">import</span> <span class="n">LabelEncoder</span><span class="p">,</span> <span class="n">StandardScaler</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.decomposition</span><span class="w"> </span><span class="kn">import</span> <span class="n">PCA</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.naive_bayes</span><span class="w"> </span><span class="kn">import</span> <span class="n">GaussianNB</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">le</span> <span class="o">=</span> <span class="n">LabelEncoder</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">labels</span> <span class="o">=</span> <span class="n">gpd</span><span class="o">.</span><span class="n">read_file</span><span class="p">(</span><span class="n">l8_224078_20200518_polygons</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">labels</span><span class="p">[</span><span class="s2">&quot;lc&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">le</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">labels</span><span class="o">.</span><span class="n">name</span><span class="p">)</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">labels</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Use a data pipeline</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">pl</span> <span class="o">=</span> <span class="n">Pipeline</span><span class="p">([(</span><span class="s1">&#39;scaler&#39;</span><span class="p">,</span> <span class="n">StandardScaler</span><span class="p">()),</span>
+<span class="gp">&gt;&gt;&gt; </span>               <span class="p">(</span><span class="s1">&#39;pca&#39;</span><span class="p">,</span> <span class="n">PCA</span><span class="p">()),</span>
+<span class="gp">&gt;&gt;&gt; </span>               <span class="p">(</span><span class="s1">&#39;clf&#39;</span><span class="p">,</span> <span class="n">GaussianNB</span><span class="p">())])</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Fit and predict the classifier</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">ref_res</span><span class="o">=</span><span class="mi">100</span><span class="p">):</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">l8_224078_20200518</span><span class="p">,</span> <span class="n">nodata</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> <span class="k">as</span> <span class="n">src</span><span class="p">:</span>
+<span class="gp">&gt;&gt;&gt; </span>        <span class="n">X</span><span class="p">,</span> <span class="n">Xy</span><span class="p">,</span> <span class="n">clf</span> <span class="o">=</span> <span class="n">fit</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="n">pl</span><span class="p">,</span> <span class="n">labels</span><span class="p">,</span> <span class="n">col</span><span class="o">=</span><span class="s2">&quot;lc&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span>        <span class="n">y</span> <span class="o">=</span> <span class="n">predict</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">clf</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span>        <span class="nb">print</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Fit and predict an unsupervised classifier</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cl</span> <span class="o">=</span> <span class="n">Pipeline</span><span class="p">([(</span><span class="s1">&#39;pca&#39;</span><span class="p">,</span> <span class="n">PCA</span><span class="p">()),</span>
+<span class="gp">&gt;&gt;&gt; </span>               <span class="p">(</span><span class="s1">&#39;cst&#39;</span><span class="p">,</span> <span class="n">KMeans</span><span class="p">())])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">l8_224078_20200518</span><span class="p">)</span> <span class="k">as</span> <span class="n">src</span><span class="p">:</span>
+<span class="gp">&gt;&gt;&gt; </span>   <span class="n">X</span><span class="p">,</span> <span class="n">Xy</span><span class="p">,</span> <span class="n">clf</span> <span class="o">=</span> <span class="n">fit</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="n">cl</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span>   <span class="n">y1</span> <span class="o">=</span> <span class="n">predict</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">clf</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="geowombat.ml.classifiers.ClassifiersMixin">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">geowombat.ml.classifiers.</span></span><span class="sig-name descname"><span class="pre">ClassifiersMixin</span></span><a class="reference internal" href="../_modules/geowombat/ml/classifiers.html#ClassifiersMixin"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geowombat.ml.classifiers.ClassifiersMixin" title="Permalink to this definition">#</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="field-list simple">
+<dt class="field-odd">Attributes<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>classes_</strong></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Methods</p>
+<table class="autosummary longtable table autosummary">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#geowombat.ml.classifiers.ClassifiersMixin.add_categorical" title="geowombat.ml.classifiers.ClassifiersMixin.add_categorical"><code class="xref py py-obj docutils literal notranslate"><span class="pre">add_categorical</span></code></a>(data, labels, col[, ...])</p></td>
+<td><p>Adds numeric categorical data to array based on polygon col values.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py method">
+<dt class="sig sig-object py" id="geowombat.ml.classifiers.ClassifiersMixin.add_categorical">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">add_categorical</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">labels</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">col</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">variable_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'cat1'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/geowombat/ml/classifiers.html#ClassifiersMixin.add_categorical"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geowombat.ml.classifiers.ClassifiersMixin.add_categorical" title="Permalink to this definition">#</a></dt>
+<dd><p>Adds numeric categorical data to array based on polygon col values.
+For multiple time periods, multiple copies are made, one for each time
+period.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>xarray.DataArray</em>) – </p></li>
+<li><p><strong>labels</strong> (<em>Path</em><em> or </em><em>GeoDataFrame</em>) – The labels with categorical data.</p></li>
+<li><p><strong>col</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – The column in <code class="docutils literal notranslate"><span class="pre">labels</span></code> you want to assign values from.
+If <code class="docutils literal notranslate"><span class="pre">None</span></code>, creates a binary raster.</p></li>
+<li><p><strong>variable_name</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – The name assigned to the categorical data.</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">geowombat.ml.classifiers</span><span class="w"> </span><span class="kn">import</span> <span class="n">Classifiers</span>
+<span class="gp">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">gwclf</span> <span class="o">=</span> <span class="n">Classifiers</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">climatecluster</span> <span class="o">=</span> <span class="s1">&#39; ./ClusterEco15_Y5.shp&#39;</span>
+<span class="gp">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">time_names</span> <span class="o">=</span> <span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">vrts</span><span class="p">))]</span>
+<span class="gp">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">vrts</span><span class="p">,</span> <span class="n">time_names</span><span class="o">=</span><span class="n">time_names</span><span class="p">)</span> <span class="k">as</span> <span class="n">src</span><span class="p">:</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="n">src</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s1">&#39;filename&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">vrts</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="n">cats</span> <span class="o">=</span> <span class="n">gwclf</span><span class="o">.</span><span class="n">add_categorical</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="n">climatecluster</span><span class="p">,</span> <span class="n">col</span><span class="o">=</span><span class="s1">&#39;ClusterN_2&#39;</span><span class="p">,</span> <span class="n">variable_name</span><span class="o">=</span><span class="s1">&#39;clim_clust&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="geowombat.ml.classifiers.ClassifiersMixin.classes_">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">classes_</span></span><a class="headerlink" href="#geowombat.ml.classifiers.ClassifiersMixin.classes_" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-geowombat.ml.transformers">
+<span id="geowombat-ml-transformers-module"></span><h2>geowombat.ml.transformers module<a class="headerlink" href="#module-geowombat.ml.transformers" title="Permalink to this heading">#</a></h2>
+<p>Created on Mon Aug 10 13:41:40 2020
+adapted from sklearn-xarray/preprocessing
+&#64;author: mmann1123</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="geowombat.ml.transformers.BaseTransformer">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">geowombat.ml.transformers.</span></span><span class="sig-name descname"><span class="pre">BaseTransformer</span></span><a class="reference internal" href="../_modules/geowombat/ml/transformers.html#BaseTransformer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geowombat.ml.transformers.BaseTransformer" title="Permalink to this definition">#</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">BaseEstimator</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">TransformerMixin</span></code></p>
+<p>Base class for transformers.</p>
+<p class="rubric">Methods</p>
+<table class="autosummary longtable table autosummary">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#geowombat.ml.transformers.BaseTransformer.fit" title="geowombat.ml.transformers.BaseTransformer.fit"><code class="xref py py-obj docutils literal notranslate"><span class="pre">fit</span></code></a>(X[, y])</p></td>
+<td><p>Fit estimator to data. Parameters ---------- X : xarray DataArray or Dataset     Training set. y : xarray DataArray or Dataset     Target values. Returns ------- self:     The estimator itself.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">fit_transform</span></code>(X[, y])</p></td>
+<td><p>Fit to data, then transform it.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_metadata_routing</span></code>()</p></td>
+<td><p>Get metadata routing of this object.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_params</span></code>([deep])</p></td>
+<td><p>Get parameters for this estimator.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_output</span></code>(*[, transform])</p></td>
+<td><p>Set output container.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_params</span></code>(**params)</p></td>
+<td><p>Set the parameters of this estimator.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#geowombat.ml.transformers.BaseTransformer.transform" title="geowombat.ml.transformers.BaseTransformer.transform"><code class="xref py py-obj docutils literal notranslate"><span class="pre">transform</span></code></a>(X)</p></td>
+<td><p>Transform input data. Parameters ---------- X : xarray DataArray or Dataset     The input data. Returns ------- Xt : xarray DataArray or Dataset     The transformed data.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py method">
+<dt class="sig sig-object py" id="geowombat.ml.transformers.BaseTransformer.fit">
+<span class="sig-name descname"><span class="pre">fit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">fit_params</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/geowombat/ml/transformers.html#BaseTransformer.fit"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geowombat.ml.transformers.BaseTransformer.fit" title="Permalink to this definition">#</a></dt>
+<dd><p>Fit estimator to data.
+Parameters
+———-
+X : xarray DataArray or Dataset</p>
+<blockquote>
+<div><p>Training set.</p>
+</div></blockquote>
+<dl class="simple">
+<dt>y<span class="classifier">xarray DataArray or Dataset</span></dt><dd><p>Target values.</p>
+</dd>
+</dl>
+<section id="returns">
+<h3>Returns<a class="headerlink" href="#returns" title="Permalink to this heading">#</a></h3>
+<dl class="simple">
+<dt>self:</dt><dd><p>The estimator itself.</p>
+</dd>
+</dl>
+</section>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geowombat.ml.transformers.BaseTransformer.transform">
+<span class="sig-name descname"><span class="pre">transform</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/geowombat/ml/transformers.html#BaseTransformer.transform"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geowombat.ml.transformers.BaseTransformer.transform" title="Permalink to this definition">#</a></dt>
+<dd><p>Transform input data.
+Parameters
+———-
+X : xarray DataArray or Dataset</p>
+<blockquote>
+<div><p>The input data.</p>
+</div></blockquote>
+<section id="id1">
+<h3>Returns<a class="headerlink" href="#id1" title="Permalink to this heading">#</a></h3>
+<dl class="simple">
+<dt>Xt<span class="classifier">xarray DataArray or Dataset</span></dt><dd><p>The transformed data.</p>
+</dd>
+</dl>
+</section>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="geowombat.ml.transformers.Featurizer_GW">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">geowombat.ml.transformers.</span></span><span class="sig-name descname"><span class="pre">Featurizer_GW</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sample_dim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'sample'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">feature_dim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'feature'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">var_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'Features'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">order</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_array</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">groupby</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">group_dim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'sample'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/geowombat/ml/transformers.html#Featurizer_GW"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geowombat.ml.transformers.Featurizer_GW" title="Permalink to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#geowombat.ml.transformers.BaseTransformer" title="geowombat.ml.transformers.BaseTransformer"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseTransformer</span></code></a></p>
+<p>Stack all dimensions and variables except for sample dimension.</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl>
+<dt><strong>sample_dim</strong><span class="classifier">str, list, tuple</span></dt><dd><p>Name of the dimension used to define how the data is sampled.
+For instance, an individual’s activity recorded over time would
+be sampled based on the dimension time.</p>
+<p>If your sample dim has multiple dimensions, for instance x,y,time
+these can be passed as a list or tuple. Before stacking, a new
+multiindex z will be created for these dimensions.</p>
+</dd>
+<dt><strong>feature_dim</strong><span class="classifier">str</span></dt><dd><p>Name of the feature dimension created to store the stacked data.</p>
+</dd>
+<dt><strong>var_name</strong><span class="classifier">str</span></dt><dd><p>Name of the new variable (for Datasets).</p>
+</dd>
+<dt><strong>order</strong><span class="classifier">list or tuple</span></dt><dd><p>Order of dimension stacking.</p>
+</dd>
+<dt><strong>return_array: bool</strong></dt><dd><p>Whether to return a DataArray when a Dataset was passed.</p>
+</dd>
+<dt><strong>groupby</strong><span class="classifier">str or list, optional</span></dt><dd><p>Name of coordinate or list of coordinates by which the groups are
+determined.</p>
+</dd>
+<dt><strong>group_dim</strong><span class="classifier">str, optional</span></dt><dd><p>Name of dimension along which the groups are indexed.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Methods</p>
+<table class="autosummary longtable table autosummary">
+<tbody>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">fit</span></code>(X[, y])</p></td>
+<td><p>Fit estimator to data. Parameters ---------- X : xarray DataArray or Dataset     Training set. y : xarray DataArray or Dataset     Target values. Returns ------- self:     The estimator itself.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">fit_transform</span></code>(X[, y])</p></td>
+<td><p>Fit to data, then transform it.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_metadata_routing</span></code>()</p></td>
+<td><p>Get metadata routing of this object.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_params</span></code>([deep])</p></td>
+<td><p>Get parameters for this estimator.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_output</span></code>(*[, transform])</p></td>
+<td><p>Set output container.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_params</span></code>(**params)</p></td>
+<td><p>Set the parameters of this estimator.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">transform</span></code>(X)</p></td>
+<td><p>Transform input data. Parameters ---------- X : xarray DataArray or Dataset     The input data. Returns ------- Xt : xarray DataArray or Dataset     The transformed data.</p></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="geowombat.ml.transformers.Stackerizer">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">geowombat.ml.transformers.</span></span><span class="sig-name descname"><span class="pre">Stackerizer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">stack_dims</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">direction</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'stack'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sample_dim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'sample'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">transposed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">groupby</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/geowombat/ml/transformers.html#Stackerizer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geowombat.ml.transformers.Stackerizer" title="Permalink to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#geowombat.ml.transformers.BaseTransformer" title="geowombat.ml.transformers.BaseTransformer"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseTransformer</span></code></a></p>
+<dl class="simple">
+<dt>Transformer to handle higher dimensional data, for instance data</dt><dd><p>sampled in time and location (‘x’,’y’,’time’), that must be stacked
+before running Featurizer, and unstacked after prediction.</p>
+</dd>
+</dl>
+<dl class="field-list">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl>
+<dt><strong>sample_dim</strong><span class="classifier">list, tuple</span></dt><dd><p>List (tuple) of the dimensions used to define how the data is sampled.</p>
+<p>If your sample dim has multiple dimensions, for instance x,y,time
+these can be passed as a list or tuple. Before stacking, a new
+multiindex ‘sample’ will be created for these dimensions.</p>
+</dd>
+<dt><strong>direction</strong><span class="classifier">str, optional</span></dt><dd><p>“stack” or “unstack” defines the direction of transformation.
+Default is “stack”</p>
+</dd>
+<dt><strong>sample_dim</strong><span class="classifier">str</span></dt><dd><p>Name of multiindex used to stack sample dims. Defaults to “sample”</p>
+</dd>
+<dt><strong>transposed</strong><span class="classifier">bool</span></dt><dd><p>Should the output be transposed after stacking. Default is True.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Methods</p>
+<table class="autosummary longtable table autosummary">
+<tbody>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">fit</span></code>(X[, y])</p></td>
+<td><p>Fit estimator to data. Parameters ---------- X : xarray DataArray or Dataset     Training set. y : xarray DataArray or Dataset     Target values. Returns ------- self:     The estimator itself.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">fit_transform</span></code>(X[, y])</p></td>
+<td><p>Fit to data, then transform it.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_metadata_routing</span></code>()</p></td>
+<td><p>Get metadata routing of this object.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_params</span></code>([deep])</p></td>
+<td><p>Get parameters for this estimator.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_output</span></code>(*[, transform])</p></td>
+<td><p>Set output container.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_params</span></code>(**params)</p></td>
+<td><p>Set the parameters of this estimator.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">transform</span></code>(X)</p></td>
+<td><p>Transform input data. Parameters ---------- X : xarray DataArray or Dataset     The input data. Returns ------- Xt : xarray DataArray or Dataset     The transformed data.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>Xt</strong><span class="classifier">xarray DataArray or Dataset</span></dt><dd><p>The transformed data.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="geowombat.ml.transformers.featurize_gw">
+<span class="sig-prename descclassname"><span class="pre">geowombat.ml.transformers.</span></span><span class="sig-name descname"><span class="pre">featurize_gw</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_estimator</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">fit_params</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/geowombat/ml/transformers.html#featurize_gw"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geowombat.ml.transformers.featurize_gw" title="Permalink to this definition">#</a></dt>
+<dd><p>Stacks all dimensions and variables except for sample dimension.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>X</strong><span class="classifier">xarray DataArray or Dataset</span></dt><dd><p>The input data.</p>
+</dd>
+<dt><strong>return_estimator</strong><span class="classifier">bool</span></dt><dd><p>Whether to return the fitted estimator along with the transformed data.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>Xt</strong><span class="classifier">xarray DataArray or Dataset</span></dt><dd><p>The transformed data.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="geowombat.ml.transformers.is_dataarray">
+<span class="sig-prename descclassname"><span class="pre">geowombat.ml.transformers.</span></span><span class="sig-name descname"><span class="pre">is_dataarray</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">require_attrs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/geowombat/ml/transformers.html#is_dataarray"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geowombat.ml.transformers.is_dataarray" title="Permalink to this definition">#</a></dt>
+<dd><p>Check whether an object is a DataArray.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>X</strong><span class="classifier">anything</span></dt><dd><p>The object to be checked.</p>
+</dd>
+<dt><strong>require_attrs</strong><span class="classifier">list of str, optional</span></dt><dd><p>The attributes the object has to have in order to pass as a DataArray.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>bool</dt><dd><p>Whether the object is a DataArray or not.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="geowombat.ml.transformers.is_dataset">
+<span class="sig-prename descclassname"><span class="pre">geowombat.ml.transformers.</span></span><span class="sig-name descname"><span class="pre">is_dataset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">require_attrs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/geowombat/ml/transformers.html#is_dataset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geowombat.ml.transformers.is_dataset" title="Permalink to this definition">#</a></dt>
+<dd><p>Check whether an object is a Dataset.
+Parameters
+———-
+X : anything</p>
+<blockquote>
+<div><p>The object to be checked.</p>
+</div></blockquote>
+<dl class="simple">
+<dt>require_attrs<span class="classifier">list of str, optional</span></dt><dd><p>The attributes the object has to have in order to pass as a Dataset.</p>
+</dd>
+</dl>
+<section id="id2">
+<h3>Returns<a class="headerlink" href="#id2" title="Permalink to this heading">#</a></h3>
+<dl class="simple">
+<dt>bool</dt><dd><p>Whether the object is a Dataset or not.</p>
+</dd>
+</dl>
+</section>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="geowombat.ml.transformers.stackerizer">
+<span class="sig-prename descclassname"><span class="pre">geowombat.ml.transformers.</span></span><span class="sig-name descname"><span class="pre">stackerizer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_estimator</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">fit_params</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/geowombat/ml/transformers.html#stackerizer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geowombat.ml.transformers.stackerizer" title="Permalink to this definition">#</a></dt>
+<dd><p>Stacks all dimensions and variables except for sample dimension.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>X</strong><span class="classifier">xarray DataArray or Dataset””</span></dt><dd><p>The input data.</p>
+</dd>
+<dt><strong>return_estimator</strong><span class="classifier">bool</span></dt><dd><p>Whether to return the fitted estimator along with the transformed data.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>Xt</strong><span class="classifier">xarray DataArray or Dataset</span></dt><dd><p>The transformed data.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="module-geowombat.ml">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-geowombat.ml" title="Permalink to this heading">#</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="geowombat.ml.LTAEClassifier">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">geowombat.ml.</span></span><span class="sig-name descname"><span class="pre">LTAEClassifier</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n_head</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">4</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">d_k</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">32</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">d_model</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">128</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dropout</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_epochs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">50</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">256</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lr</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.001</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'cpu'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/geowombat/ml/dl_classifiers.html#LTAEClassifier"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geowombat.ml.LTAEClassifier" title="Permalink to this definition">#</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">GeoWombatDLClassifier</span></code></p>
+<p>L-TAE classifier for satellite image time series.</p>
+<p>Expects multi-temporal data. Uses temporal attention to
+classify each pixel based on its spectral trajectory.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>n_head</strong><span class="classifier">int</span></dt><dd><p>Number of attention heads. Default 4.</p>
+</dd>
+<dt><strong>d_k</strong><span class="classifier">int</span></dt><dd><p>Key dimension per head. Default 32.</p>
+</dd>
+<dt><strong>d_model</strong><span class="classifier">int</span></dt><dd><p>Internal embedding dimension. Default 128.</p>
+</dd>
+<dt><strong>dropout</strong><span class="classifier">float</span></dt><dd><p>Dropout rate. Default 0.1.</p>
+</dd>
+<dt><strong>max_epochs</strong><span class="classifier">int</span></dt><dd><p>Training epochs. Default 50.</p>
+</dd>
+<dt><strong>batch_size</strong><span class="classifier">int</span></dt><dd><p>Mini-batch size. Default 256.</p>
+</dd>
+<dt><strong>lr</strong><span class="classifier">float</span></dt><dd><p>Learning rate. Default 1e-3.</p>
+</dd>
+<dt><strong>device</strong><span class="classifier">str</span></dt><dd><p>‘cpu’, ‘cuda’, or ‘auto’. Default ‘cpu’.</p>
+</dd>
+<dt><strong>verbose</strong><span class="classifier">int</span></dt><dd><p>0 = silent, 1 = progress. Default 0.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Methods</p>
+<table class="table">
+<tbody>
+<tr class="row-odd"><td><p><strong>fit</strong></p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p><strong>predict</strong></p></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<dl class="py method">
+<dt class="sig sig-object py" id="geowombat.ml.LTAEClassifier.fit">
+<span class="sig-name descname"><span class="pre">fit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">labels</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">col</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">targ_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'targ'</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/geowombat/ml/dl_classifiers.html#LTAEClassifier.fit"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geowombat.ml.LTAEClassifier.fit" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geowombat.ml.LTAEClassifier.predict">
+<span class="sig-name descname"><span class="pre">predict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/geowombat/ml/dl_classifiers.html#LTAEClassifier.predict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geowombat.ml.LTAEClassifier.predict" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="geowombat.ml.TabNetClassifier">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">geowombat.ml.</span></span><span class="sig-name descname"><span class="pre">TabNetClassifier</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">max_epochs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">50</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1024</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">patience</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'cpu'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">tabnet_params</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/geowombat/ml/dl_classifiers.html#TabNetClassifier"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geowombat.ml.TabNetClassifier" title="Permalink to this definition">#</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">GeoWombatDLClassifier</span></code></p>
+<p>TabNet attention-based classifier for pixel-wise classification.</p>
+<p>Wraps pytorch-tabnet internally. Works on tabular (samples, features)
+data — each pixel is one sample with spectral bands as features.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>max_epochs</strong><span class="classifier">int</span></dt><dd><p>Training epochs. Default 50.</p>
+</dd>
+<dt><strong>batch_size</strong><span class="classifier">int</span></dt><dd><p>Mini-batch size. Default 1024.</p>
+</dd>
+<dt><strong>patience</strong><span class="classifier">int</span></dt><dd><p>Early stopping patience. Default 10.</p>
+</dd>
+<dt><strong>device</strong><span class="classifier">str</span></dt><dd><p>‘cpu’, ‘cuda’, or ‘auto’. Default ‘cpu’.</p>
+</dd>
+<dt><strong>verbose</strong><span class="classifier">int</span></dt><dd><p>0 = silent, 1 = progress. Default 0.</p>
+</dd>
+<dt><strong>tabnet_params</strong><span class="classifier">dict</span></dt><dd><p>Extra kwargs passed to pytorch_tabnet.TabNetClassifier.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Methods</p>
+<table class="table">
+<tbody>
+<tr class="row-odd"><td><p><strong>fit</strong></p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p><strong>predict</strong></p></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<dl class="py method">
+<dt class="sig sig-object py" id="geowombat.ml.TabNetClassifier.fit">
+<span class="sig-name descname"><span class="pre">fit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">labels</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">col</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">targ_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'targ'</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/geowombat/ml/dl_classifiers.html#TabNetClassifier.fit"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geowombat.ml.TabNetClassifier.fit" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geowombat.ml.TabNetClassifier.predict">
+<span class="sig-name descname"><span class="pre">predict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/geowombat/ml/dl_classifiers.html#TabNetClassifier.predict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geowombat.ml.TabNetClassifier.predict" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="geowombat.ml.TorchGeoClassifier">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">geowombat.ml.</span></span><span class="sig-name descname"><span class="pre">TorchGeoClassifier</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'unet'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">backbone</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'resnet18'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">weights</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">patch_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">64</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stride</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_patches</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">500</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bands</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_epochs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">50</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">8</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lr</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.001</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'cpu'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/geowombat/ml/dl_classifiers.html#TorchGeoClassifier"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geowombat.ml.TorchGeoClassifier" title="Permalink to this definition">#</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">GeoWombatDLClassifier</span></code></p>
+<p>Wrapper for TorchGeo segmentation models (U-Net, DeepLabV3+, etc.).</p>
+<p>Uses pre-trained encoder weights from TorchGeo for satellite-
+specific feature extraction. Patch-based training and sliding
+window inference.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>model</strong><span class="classifier">str</span></dt><dd><p>Segmentation model name: ‘unet’, ‘deeplabv3+’, ‘fcn’.
+Default ‘unet’.</p>
+</dd>
+<dt><strong>backbone</strong><span class="classifier">str</span></dt><dd><p>Encoder backbone (timm model name). Default ‘resnet18’.</p>
+</dd>
+<dt><strong>weights</strong><span class="classifier">str or None</span></dt><dd><p>TorchGeo weight name, e.g.
+‘ResNet18_Weights.SENTINEL2_RGB_MOCO’. None for random init.</p>
+</dd>
+<dt><strong>patch_size</strong><span class="classifier">int</span></dt><dd><p>Training/inference patch size. Default 64.</p>
+</dd>
+<dt><strong>stride</strong><span class="classifier">int or None</span></dt><dd><p>Inference stride. Default patch_size // 2.</p>
+</dd>
+<dt><strong>max_patches</strong><span class="classifier">int</span></dt><dd><p>Max training patches to extract. Default 500.</p>
+</dd>
+<dt><strong>bands</strong><span class="classifier">list or None</span></dt><dd><p>Band indices or names to select from data.
+If None, uses all bands and validates count.</p>
+</dd>
+<dt><strong>max_epochs</strong><span class="classifier">int</span></dt><dd><p>Training epochs. Default 50.</p>
+</dd>
+<dt><strong>batch_size</strong><span class="classifier">int</span></dt><dd><p>Mini-batch size. Default 8.</p>
+</dd>
+<dt><strong>lr</strong><span class="classifier">float</span></dt><dd><p>Learning rate. Default 1e-3.</p>
+</dd>
+<dt><strong>device</strong><span class="classifier">str</span></dt><dd><p>‘cpu’, ‘cuda’, or ‘auto’. Default ‘cpu’.</p>
+</dd>
+<dt><strong>verbose</strong><span class="classifier">int</span></dt><dd><p>0 = silent, 1 = progress. Default 0.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Attributes<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><a class="reference internal" href="geowombat.ml.TorchGeoClassifier.html#id0" title="geowombat.ml.TorchGeoClassifier.expected_bands"><code class="xref py py-obj docutils literal notranslate"><span class="pre">expected_bands</span></code></a></dt><dd><p>Return expected input band info from model weights.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Methods</p>
+<table class="table">
+<tbody>
+<tr class="row-odd"><td><p><strong>fit</strong></p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p><strong>predict</strong></p></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<dl class="py property">
+<dt class="sig sig-object py" id="geowombat.ml.TorchGeoClassifier.expected_bands">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">expected_bands</span></span><a class="headerlink" href="#geowombat.ml.TorchGeoClassifier.expected_bands" title="Permalink to this definition">#</a></dt>
+<dd><p>Return expected input band info from model weights.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geowombat.ml.TorchGeoClassifier.fit">
+<span class="sig-name descname"><span class="pre">fit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">labels</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">col</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">targ_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'targ'</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/geowombat/ml/dl_classifiers.html#TorchGeoClassifier.fit"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geowombat.ml.TorchGeoClassifier.fit" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geowombat.ml.TorchGeoClassifier.predict">
+<span class="sig-name descname"><span class="pre">predict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/geowombat/ml/dl_classifiers.html#TorchGeoClassifier.predict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geowombat.ml.TorchGeoClassifier.predict" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="geowombat.ml.fit">
+<span class="sig-prename descclassname"><span class="pre">geowombat.ml.</span></span><span class="sig-name descname"><span class="pre">fit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">clf</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">labels</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">col</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">targ_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'targ'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">targ_dim_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'sample'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">temporal_mode</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'panel'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#geowombat.ml.fit" title="Permalink to this definition">#</a></dt>
+<dd><p>Fits a classifier given class labels.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>DataArray</em>) – The data to predict on.</p></li>
+<li><p><strong>clf</strong> (<em>object</em>) – The classifier or classification pipeline.</p></li>
+<li><p><strong>labels</strong> (<em>Optional</em><em>[</em><em>str</em><em> | </em><em>Path</em><em> | </em><em>GeoDataFrame</em><em>]</em>) – Class labels as polygon geometry.</p></li>
+<li><p><strong>col</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – The column in <code class="docutils literal notranslate"><span class="pre">labels</span></code> you want to assign values from.
+If <code class="docutils literal notranslate"><span class="pre">None</span></code>, creates a binary raster.</p></li>
+<li><p><strong>targ_name</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – The target name.</p></li>
+<li><p><strong>targ_dim_name</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – The target coordinate name.</p></li>
+<li><p><strong>temporal_mode</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – How to handle time-dimensioned data.
+<code class="docutils literal notranslate"><span class="pre">'panel'</span></code> — each pixel-time is an independent sample (B features);
+output has time dimension with per-time predictions.
+<code class="docutils literal notranslate"><span class="pre">'flatten'</span></code> — flatten time into band (T*B features per pixel);
+output has no time dimension, one prediction per pixel.
+Ignored when data has no time dimension.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Tuple of <code class="docutils literal notranslate"><span class="pre">(X,</span> <span class="pre">Xna,</span> <span class="pre">clf)</span></code>, where <code class="docutils literal notranslate"><span class="pre">X</span></code> is the original <code class="docutils literal notranslate"><span class="pre">xarray.DataArray</span></code>
+augmented to accept a prediction dimension; <code class="docutils literal notranslate"><span class="pre">Xna</span></code> is a tuple
+<code class="docutils literal notranslate"><span class="pre">(xarray.DataArray,</span> <span class="pre">sklearn_xarray.Target)</span></code> of the reshaped feature data
+(with NAs removed for supervised classifiers, retained for unsupervised) and
+the target array (None for unsupervised); and <code class="docutils literal notranslate"><span class="pre">clf</span></code> is the fitted sklearn
+pipeline.</p>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">geowombat</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">gw</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">geowombat.data</span><span class="w"> </span><span class="kn">import</span> <span class="n">l8_224078_20200518</span><span class="p">,</span> <span class="n">l8_224078_20200518_polygons</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">geowombat.ml</span><span class="w"> </span><span class="kn">import</span> <span class="n">fit</span>
+<span class="gp">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">geopandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">gpd</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.pipeline</span><span class="w"> </span><span class="kn">import</span> <span class="n">Pipeline</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.preprocessing</span><span class="w"> </span><span class="kn">import</span> <span class="n">StandardScaler</span><span class="p">,</span> <span class="n">LabelEncoder</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.decomposition</span><span class="w"> </span><span class="kn">import</span> <span class="n">PCA</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.naive_bayes</span><span class="w"> </span><span class="kn">import</span> <span class="n">GaussianNB</span>
+<span class="gp">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">le</span> <span class="o">=</span> <span class="n">LabelEncoder</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">labels</span> <span class="o">=</span> <span class="n">gpd</span><span class="o">.</span><span class="n">read_file</span><span class="p">(</span><span class="n">l8_224078_20200518_polygons</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">labels</span><span class="p">[</span><span class="s1">&#39;lc&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">le</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">labels</span><span class="o">.</span><span class="n">name</span><span class="p">)</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">labels</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Use supervised classification pipeline</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">pl</span> <span class="o">=</span> <span class="n">Pipeline</span><span class="p">([(</span><span class="s1">&#39;scaler&#39;</span><span class="p">,</span> <span class="n">StandardScaler</span><span class="p">()),</span>
+<span class="gp">&gt;&gt;&gt; </span>               <span class="p">(</span><span class="s1">&#39;pca&#39;</span><span class="p">,</span> <span class="n">PCA</span><span class="p">()),</span>
+<span class="gp">&gt;&gt;&gt; </span>               <span class="p">(</span><span class="s1">&#39;clf&#39;</span><span class="p">,</span> <span class="n">GaussianNB</span><span class="p">())])</span>
+<span class="gp">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">l8_224078_20200518</span><span class="p">)</span> <span class="k">as</span> <span class="n">src</span><span class="p">:</span>
+<span class="gp">&gt;&gt;&gt; </span>  <span class="n">X</span><span class="p">,</span> <span class="n">Xy</span><span class="p">,</span> <span class="n">clf</span> <span class="o">=</span> <span class="n">fit</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="n">pl</span><span class="p">,</span> <span class="n">labels</span><span class="p">,</span> <span class="n">col</span><span class="o">=</span><span class="s1">&#39;lc&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Fit an unsupervised classifier</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cl</span> <span class="o">=</span> <span class="n">Pipeline</span><span class="p">([(</span><span class="s1">&#39;pca&#39;</span><span class="p">,</span> <span class="n">PCA</span><span class="p">()),</span>
+<span class="gp">&gt;&gt;&gt; </span>               <span class="p">(</span><span class="s1">&#39;cst&#39;</span><span class="p">,</span> <span class="n">KMeans</span><span class="p">())])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">l8_224078_20200518</span><span class="p">)</span> <span class="k">as</span> <span class="n">src</span><span class="p">:</span>
+<span class="gp">&gt;&gt;&gt; </span>   <span class="n">X</span><span class="p">,</span> <span class="n">Xy</span><span class="p">,</span> <span class="n">clf</span> <span class="o">=</span> <span class="n">fit</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="n">cl</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="geowombat.ml.fit_predict">
+<span class="sig-prename descclassname"><span class="pre">geowombat.ml.</span></span><span class="sig-name descname"><span class="pre">fit_predict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">clf</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">labels</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">col</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">targ_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'targ'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">targ_dim_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'sample'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask_nodataval</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">temporal_mode</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'panel'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#geowombat.ml.fit_predict" title="Permalink to this definition">#</a></dt>
+<dd><p>Fits a classifier given class labels and predicts on a DataArray.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>DataArray</em>) – The data to predict on.</p></li>
+<li><p><strong>clf</strong> (<em>object</em>) – The classifier or classification pipeline.</p></li>
+<li><p><strong>labels</strong> (<em>optional</em><em>[</em><em>str</em><em> | </em><em>Path</em><em> | </em><em>GeoDataFrame</em><em>]</em>) – Class labels as polygon geometry.</p></li>
+<li><p><strong>col</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – The column in <code class="docutils literal notranslate"><span class="pre">labels</span></code> you want to assign values from.
+If <code class="docutils literal notranslate"><span class="pre">None</span></code>, creates a binary raster.</p></li>
+<li><p><strong>targ_name</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – The target name.</p></li>
+<li><p><strong>targ_dim_name</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – The target coordinate name.</p></li>
+<li><p><strong>mask_nodataval</strong> (<em>Optional</em><em>[</em><em>Bool</em><em>]</em>) – If true, data.attrs[“nodatavals”][0]
+are replaced with np.nan and the array is returned as type float</p></li>
+<li><p><strong>temporal_mode</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – How to handle time-dimensioned data.
+‘panel’ — each pixel-time is an independent sample.
+‘flatten’ — flatten time into band.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Predictions shaped (‘time’ x ‘band’ x ‘y’ x ‘x’)</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">xarray.DataArray</span></code></p>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">geowombat</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">gw</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">geowombat.data</span><span class="w"> </span><span class="kn">import</span> <span class="n">l8_224078_20200518</span><span class="p">,</span> <span class="n">l8_224078_20200518_polygons</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">geowombat.ml</span><span class="w"> </span><span class="kn">import</span> <span class="n">fit_predict</span>
+<span class="gp">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">geopandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">gpd</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.pipeline</span><span class="w"> </span><span class="kn">import</span> <span class="n">Pipeline</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.preprocessing</span><span class="w"> </span><span class="kn">import</span> <span class="n">StandardScaler</span><span class="p">,</span> <span class="n">LabelEncoder</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.decomposition</span><span class="w"> </span><span class="kn">import</span> <span class="n">PCA</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.naive_bayes</span><span class="w"> </span><span class="kn">import</span> <span class="n">GaussianNB</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.cluster</span><span class="w"> </span><span class="kn">import</span> <span class="n">KMeans</span>
+<span class="gp">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">le</span> <span class="o">=</span> <span class="n">LabelEncoder</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">labels</span> <span class="o">=</span> <span class="n">gpd</span><span class="o">.</span><span class="n">read_file</span><span class="p">(</span><span class="n">l8_224078_20200518_polygons</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">labels</span><span class="p">[</span><span class="s1">&#39;lc&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">le</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">labels</span><span class="o">.</span><span class="n">name</span><span class="p">)</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">labels</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Use a supervised classification pipeline</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">pl</span> <span class="o">=</span> <span class="n">Pipeline</span><span class="p">([(</span><span class="s1">&#39;scaler&#39;</span><span class="p">,</span> <span class="n">StandardScaler</span><span class="p">()),</span>
+<span class="gp">&gt;&gt;&gt; </span>               <span class="p">(</span><span class="s1">&#39;pca&#39;</span><span class="p">,</span> <span class="n">PCA</span><span class="p">()),</span>
+<span class="gp">&gt;&gt;&gt; </span>               <span class="p">(</span><span class="s1">&#39;clf&#39;</span><span class="p">,</span> <span class="n">GaussianNB</span><span class="p">())])</span>
+<span class="gp">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">l8_224078_20200518</span><span class="p">,</span> <span class="n">nodata</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> <span class="k">as</span> <span class="n">src</span><span class="p">:</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="n">y</span> <span class="o">=</span> <span class="n">fit_predict</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="n">pl</span><span class="p">,</span> <span class="n">labels</span><span class="p">,</span> <span class="n">col</span><span class="o">=</span><span class="s1">&#39;lc&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="n">y</span><span class="o">.</span><span class="n">sel</span><span class="p">(</span><span class="n">band</span><span class="o">=</span><span class="s1">&#39;targ&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">imshow</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Use an unsupervised classification pipeline</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cl</span> <span class="o">=</span> <span class="n">Pipeline</span><span class="p">([(</span><span class="s1">&#39;pca&#39;</span><span class="p">,</span> <span class="n">PCA</span><span class="p">()),</span>
+<span class="gp">&gt;&gt;&gt; </span>               <span class="p">(</span><span class="s1">&#39;cst&#39;</span><span class="p">,</span> <span class="n">KMeans</span><span class="p">())])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">l8_224078_20200518</span><span class="p">,</span> <span class="n">nodata</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> <span class="k">as</span> <span class="n">src</span><span class="p">:</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="n">y2</span> <span class="o">=</span> <span class="n">fit_predict</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="n">cl</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="geowombat.ml.predict">
+<span class="sig-prename descclassname"><span class="pre">geowombat.ml.</span></span><span class="sig-name descname"><span class="pre">predict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">X</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">clf</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">targ_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'targ'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">targ_dim_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'sample'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask_nodataval</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">temporal_mode</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'panel'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#geowombat.ml.predict" title="Permalink to this definition">#</a></dt>
+<dd><p>Predicts on a DataArray using a fitted classifier.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>DataArray</em>) – The data to predict on.</p></li>
+<li><p><strong>X</strong> (<em>DataArray</em>) – Data array generated by geowombat.ml.fit.</p></li>
+<li><p><strong>clf</strong> (<em>object</em>) – The classifier or classification pipeline.</p></li>
+<li><p><strong>targ_name</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – The target name.</p></li>
+<li><p><strong>targ_dim_name</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – The target coordinate name.</p></li>
+<li><p><strong>mask_nodataval</strong> (<em>Optional</em><em>[</em><em>Bool</em><em>]</em>) – If true, data.attrs[“nodatavals”][0]
+are replaced with np.nan and the array is returned as type float</p></li>
+<li><p><strong>temporal_mode</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – How to handle time-dimensioned data.
+‘panel’ — each pixel-time is an independent sample.
+‘flatten’ — flatten time into band.
+Must match the temporal_mode used in fit().</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Predictions shaped (‘time’ x ‘band’ x ‘y’ x ‘x’)</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">xarray.DataArray</span></code></p>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">geowombat</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">gw</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">geowombat.data</span><span class="w"> </span><span class="kn">import</span> <span class="n">l8_224078_20200518</span><span class="p">,</span> <span class="n">l8_224078_20200518_polygons</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">geowombat.ml</span><span class="w"> </span><span class="kn">import</span> <span class="n">fit</span><span class="p">,</span> <span class="n">predict</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">geopandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">gpd</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.pipeline</span><span class="w"> </span><span class="kn">import</span> <span class="n">Pipeline</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.preprocessing</span><span class="w"> </span><span class="kn">import</span> <span class="n">LabelEncoder</span><span class="p">,</span> <span class="n">StandardScaler</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.decomposition</span><span class="w"> </span><span class="kn">import</span> <span class="n">PCA</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.naive_bayes</span><span class="w"> </span><span class="kn">import</span> <span class="n">GaussianNB</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">le</span> <span class="o">=</span> <span class="n">LabelEncoder</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">labels</span> <span class="o">=</span> <span class="n">gpd</span><span class="o">.</span><span class="n">read_file</span><span class="p">(</span><span class="n">l8_224078_20200518_polygons</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">labels</span><span class="p">[</span><span class="s2">&quot;lc&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">le</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">labels</span><span class="o">.</span><span class="n">name</span><span class="p">)</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">labels</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Use a data pipeline</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">pl</span> <span class="o">=</span> <span class="n">Pipeline</span><span class="p">([(</span><span class="s1">&#39;scaler&#39;</span><span class="p">,</span> <span class="n">StandardScaler</span><span class="p">()),</span>
+<span class="gp">&gt;&gt;&gt; </span>               <span class="p">(</span><span class="s1">&#39;pca&#39;</span><span class="p">,</span> <span class="n">PCA</span><span class="p">()),</span>
+<span class="gp">&gt;&gt;&gt; </span>               <span class="p">(</span><span class="s1">&#39;clf&#39;</span><span class="p">,</span> <span class="n">GaussianNB</span><span class="p">())])</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Fit and predict the classifier</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">ref_res</span><span class="o">=</span><span class="mi">100</span><span class="p">):</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">l8_224078_20200518</span><span class="p">,</span> <span class="n">nodata</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> <span class="k">as</span> <span class="n">src</span><span class="p">:</span>
+<span class="gp">&gt;&gt;&gt; </span>        <span class="n">X</span><span class="p">,</span> <span class="n">Xy</span><span class="p">,</span> <span class="n">clf</span> <span class="o">=</span> <span class="n">fit</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="n">pl</span><span class="p">,</span> <span class="n">labels</span><span class="p">,</span> <span class="n">col</span><span class="o">=</span><span class="s2">&quot;lc&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span>        <span class="n">y</span> <span class="o">=</span> <span class="n">predict</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">clf</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span>        <span class="nb">print</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Fit and predict an unsupervised classifier</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cl</span> <span class="o">=</span> <span class="n">Pipeline</span><span class="p">([(</span><span class="s1">&#39;pca&#39;</span><span class="p">,</span> <span class="n">PCA</span><span class="p">()),</span>
+<span class="gp">&gt;&gt;&gt; </span>               <span class="p">(</span><span class="s1">&#39;cst&#39;</span><span class="p">,</span> <span class="n">KMeans</span><span class="p">())])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">l8_224078_20200518</span><span class="p">)</span> <span class="k">as</span> <span class="n">src</span><span class="p">:</span>
+<span class="gp">&gt;&gt;&gt; </span>   <span class="n">X</span><span class="p">,</span> <span class="n">Xy</span><span class="p">,</span> <span class="n">clf</span> <span class="o">=</span> <span class="n">fit</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="n">cl</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span>   <span class="n">y1</span> <span class="o">=</span> <span class="n">predict</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">clf</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</section>
+</section>
+
+
+                </article>
+              
+
+              
+              
+                <footer class="bd-footer-article">
+                  <!-- Previous / next buttons -->
+<div class="prev-next-area">
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+  <div class="sidebar-secondary-item">
+  <div class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> Contents
+  </div>
+  <nav class="bd-toc-nav page-toc">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#submodules">Submodules</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-geowombat.ml.classifiers">geowombat.ml.classifiers module</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#geowombat.ml.classifiers.Classifiers"><code class="docutils literal notranslate"><span class="pre">Classifiers</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#geowombat.ml.classifiers.Classifiers.fit"><code class="docutils literal notranslate"><span class="pre">Classifiers.fit()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#geowombat.ml.classifiers.Classifiers.fit_predict"><code class="docutils literal notranslate"><span class="pre">Classifiers.fit_predict()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#geowombat.ml.classifiers.Classifiers.predict"><code class="docutils literal notranslate"><span class="pre">Classifiers.predict()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#geowombat.ml.classifiers.ClassifiersMixin"><code class="docutils literal notranslate"><span class="pre">ClassifiersMixin</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#geowombat.ml.classifiers.ClassifiersMixin.add_categorical"><code class="docutils literal notranslate"><span class="pre">ClassifiersMixin.add_categorical()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#geowombat.ml.classifiers.ClassifiersMixin.classes_"><code class="docutils literal notranslate"><span class="pre">ClassifiersMixin.classes_</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-geowombat.ml.transformers">geowombat.ml.transformers module</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#geowombat.ml.transformers.BaseTransformer"><code class="docutils literal notranslate"><span class="pre">BaseTransformer</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#geowombat.ml.transformers.BaseTransformer.fit"><code class="docutils literal notranslate"><span class="pre">BaseTransformer.fit()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#geowombat.ml.transformers.BaseTransformer.transform"><code class="docutils literal notranslate"><span class="pre">BaseTransformer.transform()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#geowombat.ml.transformers.Featurizer_GW"><code class="docutils literal notranslate"><span class="pre">Featurizer_GW</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#geowombat.ml.transformers.Stackerizer"><code class="docutils literal notranslate"><span class="pre">Stackerizer</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#geowombat.ml.transformers.featurize_gw"><code class="docutils literal notranslate"><span class="pre">featurize_gw()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#geowombat.ml.transformers.is_dataarray"><code class="docutils literal notranslate"><span class="pre">is_dataarray()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#geowombat.ml.transformers.is_dataset"><code class="docutils literal notranslate"><span class="pre">is_dataset()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#geowombat.ml.transformers.stackerizer"><code class="docutils literal notranslate"><span class="pre">stackerizer()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-geowombat.ml">Module contents</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#geowombat.ml.LTAEClassifier"><code class="docutils literal notranslate"><span class="pre">LTAEClassifier</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#geowombat.ml.LTAEClassifier.fit"><code class="docutils literal notranslate"><span class="pre">LTAEClassifier.fit()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#geowombat.ml.LTAEClassifier.predict"><code class="docutils literal notranslate"><span class="pre">LTAEClassifier.predict()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#geowombat.ml.TabNetClassifier"><code class="docutils literal notranslate"><span class="pre">TabNetClassifier</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#geowombat.ml.TabNetClassifier.fit"><code class="docutils literal notranslate"><span class="pre">TabNetClassifier.fit()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#geowombat.ml.TabNetClassifier.predict"><code class="docutils literal notranslate"><span class="pre">TabNetClassifier.predict()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#geowombat.ml.TorchGeoClassifier"><code class="docutils literal notranslate"><span class="pre">TorchGeoClassifier</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#geowombat.ml.TorchGeoClassifier.expected_bands"><code class="docutils literal notranslate"><span class="pre">TorchGeoClassifier.expected_bands</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#geowombat.ml.TorchGeoClassifier.fit"><code class="docutils literal notranslate"><span class="pre">TorchGeoClassifier.fit()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#geowombat.ml.TorchGeoClassifier.predict"><code class="docutils literal notranslate"><span class="pre">TorchGeoClassifier.predict()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#geowombat.ml.fit"><code class="docutils literal notranslate"><span class="pre">fit()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#geowombat.ml.fit_predict"><code class="docutils literal notranslate"><span class="pre">fit_predict()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#geowombat.ml.predict"><code class="docutils literal notranslate"><span class="pre">predict()</span></code></a></li>
+</ul>
+</li>
+</ul>
+  </nav></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            <div class="bd-footer-content__inner">
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+  <p class="copyright">
+    
+      © Copyright 2020-2026, GeoWombat.
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+</div></div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../_static/scripts/bootstrap.js?digest=12da95d707ffb74b382d"></script>
+<script src="../_static/scripts/pydata-sphinx-theme.js?digest=12da95d707ffb74b382d"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>

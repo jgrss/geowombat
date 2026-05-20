@@ -1,0 +1,985 @@
+
+
+<!DOCTYPE html>
+
+
+<html lang="en" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>geowombat.detect.metrics</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../../_static/styles/theme.css?digest=12da95d707ffb74b382d" rel="stylesheet" />
+<link href="../../../_static/styles/bootstrap.css?digest=12da95d707ffb74b382d" rel="stylesheet" />
+<link href="../../../_static/styles/pydata-sphinx-theme.css?digest=12da95d707ffb74b382d" rel="stylesheet" />
+
+  
+  <link href="../../../_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=12da95d707ffb74b382d" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css" />
+    <link rel="stylesheet" href="../../../_static/styles/sphinx-book-theme.css?digest=14f4ca6b54d191a8c7657f6c759bf11a5fb86285" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/custom.css" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=12da95d707ffb74b382d" />
+<link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=12da95d707ffb74b382d" />
+
+    <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+    <script src="../../../_static/doctools.js"></script>
+    <script src="../../../_static/sphinx_highlight.js"></script>
+    <script src="../../../_static/clipboard.min.js"></script>
+    <script src="../../../_static/copybutton.js"></script>
+    <script src="../../../_static/scripts/sphinx-book-theme.js?digest=5a5c038af52cf7bc1a1ec88eea08e6366ee68824"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/geowombat/detect/metrics';</script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__primary"
+          id="__primary"/>
+  <label class="overlay overlay-primary" for="__primary"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__secondary"
+          id="__secondary"/>
+  <label class="overlay overlay-secondary" for="__secondary"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="../../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search..."
+         aria-label="Search..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+  
+    <nav class="bd-header navbar navbar-expand-lg bd-navbar">
+    </nav>
+  
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      <div class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+  
+
+<a class="navbar-brand logo" href="../../../index.html">
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../../../_static/logo.png" class="logo__image only-light" alt="GeoWombat"/>
+    <script>document.write(`<img src="../../../_static/logo.png" class="logo__image only-dark" alt="GeoWombat"/>`);</script>
+  
+  
+</a></div>
+        <div class="sidebar-primary-item"><nav class="bd-links" id="bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        <p aria-level="2" class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../../install.html">Installing GeoWombat</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../quick-overview.html">Quick overview</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../../tutorial.html">Tutorial</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-1"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../tutorial-why.html">Why GeoWombat?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../tutorial-open.html">Opening rasters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../tutorial-edit.html">Editing rasters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../tutorial-config.html">Configuration manager</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../tutorial-gw.html">GeoWombat DataArray accessor</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../tutorial-crs.html">Coordinate Reference Systems</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../tutorial-plot.html">Plotting raster data</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../../examples.html">Examples</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-2"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../io.html">Raster I/O</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../io-distributed.html">Distributed processing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../extraction.html">Data extraction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../band-math.html">Band math</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../apply.html">User functions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../ml.html">Machine learning</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../dl.html">Deep learning classifiers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../object-detection.html">Object detection</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../moving.html">Moving windows</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../radiometry.html">Radiometry</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../coreg.html">Co-registration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../tasks.html">Pipeline tasks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../web.html">Accessing STAC Catalogs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../external.html">External examples</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../gpu.html">Time series processes on the GPU</a></li>
+</ul>
+</li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Changes</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../../changelog.html">Changelog</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../issues.html">Issues</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Reference</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../../api.html">API reference</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-3"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.core.geoxarray.GeoWombatAccessor.html">GeoWombat DataArray (DataArray.gw)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.load.html">load</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.extract.html">extract</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.sample.html">sample</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.calc_area.html">calc_area</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.subset.html">subset</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.clip.html">clip</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.clip_by_polygon.html">clip_by_polygon</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.mask.html">mask</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.replace.html">replace</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.recode.html">recode</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.coregister.html">coregister</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.polygons_to_points.html">polygons_to_points</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.apply.html">apply</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.transform_crs.html">transform_crs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.save.html">save</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.to_raster.html">to_raster</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.to_netcdf.html">to_netcdf</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.to_vrt.html">to_vrt</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.array_to_polygon.html">array_to_polygon</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.polygon_to_array.html">polygon_to_array</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.moving.html">moving</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.norm_diff.html">norm_diff</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.avi.html">avi</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.evi.html">evi</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.evi2.html">evi2</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.kndvi.html">kndvi</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.nbr.html">nbr</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.ndvi.html">ndvi</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.wi.html">wi</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.tasseled_cap.html">tasseled_cap</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.coords_to_indices.html">coords_to_indices</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.indices_to_coords.html">indices_to_coords</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.bounds_to_coords.html">bounds_to_coords</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.lonlat_to_xy.html">lonlat_to_xy</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.xy_to_lonlat.html">xy_to_lonlat</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.open.html">open</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.series.html">series</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.TimeModulePipeline.html">TimeModulePipeline</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.TimeModule.html">TimeModule</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.core.stac.composite_stac.html">composite_stac</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.core.stac.merge_stac.html">merge_stac</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.core.stac.open_stac.html">open_stac</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.core.stac.STACCollectionURLNames.html">STACCollectionURLNames</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.core.stac.STACCollections.html">STACCollections</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.core.stac.STACNames.html">STACNames</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.core.stac.StrEnum.html">StrEnum</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.ml.fit.html">fit</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.ml.fit_predict.html">fit_predict</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.ml.predict.html">predict</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.ml.TabNetClassifier.html">TabNetClassifier</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.ml.LTAEClassifier.html">LTAEClassifier</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.ml.TorchGeoClassifier.html">TorchGeoClassifier</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.detect.boxes_from_polygons.html">boxes_from_polygons</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.detect.build_dataset.html">build_dataset</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.detect.build_yolo_dataset.html">build_yolo_dataset</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.detect.detection_accuracy.html">detection_accuracy</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.detect.export_for_review.html">export_for_review</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.detect.fit.html">fit</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.detect.fit_predict.html">fit_predict</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.detect.plot_detections.html">plot_detections</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.detect.predict.html">predict</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.detect.recompute_from_review.html">recompute_from_review</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.detect.SAMRefiner.html">SAMRefiner</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.detect.TorchGeoDetector.html">TorchGeoDetector</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.detect.YOLODetector.html">YOLODetector</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.radiometry.landsat_pixel_angles.html">landsat_pixel_angles</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.radiometry.sentinel_pixel_angles.html">sentinel_pixel_angles</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.radiometry.BRDF.html">BRDF</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.radiometry.Topo.html">Topo</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.radiometry.LinearAdjustments.html">LinearAdjustments</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.radiometry.RadTransforms.html">RadTransforms</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.radiometry.DOS.html">DOS</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.radiometry.SixS.html">SixS</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.radiometry.QAMasker.html">QAMasker</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.radiometry.QABits.html">QABits</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.radiometry.SCLValues.html">SCLValues</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.radiometry.HLSFmaskBits.html">HLSFmaskBits</a></li>
+</ul>
+</li>
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><label class="sidebar-toggle primary-toggle btn btn-sm" for="__primary" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</label></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+<a href="https://github.com/jgrss/geowombat" target="_blank"
+   class="btn btn-sm btn-source-repository-button"
+   title="Source repository"
+   data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fab fa-github"></i>
+  </span>
+
+</a>
+
+
+
+
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button"
+  title="Fullscreen mode"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+
+<script>
+document.write(`
+  <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
+    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
+    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
+  </button>
+`);
+</script>
+
+<script>
+document.write(`
+  <button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+  </button>
+`);
+</script>
+
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1></h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article" role="main">
+                  
+  <h1>Source code for geowombat.detect.metrics</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Accuracy assessment for object detection.</span>
+
+<span class="sd">Computes IoU-matched precision/recall/F1/AP per class and produces a</span>
+<span class="sd">review-ready GeoDataFrame suitable for stepping through in QGIS (e.g.</span>
+<span class="sd">with the GoToNextFeature3+ plugin or the built-in Form view) to verify</span>
+<span class="sd">TP / FP / FN judgments manually before reporting final metrics.</span>
+
+<span class="sd">Example</span>
+<span class="sd">-------</span>
+<span class="sd">&gt;&gt;&gt; from geowombat.detect import (</span>
+<span class="sd">...     detection_accuracy, export_for_review, recompute_from_review,</span>
+<span class="sd">... )</span>
+<span class="sd">&gt;&gt;&gt; results = detection_accuracy(pred_gdf, truth_gdf, class_col=&#39;species&#39;)</span>
+<span class="sd">&gt;&gt;&gt; results[&#39;metrics&#39;]               # per-class precision/recall/F1/AP</span>
+<span class="sd">&gt;&gt;&gt; export_for_review(results[&#39;matched&#39;], &#39;review.gpkg&#39;)</span>
+<span class="sd">&gt;&gt;&gt; # ... edit reviewer_label in QGIS, then ...</span>
+<span class="sd">&gt;&gt;&gt; final = recompute_from_review(&#39;review.gpkg&#39;, class_col=&#39;species&#39;)</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">geopandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">gpd</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">shapely.geometry</span><span class="w"> </span><span class="kn">import</span> <span class="n">Polygon</span>
+
+
+<span class="c1"># ---------------------------------------------------------------------------</span>
+<span class="c1"># IoU + matching</span>
+<span class="c1"># ---------------------------------------------------------------------------</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_iou</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">a</span><span class="o">.</span><span class="n">is_empty</span> <span class="ow">or</span> <span class="n">b</span><span class="o">.</span><span class="n">is_empty</span><span class="p">:</span>
+        <span class="k">return</span> <span class="mf">0.0</span>
+    <span class="n">inter</span> <span class="o">=</span> <span class="n">a</span><span class="o">.</span><span class="n">intersection</span><span class="p">(</span><span class="n">b</span><span class="p">)</span><span class="o">.</span><span class="n">area</span>
+    <span class="k">if</span> <span class="n">inter</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">return</span> <span class="mf">0.0</span>
+    <span class="n">union</span> <span class="o">=</span> <span class="n">a</span><span class="o">.</span><span class="n">area</span> <span class="o">+</span> <span class="n">b</span><span class="o">.</span><span class="n">area</span> <span class="o">-</span> <span class="n">inter</span>
+    <span class="k">return</span> <span class="n">inter</span> <span class="o">/</span> <span class="n">union</span> <span class="k">if</span> <span class="n">union</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="mf">0.0</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_greedy_match</span><span class="p">(</span><span class="n">preds</span><span class="p">,</span> <span class="n">truths</span><span class="p">,</span> <span class="n">iou_threshold</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Greedy IoU matching of predictions to ground truth.</span>
+
+<span class="sd">    Predictions are processed in descending score order. Each truth can</span>
+<span class="sd">    only be matched once. Returns three lists of indices:</span>
+<span class="sd">    ``(tp_pairs, fp_idx, fn_idx)`` where ``tp_pairs`` are</span>
+<span class="sd">    ``(pred_idx, truth_idx, iou)``.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">preds</span><span class="o">.</span><span class="n">empty</span> <span class="ow">and</span> <span class="n">truths</span><span class="o">.</span><span class="n">empty</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">[],</span> <span class="p">[],</span> <span class="p">[]</span>
+    <span class="k">if</span> <span class="n">preds</span><span class="o">.</span><span class="n">empty</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">[],</span> <span class="p">[],</span> <span class="nb">list</span><span class="p">(</span><span class="n">truths</span><span class="o">.</span><span class="n">index</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">truths</span><span class="o">.</span><span class="n">empty</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">[],</span> <span class="nb">list</span><span class="p">(</span><span class="n">preds</span><span class="o">.</span><span class="n">index</span><span class="p">),</span> <span class="p">[]</span>
+
+    <span class="n">pred_order</span> <span class="o">=</span> <span class="n">preds</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="s1">&#39;score&#39;</span><span class="p">,</span> <span class="n">ascending</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+    <span class="n">truth_geoms</span> <span class="o">=</span> <span class="p">{</span><span class="n">i</span><span class="p">:</span> <span class="n">g</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">g</span> <span class="ow">in</span> <span class="n">truths</span><span class="o">.</span><span class="n">geometry</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
+    <span class="n">matched_truth</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+
+    <span class="n">tp</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">fp</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">pi</span> <span class="ow">in</span> <span class="n">pred_order</span><span class="p">:</span>
+        <span class="n">pg</span> <span class="o">=</span> <span class="n">preds</span><span class="o">.</span><span class="n">geometry</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">pi</span><span class="p">]</span>
+        <span class="n">best_iou</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="n">best_ti</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">for</span> <span class="n">ti</span><span class="p">,</span> <span class="n">tg</span> <span class="ow">in</span> <span class="n">truth_geoms</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">ti</span> <span class="ow">in</span> <span class="n">matched_truth</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="n">i</span> <span class="o">=</span> <span class="n">_iou</span><span class="p">(</span><span class="n">pg</span><span class="p">,</span> <span class="n">tg</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">i</span> <span class="o">&gt;</span> <span class="n">best_iou</span><span class="p">:</span>
+                <span class="n">best_iou</span> <span class="o">=</span> <span class="n">i</span>
+                <span class="n">best_ti</span> <span class="o">=</span> <span class="n">ti</span>
+        <span class="k">if</span> <span class="n">best_ti</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">best_iou</span> <span class="o">&gt;=</span> <span class="n">iou_threshold</span><span class="p">:</span>
+            <span class="n">tp</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">pi</span><span class="p">,</span> <span class="n">best_ti</span><span class="p">,</span> <span class="n">best_iou</span><span class="p">))</span>
+            <span class="n">matched_truth</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">best_ti</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">fp</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">pi</span><span class="p">)</span>
+
+    <span class="n">fn</span> <span class="o">=</span> <span class="p">[</span><span class="n">ti</span> <span class="k">for</span> <span class="n">ti</span> <span class="ow">in</span> <span class="n">truths</span><span class="o">.</span><span class="n">index</span> <span class="k">if</span> <span class="n">ti</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">matched_truth</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">tp</span><span class="p">,</span> <span class="n">fp</span><span class="p">,</span> <span class="n">fn</span>
+
+
+<span class="c1"># ---------------------------------------------------------------------------</span>
+<span class="c1"># Per-class AP</span>
+<span class="c1"># ---------------------------------------------------------------------------</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_voc_ap</span><span class="p">(</span><span class="n">recall</span><span class="p">,</span> <span class="n">precision</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;11-point interpolated PASCAL VOC AP.&quot;&quot;&quot;</span>
+    <span class="n">ap</span> <span class="o">=</span> <span class="mf">0.0</span>
+    <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">11</span><span class="p">):</span>
+        <span class="n">p</span> <span class="o">=</span> <span class="n">precision</span><span class="p">[</span><span class="n">recall</span> <span class="o">&gt;=</span> <span class="n">t</span><span class="p">]</span>
+        <span class="n">ap</span> <span class="o">+=</span> <span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="k">if</span> <span class="n">p</span><span class="o">.</span><span class="n">size</span> <span class="k">else</span> <span class="mf">0.0</span><span class="p">)</span> <span class="o">/</span> <span class="mf">11.0</span>
+    <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="n">ap</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_ap_for_class</span><span class="p">(</span><span class="n">class_preds</span><span class="p">,</span> <span class="n">class_truths</span><span class="p">,</span> <span class="n">iou_threshold</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">class_truths</span><span class="o">.</span><span class="n">empty</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s1">&#39;ap&#39;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span> <span class="s1">&#39;precision&#39;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span> <span class="s1">&#39;recall&#39;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span> <span class="s1">&#39;f1&#39;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span>
+            <span class="s1">&#39;tp&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s1">&#39;fp&#39;</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">class_preds</span><span class="p">),</span> <span class="s1">&#39;fn&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+            <span class="s1">&#39;support&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="p">}</span>
+    <span class="k">if</span> <span class="n">class_preds</span><span class="o">.</span><span class="n">empty</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s1">&#39;ap&#39;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span> <span class="s1">&#39;precision&#39;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span> <span class="s1">&#39;recall&#39;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span> <span class="s1">&#39;f1&#39;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span>
+            <span class="s1">&#39;tp&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s1">&#39;fp&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s1">&#39;fn&#39;</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">class_truths</span><span class="p">),</span>
+            <span class="s1">&#39;support&#39;</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">class_truths</span><span class="p">),</span>
+        <span class="p">}</span>
+
+    <span class="n">order</span> <span class="o">=</span> <span class="n">class_preds</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="s1">&#39;score&#39;</span><span class="p">,</span> <span class="n">ascending</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+    <span class="n">matched</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+    <span class="n">tps</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">order</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">)</span>
+    <span class="n">fps</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">order</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">pi</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">order</span><span class="p">):</span>
+        <span class="n">pg</span> <span class="o">=</span> <span class="n">class_preds</span><span class="o">.</span><span class="n">geometry</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">pi</span><span class="p">]</span>
+        <span class="n">best_iou</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="n">best_ti</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">for</span> <span class="n">ti</span><span class="p">,</span> <span class="n">tg</span> <span class="ow">in</span> <span class="n">class_truths</span><span class="o">.</span><span class="n">geometry</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">ti</span> <span class="ow">in</span> <span class="n">matched</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="n">iou</span> <span class="o">=</span> <span class="n">_iou</span><span class="p">(</span><span class="n">pg</span><span class="p">,</span> <span class="n">tg</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">iou</span> <span class="o">&gt;</span> <span class="n">best_iou</span><span class="p">:</span>
+                <span class="n">best_iou</span> <span class="o">=</span> <span class="n">iou</span>
+                <span class="n">best_ti</span> <span class="o">=</span> <span class="n">ti</span>
+        <span class="k">if</span> <span class="n">best_ti</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">best_iou</span> <span class="o">&gt;=</span> <span class="n">iou_threshold</span><span class="p">:</span>
+            <span class="n">tps</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+            <span class="n">matched</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">best_ti</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">fps</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+
+    <span class="n">cum_tp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cumsum</span><span class="p">(</span><span class="n">tps</span><span class="p">)</span>
+    <span class="n">cum_fp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cumsum</span><span class="p">(</span><span class="n">fps</span><span class="p">)</span>
+    <span class="n">n_truth</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">class_truths</span><span class="p">)</span>
+    <span class="n">recall</span> <span class="o">=</span> <span class="n">cum_tp</span> <span class="o">/</span> <span class="nb">max</span><span class="p">(</span><span class="n">n_truth</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="n">precision</span> <span class="o">=</span> <span class="n">cum_tp</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">cum_tp</span> <span class="o">+</span> <span class="n">cum_fp</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="n">ap</span> <span class="o">=</span> <span class="n">_voc_ap</span><span class="p">(</span><span class="n">recall</span><span class="p">,</span> <span class="n">precision</span><span class="p">)</span>
+
+    <span class="n">tp_total</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">cum_tp</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+    <span class="n">fp_total</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">cum_fp</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+    <span class="n">fn_total</span> <span class="o">=</span> <span class="n">n_truth</span> <span class="o">-</span> <span class="n">tp_total</span>
+    <span class="n">p</span> <span class="o">=</span> <span class="n">tp_total</span> <span class="o">/</span> <span class="nb">max</span><span class="p">(</span><span class="n">tp_total</span> <span class="o">+</span> <span class="n">fp_total</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="n">r</span> <span class="o">=</span> <span class="n">tp_total</span> <span class="o">/</span> <span class="nb">max</span><span class="p">(</span><span class="n">n_truth</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="n">f1</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">p</span> <span class="o">*</span> <span class="n">r</span> <span class="o">/</span> <span class="nb">max</span><span class="p">(</span><span class="n">p</span> <span class="o">+</span> <span class="n">r</span><span class="p">,</span> <span class="mf">1e-12</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="p">{</span>
+        <span class="s1">&#39;ap&#39;</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">ap</span><span class="p">),</span>
+        <span class="s1">&#39;precision&#39;</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">p</span><span class="p">),</span>
+        <span class="s1">&#39;recall&#39;</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">r</span><span class="p">),</span>
+        <span class="s1">&#39;f1&#39;</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">f1</span><span class="p">),</span>
+        <span class="s1">&#39;tp&#39;</span><span class="p">:</span> <span class="n">tp_total</span><span class="p">,</span>
+        <span class="s1">&#39;fp&#39;</span><span class="p">:</span> <span class="n">fp_total</span><span class="p">,</span>
+        <span class="s1">&#39;fn&#39;</span><span class="p">:</span> <span class="n">fn_total</span><span class="p">,</span>
+        <span class="s1">&#39;support&#39;</span><span class="p">:</span> <span class="n">n_truth</span><span class="p">,</span>
+    <span class="p">}</span>
+
+
+<span class="c1"># ---------------------------------------------------------------------------</span>
+<span class="c1"># Public API</span>
+<span class="c1"># ---------------------------------------------------------------------------</span>
+
+<div class="viewcode-block" id="detection_accuracy"><a class="viewcode-back" href="../../../api/geowombat.detect.detection_accuracy.html#geowombat.detect.detection_accuracy">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">detection_accuracy</span><span class="p">(</span>
+    <span class="n">predictions</span><span class="p">,</span>
+    <span class="n">truth</span><span class="p">,</span>
+    <span class="n">class_col</span><span class="o">=</span><span class="s1">&#39;class_name&#39;</span><span class="p">,</span>
+    <span class="n">iou_thresholds</span><span class="o">=</span><span class="p">(</span><span class="mf">0.5</span><span class="p">,),</span>
+    <span class="n">score_col</span><span class="o">=</span><span class="s1">&#39;score&#39;</span><span class="p">,</span>
+    <span class="n">class_agnostic</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Compute detection accuracy metrics + a review-ready GeoDataFrame.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    predictions : geopandas.GeoDataFrame</span>
+<span class="sd">        Detector output. Must include ``geometry``, ``score`` (or</span>
+<span class="sd">        ``score_col``), and a class column.</span>
+<span class="sd">    truth : geopandas.GeoDataFrame</span>
+<span class="sd">        Ground-truth boxes/polygons in the same CRS.</span>
+<span class="sd">    class_col : str</span>
+<span class="sd">        Column with class labels in both inputs.</span>
+<span class="sd">    iou_thresholds : sequence of float, or &#39;coco&#39;</span>
+<span class="sd">        IoU thresholds to evaluate. ``&#39;coco&#39;`` expands to 0.5..0.95</span>
+<span class="sd">        step 0.05 and returns mAP@[.5:.95].</span>
+<span class="sd">    score_col : str</span>
+<span class="sd">        Score column in predictions. Default &#39;score&#39;.</span>
+<span class="sd">    class_agnostic : bool</span>
+<span class="sd">        If True, ignore class labels (treat as a single class).</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    dict</span>
+<span class="sd">        Keys:</span>
+<span class="sd">          - ``metrics``: DataFrame indexed by class with columns</span>
+<span class="sd">            ``precision, recall, f1, ap, tp, fp, fn, support`` for each</span>
+<span class="sd">            IoU threshold.</span>
+<span class="sd">          - ``summary``: dict of overall mAP per threshold + mAP@[.5:.95].</span>
+<span class="sd">          - ``matched``: GeoDataFrame of TP/FP/FN rows ready for QGIS</span>
+<span class="sd">            review (see ``export_for_review``).</span>
+<span class="sd">          - ``confusion``: DataFrame of class confusion (per-class</span>
+<span class="sd">            truth vs. matched-prediction class) at the lowest IoU.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">predictions</span><span class="o">.</span><span class="n">crs</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">truth</span><span class="o">.</span><span class="n">crs</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Both predictions and truth must have a CRS set.&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">predictions</span><span class="o">.</span><span class="n">crs</span><span class="o">.</span><span class="n">to_epsg</span><span class="p">()</span> <span class="o">!=</span> <span class="n">truth</span><span class="o">.</span><span class="n">crs</span><span class="o">.</span><span class="n">to_epsg</span><span class="p">():</span>
+        <span class="n">truth</span> <span class="o">=</span> <span class="n">truth</span><span class="o">.</span><span class="n">to_crs</span><span class="p">(</span><span class="n">predictions</span><span class="o">.</span><span class="n">crs</span><span class="p">)</span>
+
+    <span class="c1"># Reset to a simple 0..N integer index — osmnx and other sources can</span>
+    <span class="c1"># return MultiIndex GeoDataFrames whose keys aren&#39;t castable to int.</span>
+    <span class="n">preds</span> <span class="o">=</span> <span class="n">predictions</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="n">truths</span> <span class="o">=</span> <span class="n">truth</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+    <span class="k">if</span> <span class="n">score_col</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">preds</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;predictions missing score column &#39;</span><span class="si">{</span><span class="n">score_col</span><span class="si">}</span><span class="s2">&#39;.&quot;</span>
+        <span class="p">)</span>
+    <span class="k">if</span> <span class="n">class_agnostic</span><span class="p">:</span>
+        <span class="n">preds</span><span class="p">[</span><span class="s1">&#39;_cls&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;_all_&#39;</span>
+        <span class="n">truths</span><span class="p">[</span><span class="s1">&#39;_cls&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;_all_&#39;</span>
+        <span class="n">class_col_use</span> <span class="o">=</span> <span class="s1">&#39;_cls&#39;</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">class_col</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">preds</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;predictions missing class column &#39;</span><span class="si">{</span><span class="n">class_col</span><span class="si">}</span><span class="s2">&#39;.&quot;</span>
+            <span class="p">)</span>
+        <span class="k">if</span> <span class="n">class_col</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">truths</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;truth missing class column &#39;</span><span class="si">{</span><span class="n">class_col</span><span class="si">}</span><span class="s2">&#39;.&quot;</span>
+            <span class="p">)</span>
+        <span class="n">class_col_use</span> <span class="o">=</span> <span class="n">class_col</span>
+
+    <span class="n">preds</span> <span class="o">=</span> <span class="n">preds</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">{</span><span class="n">score_col</span><span class="p">:</span> <span class="s1">&#39;score&#39;</span><span class="p">})</span>
+
+    <span class="k">if</span> <span class="n">iou_thresholds</span> <span class="o">==</span> <span class="s1">&#39;coco&#39;</span><span class="p">:</span>
+        <span class="n">thresholds</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.05</span><span class="p">),</span> <span class="mi">2</span><span class="p">))</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">thresholds</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">iou_thresholds</span><span class="p">)</span>
+
+    <span class="n">classes</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span>
+        <span class="nb">set</span><span class="p">(</span><span class="n">preds</span><span class="p">[</span><span class="n">class_col_use</span><span class="p">]</span><span class="o">.</span><span class="n">dropna</span><span class="p">()</span><span class="o">.</span><span class="n">unique</span><span class="p">()</span><span class="o">.</span><span class="n">tolist</span><span class="p">())</span>
+        <span class="o">|</span> <span class="nb">set</span><span class="p">(</span><span class="n">truths</span><span class="p">[</span><span class="n">class_col_use</span><span class="p">]</span><span class="o">.</span><span class="n">dropna</span><span class="p">()</span><span class="o">.</span><span class="n">unique</span><span class="p">()</span><span class="o">.</span><span class="n">tolist</span><span class="p">())</span>
+    <span class="p">)</span>
+
+    <span class="n">rows</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">thr</span> <span class="ow">in</span> <span class="n">thresholds</span><span class="p">:</span>
+        <span class="k">for</span> <span class="bp">cls</span> <span class="ow">in</span> <span class="n">classes</span><span class="p">:</span>
+            <span class="n">cp</span> <span class="o">=</span> <span class="n">preds</span><span class="p">[</span><span class="n">preds</span><span class="p">[</span><span class="n">class_col_use</span><span class="p">]</span> <span class="o">==</span> <span class="bp">cls</span><span class="p">]</span>
+            <span class="n">ct</span> <span class="o">=</span> <span class="n">truths</span><span class="p">[</span><span class="n">truths</span><span class="p">[</span><span class="n">class_col_use</span><span class="p">]</span> <span class="o">==</span> <span class="bp">cls</span><span class="p">]</span>
+            <span class="n">stats</span> <span class="o">=</span> <span class="n">_ap_for_class</span><span class="p">(</span><span class="n">cp</span><span class="p">,</span> <span class="n">ct</span><span class="p">,</span> <span class="n">thr</span><span class="p">)</span>
+            <span class="n">stats</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s1">&#39;class&#39;</span><span class="p">:</span> <span class="bp">cls</span><span class="p">,</span> <span class="s1">&#39;iou_threshold&#39;</span><span class="p">:</span> <span class="n">thr</span><span class="p">})</span>
+            <span class="n">rows</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">stats</span><span class="p">)</span>
+    <span class="n">metrics_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">rows</span><span class="p">)</span><span class="o">.</span><span class="n">set_index</span><span class="p">([</span><span class="s1">&#39;iou_threshold&#39;</span><span class="p">,</span> <span class="s1">&#39;class&#39;</span><span class="p">])</span>
+
+    <span class="n">summary</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">thr</span> <span class="ow">in</span> <span class="n">thresholds</span><span class="p">:</span>
+        <span class="n">ap_vals</span> <span class="o">=</span> <span class="n">metrics_df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">thr</span><span class="p">,</span> <span class="s1">&#39;ap&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
+        <span class="n">summary</span><span class="p">[</span><span class="sa">f</span><span class="s1">&#39;mAP@</span><span class="si">{</span><span class="n">thr</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">ap_vals</span><span class="p">))</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">ap_vals</span><span class="p">)</span> <span class="k">else</span> <span class="mf">0.0</span>
+    <span class="k">if</span> <span class="n">iou_thresholds</span> <span class="o">==</span> <span class="s1">&#39;coco&#39;</span><span class="p">:</span>
+        <span class="n">summary</span><span class="p">[</span><span class="s1">&#39;mAP@[.5:.95]&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">summary</span><span class="o">.</span><span class="n">values</span><span class="p">())))</span>
+
+    <span class="c1"># ------------------------------------------------------------------</span>
+    <span class="c1"># Build review GeoDataFrame at the lowest IoU threshold — that&#39;s the</span>
+    <span class="c1"># one humans typically audit (most lenient pairing).</span>
+    <span class="c1"># ------------------------------------------------------------------</span>
+    <span class="n">primary_iou</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">thresholds</span><span class="p">)</span>
+    <span class="n">review_rows</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">confusion_rows</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="c1"># Per-class greedy matching to fill TP/FP/FN with class context</span>
+    <span class="k">for</span> <span class="bp">cls</span> <span class="ow">in</span> <span class="n">classes</span><span class="p">:</span>
+        <span class="n">cp</span> <span class="o">=</span> <span class="n">preds</span><span class="p">[</span><span class="n">preds</span><span class="p">[</span><span class="n">class_col_use</span><span class="p">]</span> <span class="o">==</span> <span class="bp">cls</span><span class="p">]</span>
+        <span class="n">ct</span> <span class="o">=</span> <span class="n">truths</span><span class="p">[</span><span class="n">truths</span><span class="p">[</span><span class="n">class_col_use</span><span class="p">]</span> <span class="o">==</span> <span class="bp">cls</span><span class="p">]</span>
+        <span class="n">tp_pairs</span><span class="p">,</span> <span class="n">fp_idx</span><span class="p">,</span> <span class="n">fn_idx</span> <span class="o">=</span> <span class="n">_greedy_match</span><span class="p">(</span><span class="n">cp</span><span class="p">,</span> <span class="n">ct</span><span class="p">,</span> <span class="n">primary_iou</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">pi</span><span class="p">,</span> <span class="n">ti</span><span class="p">,</span> <span class="n">iou_val</span> <span class="ow">in</span> <span class="n">tp_pairs</span><span class="p">:</span>
+            <span class="n">review_rows</span><span class="o">.</span><span class="n">append</span><span class="p">({</span>
+                <span class="s1">&#39;geometry&#39;</span><span class="p">:</span> <span class="n">preds</span><span class="o">.</span><span class="n">geometry</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">pi</span><span class="p">],</span>
+                <span class="s1">&#39;status&#39;</span><span class="p">:</span> <span class="s1">&#39;TP&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;class_name&#39;</span><span class="p">:</span> <span class="bp">cls</span><span class="p">,</span>
+                <span class="s1">&#39;truth_class&#39;</span><span class="p">:</span> <span class="bp">cls</span><span class="p">,</span>
+                <span class="s1">&#39;score&#39;</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">preds</span><span class="p">[</span><span class="s1">&#39;score&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">pi</span><span class="p">]),</span>
+                <span class="s1">&#39;iou&#39;</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">iou_val</span><span class="p">),</span>
+                <span class="s1">&#39;pred_idx&#39;</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">pi</span><span class="p">),</span>
+                <span class="s1">&#39;truth_idx&#39;</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">ti</span><span class="p">),</span>
+                <span class="s1">&#39;reviewer_label&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;notes&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
+            <span class="p">})</span>
+            <span class="n">confusion_rows</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="bp">cls</span><span class="p">,</span> <span class="bp">cls</span><span class="p">))</span>
+        <span class="k">for</span> <span class="n">pi</span> <span class="ow">in</span> <span class="n">fp_idx</span><span class="p">:</span>
+            <span class="c1"># Check whether the FP overlaps a truth of a different class</span>
+            <span class="n">pg</span> <span class="o">=</span> <span class="n">preds</span><span class="o">.</span><span class="n">geometry</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">pi</span><span class="p">]</span>
+            <span class="n">best_other</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="n">best_iou</span> <span class="o">=</span> <span class="mf">0.0</span>
+            <span class="k">for</span> <span class="n">ti</span><span class="p">,</span> <span class="n">tg</span> <span class="ow">in</span> <span class="n">truths</span><span class="o">.</span><span class="n">geometry</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="k">if</span> <span class="n">truths</span><span class="p">[</span><span class="n">class_col_use</span><span class="p">]</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">ti</span><span class="p">]</span> <span class="o">==</span> <span class="bp">cls</span><span class="p">:</span>
+                    <span class="k">continue</span>
+                <span class="n">v</span> <span class="o">=</span> <span class="n">_iou</span><span class="p">(</span><span class="n">pg</span><span class="p">,</span> <span class="n">tg</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">v</span> <span class="o">&gt;</span> <span class="n">best_iou</span><span class="p">:</span>
+                    <span class="n">best_iou</span> <span class="o">=</span> <span class="n">v</span>
+                    <span class="n">best_other</span> <span class="o">=</span> <span class="n">ti</span>
+            <span class="k">if</span> <span class="n">best_other</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">best_iou</span> <span class="o">&gt;=</span> <span class="n">primary_iou</span><span class="p">:</span>
+                <span class="n">truth_cls</span> <span class="o">=</span> <span class="n">truths</span><span class="p">[</span><span class="n">class_col_use</span><span class="p">]</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">best_other</span><span class="p">]</span>
+                <span class="n">review_rows</span><span class="o">.</span><span class="n">append</span><span class="p">({</span>
+                    <span class="s1">&#39;geometry&#39;</span><span class="p">:</span> <span class="n">pg</span><span class="p">,</span>
+                    <span class="s1">&#39;status&#39;</span><span class="p">:</span> <span class="s1">&#39;FP_class&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;class_name&#39;</span><span class="p">:</span> <span class="bp">cls</span><span class="p">,</span>
+                    <span class="s1">&#39;truth_class&#39;</span><span class="p">:</span> <span class="n">truth_cls</span><span class="p">,</span>
+                    <span class="s1">&#39;score&#39;</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">preds</span><span class="p">[</span><span class="s1">&#39;score&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">pi</span><span class="p">]),</span>
+                    <span class="s1">&#39;iou&#39;</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">best_iou</span><span class="p">),</span>
+                    <span class="s1">&#39;pred_idx&#39;</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">pi</span><span class="p">),</span>
+                    <span class="s1">&#39;truth_idx&#39;</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">best_other</span><span class="p">),</span>
+                    <span class="s1">&#39;reviewer_label&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;notes&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
+                <span class="p">})</span>
+                <span class="n">confusion_rows</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">truth_cls</span><span class="p">,</span> <span class="bp">cls</span><span class="p">))</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">review_rows</span><span class="o">.</span><span class="n">append</span><span class="p">({</span>
+                    <span class="s1">&#39;geometry&#39;</span><span class="p">:</span> <span class="n">pg</span><span class="p">,</span>
+                    <span class="s1">&#39;status&#39;</span><span class="p">:</span> <span class="s1">&#39;FP&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;class_name&#39;</span><span class="p">:</span> <span class="bp">cls</span><span class="p">,</span>
+                    <span class="s1">&#39;truth_class&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+                    <span class="s1">&#39;score&#39;</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">preds</span><span class="p">[</span><span class="s1">&#39;score&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">pi</span><span class="p">]),</span>
+                    <span class="s1">&#39;iou&#39;</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">best_iou</span><span class="p">),</span>
+                    <span class="s1">&#39;pred_idx&#39;</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">pi</span><span class="p">),</span>
+                    <span class="s1">&#39;truth_idx&#39;</span><span class="p">:</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span>
+                    <span class="s1">&#39;reviewer_label&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;notes&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
+                <span class="p">})</span>
+        <span class="k">for</span> <span class="n">ti</span> <span class="ow">in</span> <span class="n">fn_idx</span><span class="p">:</span>
+            <span class="n">review_rows</span><span class="o">.</span><span class="n">append</span><span class="p">({</span>
+                <span class="s1">&#39;geometry&#39;</span><span class="p">:</span> <span class="n">truths</span><span class="o">.</span><span class="n">geometry</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">ti</span><span class="p">],</span>
+                <span class="s1">&#39;status&#39;</span><span class="p">:</span> <span class="s1">&#39;FN&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;class_name&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+                <span class="s1">&#39;truth_class&#39;</span><span class="p">:</span> <span class="bp">cls</span><span class="p">,</span>
+                <span class="s1">&#39;score&#39;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span>
+                <span class="s1">&#39;iou&#39;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span>
+                <span class="s1">&#39;pred_idx&#39;</span><span class="p">:</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span>
+                <span class="s1">&#39;truth_idx&#39;</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">ti</span><span class="p">),</span>
+                <span class="s1">&#39;reviewer_label&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;notes&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
+            <span class="p">})</span>
+            <span class="n">confusion_rows</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="bp">cls</span><span class="p">,</span> <span class="s1">&#39;_missed_&#39;</span><span class="p">))</span>
+
+    <span class="n">matched_gdf</span> <span class="o">=</span> <span class="n">gpd</span><span class="o">.</span><span class="n">GeoDataFrame</span><span class="p">(</span>
+        <span class="n">review_rows</span><span class="p">,</span> <span class="n">geometry</span><span class="o">=</span><span class="s1">&#39;geometry&#39;</span><span class="p">,</span> <span class="n">crs</span><span class="o">=</span><span class="n">preds</span><span class="o">.</span><span class="n">crs</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="c1"># Confusion matrix (truth vs. predicted class label among matched)</span>
+    <span class="k">if</span> <span class="n">confusion_rows</span><span class="p">:</span>
+        <span class="n">cm</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">crosstab</span><span class="p">(</span>
+            <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">([</span><span class="n">r</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">confusion_rows</span><span class="p">],</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;truth&#39;</span><span class="p">),</span>
+            <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">([</span><span class="n">r</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">confusion_rows</span><span class="p">],</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;predicted&#39;</span><span class="p">),</span>
+        <span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">cm</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">()</span>
+
+    <span class="k">return</span> <span class="p">{</span>
+        <span class="s1">&#39;metrics&#39;</span><span class="p">:</span> <span class="n">metrics_df</span><span class="p">,</span>
+        <span class="s1">&#39;summary&#39;</span><span class="p">:</span> <span class="n">summary</span><span class="p">,</span>
+        <span class="s1">&#39;matched&#39;</span><span class="p">:</span> <span class="n">matched_gdf</span><span class="p">,</span>
+        <span class="s1">&#39;confusion&#39;</span><span class="p">:</span> <span class="n">cm</span><span class="p">,</span>
+    <span class="p">}</span></div>
+
+
+<div class="viewcode-block" id="export_for_review"><a class="viewcode-back" href="../../../api/geowombat.detect.export_for_review.html#geowombat.detect.export_for_review">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">export_for_review</span><span class="p">(</span><span class="n">matched_gdf</span><span class="p">,</span> <span class="n">out_path</span><span class="p">,</span> <span class="n">layer</span><span class="o">=</span><span class="s1">&#39;detections_review&#39;</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Write a matched GeoDataFrame to GeoPackage for QGIS review.</span>
+
+<span class="sd">    The output file is suitable for the QGIS attribute form workflow and</span>
+<span class="sd">    feature-stepping plugins (e.g. GoToNextFeature3+). The</span>
+<span class="sd">    ``reviewer_label`` field is empty for the user to fill in (values</span>
+<span class="sd">    like ``&#39;TP&#39;``, ``&#39;FP&#39;``, ``&#39;FN&#39;``, ``&#39;unclear&#39;`` are recommended);</span>
+<span class="sd">    ``notes`` is free text.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    matched_gdf : geopandas.GeoDataFrame</span>
+<span class="sd">        Output from ``detection_accuracy``.</span>
+<span class="sd">    out_path : str or Path</span>
+<span class="sd">        Destination .gpkg path.</span>
+<span class="sd">    layer : str</span>
+<span class="sd">        GeoPackage layer name.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">out_path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">out_path</span><span class="p">)</span>
+    <span class="n">out_path</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">matched_gdf</span><span class="o">.</span><span class="n">to_file</span><span class="p">(</span><span class="n">out_path</span><span class="p">,</span> <span class="n">layer</span><span class="o">=</span><span class="n">layer</span><span class="p">,</span> <span class="n">driver</span><span class="o">=</span><span class="s1">&#39;GPKG&#39;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">out_path</span></div>
+
+
+<div class="viewcode-block" id="recompute_from_review"><a class="viewcode-back" href="../../../api/geowombat.detect.recompute_from_review.html#geowombat.detect.recompute_from_review">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">recompute_from_review</span><span class="p">(</span><span class="n">review_input</span><span class="p">,</span> <span class="n">class_col</span><span class="o">=</span><span class="s1">&#39;class_name&#39;</span><span class="p">,</span>
+                          <span class="n">layer</span><span class="o">=</span><span class="s1">&#39;detections_review&#39;</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Recompute metrics after a human has edited ``reviewer_label``.</span>
+
+<span class="sd">    The reviewer is expected to fill ``reviewer_label`` with one of:</span>
+<span class="sd">    ``&#39;TP&#39;``, ``&#39;FP&#39;``, ``&#39;FN&#39;``, or ``&#39;unclear&#39;`` (case-insensitive).</span>
+<span class="sd">    Rows where the label is blank are treated as the automatic status.</span>
+<span class="sd">    ``&#39;unclear&#39;`` rows are excluded from the metrics entirely.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    review_input : str, Path, or GeoDataFrame</span>
+<span class="sd">        Reviewed GeoPackage path or in-memory GeoDataFrame.</span>
+<span class="sd">    class_col : str</span>
+<span class="sd">        Column to use for per-class breakdown.</span>
+<span class="sd">    layer : str</span>
+<span class="sd">        GeoPackage layer if reading from disk.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    dict</span>
+<span class="sd">        Per-class and overall counts/precision/recall/F1 after</span>
+<span class="sd">        incorporating human review.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">review_input</span><span class="p">,</span> <span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">)):</span>
+        <span class="n">gdf</span> <span class="o">=</span> <span class="n">gpd</span><span class="o">.</span><span class="n">read_file</span><span class="p">(</span><span class="n">review_input</span><span class="p">,</span> <span class="n">layer</span><span class="o">=</span><span class="n">layer</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">gdf</span> <span class="o">=</span> <span class="n">review_input</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+    <span class="n">label_col</span> <span class="o">=</span> <span class="s1">&#39;reviewer_label&#39;</span>
+    <span class="k">if</span> <span class="n">label_col</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">gdf</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;GeoDataFrame missing &#39;</span><span class="si">{</span><span class="n">label_col</span><span class="si">}</span><span class="s2">&#39; column.&quot;</span>
+        <span class="p">)</span>
+
+    <span class="n">final</span> <span class="o">=</span> <span class="n">gdf</span><span class="p">[</span><span class="s1">&#39;status&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">str</span><span class="p">)</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="n">reviewer</span> <span class="o">=</span> <span class="n">gdf</span><span class="p">[</span><span class="n">label_col</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">str</span><span class="p">)</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span>
+    <span class="n">has_review</span> <span class="o">=</span> <span class="n">reviewer</span><span class="o">.</span><span class="n">isin</span><span class="p">([</span><span class="s1">&#39;TP&#39;</span><span class="p">,</span> <span class="s1">&#39;FP&#39;</span><span class="p">,</span> <span class="s1">&#39;FN&#39;</span><span class="p">,</span> <span class="s1">&#39;UNCLEAR&#39;</span><span class="p">])</span>
+    <span class="n">final</span><span class="p">[</span><span class="n">has_review</span><span class="p">]</span> <span class="o">=</span> <span class="n">reviewer</span><span class="p">[</span><span class="n">has_review</span><span class="p">]</span>
+    <span class="c1"># Collapse FP_class into FP for top-line counts</span>
+    <span class="n">final</span> <span class="o">=</span> <span class="n">final</span><span class="o">.</span><span class="n">replace</span><span class="p">({</span><span class="s1">&#39;FP_CLASS&#39;</span><span class="p">:</span> <span class="s1">&#39;FP&#39;</span><span class="p">})</span>
+
+    <span class="n">gdf</span> <span class="o">=</span> <span class="n">gdf</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">_final</span><span class="o">=</span><span class="n">final</span><span class="p">)</span>
+    <span class="n">gdf</span> <span class="o">=</span> <span class="n">gdf</span><span class="p">[</span><span class="n">gdf</span><span class="p">[</span><span class="s1">&#39;_final&#39;</span><span class="p">]</span> <span class="o">!=</span> <span class="s1">&#39;UNCLEAR&#39;</span><span class="p">]</span>
+
+    <span class="c1"># Decide which class column to bucket by for FN rows</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_row_class</span><span class="p">(</span><span class="n">row</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">row</span><span class="p">[</span><span class="s1">&#39;_final&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;FN&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">row</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;truth_class&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="n">row</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">class_col</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">row</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">class_col</span><span class="p">)</span> <span class="ow">or</span> <span class="n">row</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;truth_class&#39;</span><span class="p">)</span>
+
+    <span class="n">gdf</span><span class="p">[</span><span class="s1">&#39;_bucket_class&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">gdf</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">_row_class</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="n">rows</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">classes</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">c</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">gdf</span><span class="p">[</span><span class="s1">&#39;_bucket_class&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">dropna</span><span class="p">()</span><span class="o">.</span><span class="n">unique</span><span class="p">())</span>
+    <span class="k">for</span> <span class="bp">cls</span> <span class="ow">in</span> <span class="n">classes</span><span class="p">:</span>
+        <span class="n">sub</span> <span class="o">=</span> <span class="n">gdf</span><span class="p">[</span><span class="n">gdf</span><span class="p">[</span><span class="s1">&#39;_bucket_class&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="bp">cls</span><span class="p">]</span>
+        <span class="n">tp</span> <span class="o">=</span> <span class="nb">int</span><span class="p">((</span><span class="n">sub</span><span class="p">[</span><span class="s1">&#39;_final&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;TP&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">())</span>
+        <span class="n">fp</span> <span class="o">=</span> <span class="nb">int</span><span class="p">((</span><span class="n">sub</span><span class="p">[</span><span class="s1">&#39;_final&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;FP&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">())</span>
+        <span class="n">fn</span> <span class="o">=</span> <span class="nb">int</span><span class="p">((</span><span class="n">sub</span><span class="p">[</span><span class="s1">&#39;_final&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;FN&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">())</span>
+        <span class="n">p</span> <span class="o">=</span> <span class="n">tp</span> <span class="o">/</span> <span class="nb">max</span><span class="p">(</span><span class="n">tp</span> <span class="o">+</span> <span class="n">fp</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">r</span> <span class="o">=</span> <span class="n">tp</span> <span class="o">/</span> <span class="nb">max</span><span class="p">(</span><span class="n">tp</span> <span class="o">+</span> <span class="n">fn</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">f1</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">p</span> <span class="o">*</span> <span class="n">r</span> <span class="o">/</span> <span class="nb">max</span><span class="p">(</span><span class="n">p</span> <span class="o">+</span> <span class="n">r</span><span class="p">,</span> <span class="mf">1e-12</span><span class="p">)</span>
+        <span class="n">rows</span><span class="o">.</span><span class="n">append</span><span class="p">({</span>
+            <span class="s1">&#39;class&#39;</span><span class="p">:</span> <span class="bp">cls</span><span class="p">,</span> <span class="s1">&#39;tp&#39;</span><span class="p">:</span> <span class="n">tp</span><span class="p">,</span> <span class="s1">&#39;fp&#39;</span><span class="p">:</span> <span class="n">fp</span><span class="p">,</span> <span class="s1">&#39;fn&#39;</span><span class="p">:</span> <span class="n">fn</span><span class="p">,</span>
+            <span class="s1">&#39;precision&#39;</span><span class="p">:</span> <span class="n">p</span><span class="p">,</span> <span class="s1">&#39;recall&#39;</span><span class="p">:</span> <span class="n">r</span><span class="p">,</span> <span class="s1">&#39;f1&#39;</span><span class="p">:</span> <span class="n">f1</span><span class="p">,</span>
+        <span class="p">})</span>
+
+    <span class="n">metrics_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">rows</span><span class="p">)</span><span class="o">.</span><span class="n">set_index</span><span class="p">(</span><span class="s1">&#39;class&#39;</span><span class="p">)</span>
+    <span class="n">overall</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s1">&#39;tp&#39;</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">metrics_df</span><span class="p">[</span><span class="s1">&#39;tp&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">()),</span>
+        <span class="s1">&#39;fp&#39;</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">metrics_df</span><span class="p">[</span><span class="s1">&#39;fp&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">()),</span>
+        <span class="s1">&#39;fn&#39;</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">metrics_df</span><span class="p">[</span><span class="s1">&#39;fn&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">()),</span>
+    <span class="p">}</span>
+    <span class="n">overall</span><span class="p">[</span><span class="s1">&#39;precision&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">overall</span><span class="p">[</span><span class="s1">&#39;tp&#39;</span><span class="p">]</span> <span class="o">/</span> <span class="nb">max</span><span class="p">(</span>
+        <span class="n">overall</span><span class="p">[</span><span class="s1">&#39;tp&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="n">overall</span><span class="p">[</span><span class="s1">&#39;fp&#39;</span><span class="p">],</span> <span class="mi">1</span>
+    <span class="p">)</span>
+    <span class="n">overall</span><span class="p">[</span><span class="s1">&#39;recall&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">overall</span><span class="p">[</span><span class="s1">&#39;tp&#39;</span><span class="p">]</span> <span class="o">/</span> <span class="nb">max</span><span class="p">(</span>
+        <span class="n">overall</span><span class="p">[</span><span class="s1">&#39;tp&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="n">overall</span><span class="p">[</span><span class="s1">&#39;fn&#39;</span><span class="p">],</span> <span class="mi">1</span>
+    <span class="p">)</span>
+    <span class="n">overall</span><span class="p">[</span><span class="s1">&#39;f1&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">overall</span><span class="p">[</span><span class="s1">&#39;precision&#39;</span><span class="p">]</span> <span class="o">*</span> <span class="n">overall</span><span class="p">[</span><span class="s1">&#39;recall&#39;</span><span class="p">]</span> <span class="o">/</span> <span class="nb">max</span><span class="p">(</span>
+        <span class="n">overall</span><span class="p">[</span><span class="s1">&#39;precision&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="n">overall</span><span class="p">[</span><span class="s1">&#39;recall&#39;</span><span class="p">],</span> <span class="mf">1e-12</span>
+    <span class="p">)</span>
+
+    <span class="k">return</span> <span class="p">{</span><span class="s1">&#39;metrics&#39;</span><span class="p">:</span> <span class="n">metrics_df</span><span class="p">,</span> <span class="s1">&#39;overall&#39;</span><span class="p">:</span> <span class="n">overall</span><span class="p">}</span></div>
+
+
+<div class="viewcode-block" id="plot_detections"><a class="viewcode-back" href="../../../api/geowombat.detect.plot_detections.html#geowombat.detect.plot_detections">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">plot_detections</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="n">predictions</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">truth</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                    <span class="n">band_indices</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">max_features</span><span class="o">=</span><span class="mi">2000</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Plot a raster with detections color-coded by TP / FP / FN.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    src : xarray.DataArray</span>
+<span class="sd">        Background raster opened with ``gw.open()``.</span>
+<span class="sd">    predictions : geopandas.GeoDataFrame, optional</span>
+<span class="sd">        Detector output. Plotted in solid lines.</span>
+<span class="sd">    truth : geopandas.GeoDataFrame, optional</span>
+<span class="sd">        Ground truth. Plotted as dashed lines.</span>
+<span class="sd">    ax : matplotlib.axes.Axes, optional</span>
+<span class="sd">        Existing axes. A new figure is created if None.</span>
+<span class="sd">    band_indices : list of int, optional</span>
+<span class="sd">        RGB bands for the background.</span>
+<span class="sd">    scale : tuple of (lo, hi), optional</span>
+<span class="sd">        Stretch range for background display.</span>
+<span class="sd">    max_features : int</span>
+<span class="sd">        Subsample to this many features before plotting to keep the</span>
+<span class="sd">        figure responsive on large outputs. Default 2000.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    matplotlib.axes.Axes</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+
+    <span class="kn">from</span><span class="w"> </span><span class="nn">..ml._labels</span><span class="w"> </span><span class="kn">import</span> <span class="n">resolve_band_indices</span>
+
+    <span class="k">if</span> <span class="n">ax</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">_</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">))</span>
+
+    <span class="c1"># Use geowombat&#39;s native imshow so band/y/x → y/x/band reorder and</span>
+    <span class="c1"># the geographic extent on the axes happen automatically.</span>
+    <span class="n">indices</span> <span class="o">=</span> <span class="n">resolve_band_indices</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="n">band_indices</span><span class="p">)</span>
+    <span class="n">rgb_src</span> <span class="o">=</span> <span class="n">src</span><span class="o">.</span><span class="n">isel</span><span class="p">(</span><span class="n">band</span><span class="o">=</span><span class="n">indices</span><span class="p">)</span>
+    <span class="n">imshow_kwargs</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;ax&#39;</span><span class="p">:</span> <span class="n">ax</span><span class="p">}</span>
+    <span class="k">if</span> <span class="n">scale</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">lo</span><span class="p">,</span> <span class="n">hi</span> <span class="o">=</span> <span class="n">scale</span>
+        <span class="n">imshow_kwargs</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">vmin</span><span class="o">=</span><span class="n">lo</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="n">hi</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">imshow_kwargs</span><span class="p">[</span><span class="s1">&#39;robust&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="n">rgb_src</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="o">**</span><span class="n">imshow_kwargs</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_maybe_sample</span><span class="p">(</span><span class="n">gdf</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">gdf</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">gdf</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">max_features</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">gdf</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">max_features</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">gdf</span>
+
+    <span class="n">predictions</span> <span class="o">=</span> <span class="n">_maybe_sample</span><span class="p">(</span><span class="n">predictions</span><span class="p">)</span>
+    <span class="n">truth</span> <span class="o">=</span> <span class="n">_maybe_sample</span><span class="p">(</span><span class="n">truth</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">truth</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">truth</span><span class="o">.</span><span class="n">empty</span><span class="p">:</span>
+        <span class="n">truth</span><span class="o">.</span><span class="n">boundary</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
+            <span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;yellow&#39;</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s1">&#39;--&#39;</span><span class="p">,</span>
+            <span class="n">linewidth</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Truth&#39;</span><span class="p">,</span>
+        <span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">predictions</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">predictions</span><span class="o">.</span><span class="n">empty</span><span class="p">:</span>
+        <span class="k">if</span> <span class="s1">&#39;status&#39;</span> <span class="ow">in</span> <span class="n">predictions</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+            <span class="n">colors</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="s1">&#39;TP&#39;</span><span class="p">:</span> <span class="s1">&#39;lime&#39;</span><span class="p">,</span> <span class="s1">&#39;FP&#39;</span><span class="p">:</span> <span class="s1">&#39;red&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;FP_class&#39;</span><span class="p">:</span> <span class="s1">&#39;orange&#39;</span><span class="p">,</span> <span class="s1">&#39;FN&#39;</span><span class="p">:</span> <span class="s1">&#39;magenta&#39;</span><span class="p">,</span>
+            <span class="p">}</span>
+            <span class="k">for</span> <span class="n">status</span><span class="p">,</span> <span class="n">color</span> <span class="ow">in</span> <span class="n">colors</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="n">sub</span> <span class="o">=</span> <span class="n">predictions</span><span class="p">[</span><span class="n">predictions</span><span class="p">[</span><span class="s1">&#39;status&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">status</span><span class="p">]</span>
+                <span class="k">if</span> <span class="n">sub</span><span class="o">.</span><span class="n">empty</span><span class="p">:</span>
+                    <span class="k">continue</span>
+                <span class="n">sub</span><span class="o">.</span><span class="n">boundary</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
+                    <span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">color</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mf">1.2</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">status</span><span class="p">,</span>
+                <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">predictions</span><span class="o">.</span><span class="n">boundary</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
+                <span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;cyan&#39;</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Predictions&#39;</span><span class="p">,</span>
+            <span class="p">)</span>
+
+    <span class="n">ax</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="s1">&#39;upper right&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">9</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">&#39;X&#39;</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;Y&#39;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">ax</span></div>
+</pre></div>
+
+                </article>
+              
+
+              
+              
+                <footer class="bd-footer-article">
+                  <!-- Previous / next buttons -->
+<div class="prev-next-area">
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            <div class="bd-footer-content__inner">
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+  <p class="copyright">
+    
+      © Copyright 2020-2026, GeoWombat.
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+</div></div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../../../_static/scripts/bootstrap.js?digest=12da95d707ffb74b382d"></script>
+<script src="../../../_static/scripts/pydata-sphinx-theme.js?digest=12da95d707ffb74b382d"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>

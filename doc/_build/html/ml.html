@@ -1,0 +1,997 @@
+
+
+<!DOCTYPE html>
+
+
+<html lang="en" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+
+    <title>Machine learning</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="_static/styles/theme.css?digest=12da95d707ffb74b382d" rel="stylesheet" />
+<link href="_static/styles/bootstrap.css?digest=12da95d707ffb74b382d" rel="stylesheet" />
+<link href="_static/styles/pydata-sphinx-theme.css?digest=12da95d707ffb74b382d" rel="stylesheet" />
+
+  
+  <link href="_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=12da95d707ffb74b382d" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.1.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" href="_static/styles/sphinx-book-theme.css?digest=14f4ca6b54d191a8c7657f6c759bf11a5fb86285" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="_static/graphviz.css" />
+    <link rel="stylesheet" type="text/css" href="_static/copybutton.css" />
+    <link rel="stylesheet" type="text/css" href="_static/custom.css" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=12da95d707ffb74b382d" />
+<link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=12da95d707ffb74b382d" />
+
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/sphinx_highlight.js"></script>
+    <script src="_static/clipboard.min.js"></script>
+    <script src="_static/copybutton.js"></script>
+    <script src="_static/scripts/sphinx-book-theme.js?digest=5a5c038af52cf7bc1a1ec88eea08e6366ee68824"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'ml';</script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Deep learning classifiers" href="dl.html" />
+    <link rel="prev" title="User functions" href="apply.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__primary"
+          id="__primary"/>
+  <label class="overlay overlay-primary" for="__primary"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__secondary"
+          id="__secondary"/>
+  <label class="overlay overlay-secondary" for="__secondary"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search..."
+         aria-label="Search..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+  
+    <nav class="bd-header navbar navbar-expand-lg bd-navbar">
+    </nav>
+  
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      <div class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+  
+
+<a class="navbar-brand logo" href="index.html">
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="_static/logo.png" class="logo__image only-light" alt="GeoWombat"/>
+    <script>document.write(`<img src="_static/logo.png" class="logo__image only-dark" alt="GeoWombat"/>`);</script>
+  
+  
+</a></div>
+        <div class="sidebar-primary-item"><nav class="bd-links" id="bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        <p aria-level="2" class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="install.html">Installing GeoWombat</a></li>
+<li class="toctree-l1"><a class="reference internal" href="quick-overview.html">Quick overview</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="tutorial.html">Tutorial</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-1"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="tutorial-why.html">Why GeoWombat?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial-open.html">Opening rasters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial-edit.html">Editing rasters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial-config.html">Configuration manager</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial-gw.html">GeoWombat DataArray accessor</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial-crs.html">Coordinate Reference Systems</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial-plot.html">Plotting raster data</a></li>
+</ul>
+</li>
+<li class="toctree-l1 current active has-children"><a class="reference internal" href="examples.html">Examples</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-2"><i class="fa-solid fa-chevron-down"></i></label><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="io.html">Raster I/O</a></li>
+<li class="toctree-l2"><a class="reference internal" href="io-distributed.html">Distributed processing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="extraction.html">Data extraction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="band-math.html">Band math</a></li>
+<li class="toctree-l2"><a class="reference internal" href="apply.html">User functions</a></li>
+<li class="toctree-l2 current active"><a class="current reference internal" href="#">Machine learning</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dl.html">Deep learning classifiers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="object-detection.html">Object detection</a></li>
+<li class="toctree-l2"><a class="reference internal" href="moving.html">Moving windows</a></li>
+<li class="toctree-l2"><a class="reference internal" href="radiometry.html">Radiometry</a></li>
+<li class="toctree-l2"><a class="reference internal" href="coreg.html">Co-registration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tasks.html">Pipeline tasks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="web.html">Accessing STAC Catalogs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="external.html">External examples</a></li>
+<li class="toctree-l2"><a class="reference internal" href="gpu.html">Time series processes on the GPU</a></li>
+</ul>
+</li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Changes</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="changelog.html">Changelog</a></li>
+<li class="toctree-l1"><a class="reference internal" href="issues.html">Issues</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Reference</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="api.html">API reference</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-3"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.core.geoxarray.GeoWombatAccessor.html">GeoWombat DataArray (DataArray.gw)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.load.html">load</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.extract.html">extract</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.sample.html">sample</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.calc_area.html">calc_area</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.subset.html">subset</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.clip.html">clip</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.clip_by_polygon.html">clip_by_polygon</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.mask.html">mask</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.replace.html">replace</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.recode.html">recode</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.coregister.html">coregister</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.polygons_to_points.html">polygons_to_points</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.apply.html">apply</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.transform_crs.html">transform_crs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.save.html">save</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.to_raster.html">to_raster</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.to_netcdf.html">to_netcdf</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.to_vrt.html">to_vrt</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.array_to_polygon.html">array_to_polygon</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.polygon_to_array.html">polygon_to_array</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.moving.html">moving</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.norm_diff.html">norm_diff</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.avi.html">avi</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.evi.html">evi</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.evi2.html">evi2</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.kndvi.html">kndvi</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.nbr.html">nbr</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.ndvi.html">ndvi</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.wi.html">wi</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.tasseled_cap.html">tasseled_cap</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.coords_to_indices.html">coords_to_indices</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.indices_to_coords.html">indices_to_coords</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.bounds_to_coords.html">bounds_to_coords</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.lonlat_to_xy.html">lonlat_to_xy</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.xy_to_lonlat.html">xy_to_lonlat</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.open.html">open</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.series.html">series</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.TimeModulePipeline.html">TimeModulePipeline</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.TimeModule.html">TimeModule</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.core.stac.composite_stac.html">composite_stac</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.core.stac.merge_stac.html">merge_stac</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.core.stac.open_stac.html">open_stac</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.core.stac.STACCollectionURLNames.html">STACCollectionURLNames</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.core.stac.STACCollections.html">STACCollections</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.core.stac.STACNames.html">STACNames</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.core.stac.StrEnum.html">StrEnum</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.ml.fit.html">fit</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.ml.fit_predict.html">fit_predict</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.ml.predict.html">predict</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.ml.TabNetClassifier.html">TabNetClassifier</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.ml.LTAEClassifier.html">LTAEClassifier</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.ml.TorchGeoClassifier.html">TorchGeoClassifier</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.detect.boxes_from_polygons.html">boxes_from_polygons</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.detect.build_dataset.html">build_dataset</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.detect.build_yolo_dataset.html">build_yolo_dataset</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.detect.detection_accuracy.html">detection_accuracy</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.detect.export_for_review.html">export_for_review</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.detect.fit.html">fit</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.detect.fit_predict.html">fit_predict</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.detect.plot_detections.html">plot_detections</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.detect.predict.html">predict</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.detect.recompute_from_review.html">recompute_from_review</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.detect.SAMRefiner.html">SAMRefiner</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.detect.TorchGeoDetector.html">TorchGeoDetector</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.detect.YOLODetector.html">YOLODetector</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.radiometry.landsat_pixel_angles.html">landsat_pixel_angles</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.radiometry.sentinel_pixel_angles.html">sentinel_pixel_angles</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.radiometry.BRDF.html">BRDF</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.radiometry.Topo.html">Topo</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.radiometry.LinearAdjustments.html">LinearAdjustments</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.radiometry.RadTransforms.html">RadTransforms</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.radiometry.DOS.html">DOS</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.radiometry.SixS.html">SixS</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.radiometry.QAMasker.html">QAMasker</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.radiometry.QABits.html">QABits</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.radiometry.SCLValues.html">SCLValues</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.radiometry.HLSFmaskBits.html">HLSFmaskBits</a></li>
+</ul>
+</li>
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><label class="sidebar-toggle primary-toggle btn btn-sm" for="__primary" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</label></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+<a href="https://github.com/jgrss/geowombat" target="_blank"
+   class="btn btn-sm btn-source-repository-button"
+   title="Source repository"
+   data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fab fa-github"></i>
+  </span>
+
+</a>
+
+
+
+
+
+
+<div class="dropdown dropdown-download-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Download this page">
+    <i class="fas fa-download"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="_sources/ml.rst" target="_blank"
+   class="btn btn-sm btn-download-source-button dropdown-item"
+   title="Download source file"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file"></i>
+  </span>
+<span class="btn__text-container">.rst</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li>
+<button onclick="window.print()"
+  class="btn btn-sm btn-download-pdf-button dropdown-item"
+  title="Print to PDF"
+  data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file-pdf"></i>
+  </span>
+<span class="btn__text-container">.pdf</span>
+</button>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button"
+  title="Fullscreen mode"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+
+<script>
+document.write(`
+  <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
+    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
+    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
+  </button>
+`);
+</script>
+
+<script>
+document.write(`
+  <button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+  </button>
+`);
+</script>
+<label class="sidebar-toggle secondary-toggle btn btn-sm" for="__secondary"title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</label>
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1>Machine learning</h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+            <div>
+                <h2> Contents </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#recommended-classifiers-for-remote-sensing">Recommended classifiers for remote sensing</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#supervised">Supervised</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#unsupervised">Unsupervised</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#setup">Setup</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#nodata-handling">Nodata handling</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#supervised-classification">Supervised classification</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#using-fit-then-predict-two-step">Using <code class="docutils literal notranslate"><span class="pre">fit()</span></code> then <code class="docutils literal notranslate"><span class="pre">predict()</span></code> (two-step)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#using-fit-predict-one-step">Using <code class="docutils literal notranslate"><span class="pre">fit_predict()</span></code> (one-step)</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#unsupervised-classification-kmeans">Unsupervised classification (KMeans)</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#band-stacked-classification">Band-stacked classification</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cross-validation-and-hyperparameter-tuning">Cross-validation and hyperparameter tuning</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#time-stacked-classification-with-temporal-mode">Time-stacked classification with <code class="docutils literal notranslate"><span class="pre">temporal_mode</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#panel-mode">Panel mode</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#flatten-mode">Flatten mode</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#unsupervised-clustering-with-time-stacked-data">Unsupervised clustering with time-stacked data</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#compare-panel-vs-flatten">Compare panel vs flatten</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#classification-with-stac-satellite-imagery">Classification with STAC satellite imagery</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#search-and-load-imagery">Search and load imagery</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#unsupervised-classification-on-a-single-stac-image">Unsupervised classification on a single STAC image</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#save-prediction-output">Save prediction output</a></li>
+</ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article" role="main">
+                  
+  <section id="machine-learning">
+<span id="ml"></span><h1>Machine learning<a class="headerlink" href="#machine-learning" title="Permalink to this heading">#</a></h1>
+<p>GeoWombat’s ML module works with any scikit-learn compatible classifier or
+pipeline. Pass a classifier to <a class="reference internal" href="api/geowombat.ml.fit.html#geowombat.ml.fit" title="geowombat.ml.fit"><code class="xref py py-func docutils literal notranslate"><span class="pre">fit()</span></code></a>,
+<a class="reference internal" href="api/geowombat.ml.predict.html#geowombat.ml.predict" title="geowombat.ml.predict"><code class="xref py py-func docutils literal notranslate"><span class="pre">predict()</span></code></a>, or <a class="reference internal" href="api/geowombat.ml.fit_predict.html#geowombat.ml.fit_predict" title="geowombat.ml.fit_predict"><code class="xref py py-func docutils literal notranslate"><span class="pre">fit_predict()</span></code></a> and it
+will be applied to the raster data as an xarray DataArray.</p>
+<p>To install ML dependencies:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="s2">&quot;geowombat[ml]&quot;</span>
+</pre></div>
+</div>
+<section id="recommended-classifiers-for-remote-sensing">
+<h2>Recommended classifiers for remote sensing<a class="headerlink" href="#recommended-classifiers-for-remote-sensing" title="Permalink to this heading">#</a></h2>
+<section id="supervised">
+<h3>Supervised<a class="headerlink" href="#supervised" title="Permalink to this heading">#</a></h3>
+<table class="table">
+<colgroup>
+<col style="width: 25.0%" />
+<col style="width: 35.0%" />
+<col style="width: 40.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Classifier</p></th>
+<th class="head"><p>Module</p></th>
+<th class="head"><p>Notes</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Random Forest</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">sklearn.ensemble.RandomForestClassifier</span></code></p></td>
+<td><p>Most widely used in remote sensing; handles high-dimensional data well, robust to noise</p></td>
+</tr>
+<tr class="row-odd"><td><p>LightGBM</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">lightgbm.LGBMClassifier</span></code></p></td>
+<td><p>Fast gradient boosting; strong accuracy with large datasets, supports categorical features</p></td>
+</tr>
+<tr class="row-even"><td><p>Gradient Boosted Trees</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">sklearn.ensemble.GradientBoostingClassifier</span></code></p></td>
+<td><p>Strong accuracy; slower than LightGBM on large datasets</p></td>
+</tr>
+<tr class="row-odd"><td><p>Support Vector Machine</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">sklearn.svm.SVC</span></code></p></td>
+<td><p>Effective in high-dimensional spaces; works well with small training sets</p></td>
+</tr>
+<tr class="row-even"><td><p>Gaussian Naive Bayes</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">sklearn.naive_bayes.GaussianNB</span></code></p></td>
+<td><p>Fast and simple baseline; assumes feature independence</p></td>
+</tr>
+<tr class="row-odd"><td><p>k-Nearest Neighbors</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">sklearn.neighbors.KNeighborsClassifier</span></code></p></td>
+<td><p>Non-parametric; useful for complex class boundaries</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="unsupervised">
+<h3>Unsupervised<a class="headerlink" href="#unsupervised" title="Permalink to this heading">#</a></h3>
+<table class="table">
+<colgroup>
+<col style="width: 25.0%" />
+<col style="width: 35.0%" />
+<col style="width: 40.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Classifier</p></th>
+<th class="head"><p>Module</p></th>
+<th class="head"><p>Notes</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>K-Means</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">sklearn.cluster.KMeans</span></code></p></td>
+<td><p>Standard clustering; fast, works well for spectrally distinct classes</p></td>
+</tr>
+<tr class="row-odd"><td><p>Mini-Batch K-Means</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">sklearn.cluster.MiniBatchKMeans</span></code></p></td>
+<td><p>Faster K-Means variant for large rasters</p></td>
+</tr>
+<tr class="row-even"><td><p>Gaussian Mixture Model</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">sklearn.mixture.GaussianMixture</span></code></p></td>
+<td><p>Soft clustering; models class overlap better than K-Means</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+<section id="setup">
+<h2>Setup<a class="headerlink" href="#setup" title="Permalink to this heading">#</a></h2>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">geowombat</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">gw</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">geowombat.data</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">l8_224078_20200518</span><span class="p">,</span>
+    <span class="n">l8_224078_20200518_points</span><span class="p">,</span>
+    <span class="n">stac_training</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">geowombat.ml</span><span class="w"> </span><span class="kn">import</span> <span class="n">fit</span><span class="p">,</span> <span class="n">predict</span><span class="p">,</span> <span class="n">fit_predict</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">geopandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">gpd</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.pipeline</span><span class="w"> </span><span class="kn">import</span> <span class="n">Pipeline</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.preprocessing</span><span class="w"> </span><span class="kn">import</span> <span class="n">LabelEncoder</span><span class="p">,</span> <span class="n">StandardScaler</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.decomposition</span><span class="w"> </span><span class="kn">import</span> <span class="n">PCA</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.naive_bayes</span><span class="w"> </span><span class="kn">import</span> <span class="n">GaussianNB</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.cluster</span><span class="w"> </span><span class="kn">import</span> <span class="n">KMeans</span>
+
+<span class="c1"># Polygon labels (integer &#39;lc&#39; column, EPSG:4326)</span>
+<span class="n">labels_poly</span> <span class="o">=</span> <span class="n">gpd</span><span class="o">.</span><span class="n">read_file</span><span class="p">(</span><span class="n">stac_training</span><span class="p">)</span>
+
+<span class="c1"># Point labels (need LabelEncoder for string names)</span>
+<span class="n">le</span> <span class="o">=</span> <span class="n">LabelEncoder</span><span class="p">()</span>
+<span class="n">labels_point</span> <span class="o">=</span> <span class="n">gpd</span><span class="o">.</span><span class="n">read_file</span><span class="p">(</span><span class="n">l8_224078_20200518_points</span><span class="p">)</span>
+<span class="n">labels_point</span><span class="p">[</span><span class="s1">&#39;lc&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">le</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">labels_point</span><span class="o">.</span><span class="n">name</span><span class="p">)</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">labels_point</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+<span class="n">labels_point</span> <span class="o">=</span> <span class="n">labels_point</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">])</span>
+</pre></div>
+</div>
+</section>
+<section id="nodata-handling">
+<h2>Nodata handling<a class="headerlink" href="#nodata-handling" title="Permalink to this heading">#</a></h2>
+<p>By default, <code class="docutils literal notranslate"><span class="pre">fit_predict()</span></code> and <code class="docutils literal notranslate"><span class="pre">predict()</span></code> mask nodata pixels in the
+output with NaN (<code class="docutils literal notranslate"><span class="pre">mask_nodataval=True</span></code>). This prevents nodata regions from
+being assigned a class label.</p>
+<p>When opening a file with <code class="docutils literal notranslate"><span class="pre">gw.open(...,</span> <span class="pre">nodata=0)</span></code>, GeoWombat builds a
+binary nodata mask from the original file <em>before</em> warping. This mask is
+attached as the <code class="docutils literal notranslate"><span class="pre">_nodata_mask</span></code> coordinate and survives reprojection and
+time-stacking. The <code class="docutils literal notranslate"><span class="pre">_mask_nodata()</span></code> method uses it to replace predictions
+at nodata locations with NaN.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">ref_res</span><span class="o">=</span><span class="mi">150</span><span class="p">):</span>
+    <span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">l8_224078_20200518</span><span class="p">,</span> <span class="n">nodata</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> <span class="k">as</span> <span class="n">src</span><span class="p">:</span>
+        <span class="c1"># _nodata_mask is automatically attached</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Has nodata mask:&#39;</span><span class="p">,</span> <span class="s1">&#39;_nodata_mask&#39;</span> <span class="ow">in</span> <span class="n">src</span><span class="o">.</span><span class="n">coords</span><span class="p">)</span>
+
+        <span class="c1"># mask_nodataval=True (default) masks nodata in predictions</span>
+        <span class="n">y</span> <span class="o">=</span> <span class="n">fit_predict</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="n">pl</span><span class="p">,</span> <span class="n">labels_poly</span><span class="p">,</span> <span class="n">col</span><span class="o">=</span><span class="s1">&#39;lc&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>To disable nodata masking, pass <code class="docutils literal notranslate"><span class="pre">mask_nodataval=False</span></code>. This is useful
+when you want to handle masking yourself or inspect raw predictions.</p>
+</section>
+<section id="supervised-classification">
+<h2>Supervised classification<a class="headerlink" href="#supervised-classification" title="Permalink to this heading">#</a></h2>
+<section id="using-fit-then-predict-two-step">
+<h3>Using <code class="docutils literal notranslate"><span class="pre">fit()</span></code> then <code class="docutils literal notranslate"><span class="pre">predict()</span></code> (two-step)<a class="headerlink" href="#using-fit-then-predict-two-step" title="Permalink to this heading">#</a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">pl</span> <span class="o">=</span> <span class="n">Pipeline</span><span class="p">([</span>
+    <span class="p">(</span><span class="s1">&#39;scaler&#39;</span><span class="p">,</span> <span class="n">StandardScaler</span><span class="p">()),</span>
+    <span class="p">(</span><span class="s1">&#39;pca&#39;</span><span class="p">,</span> <span class="n">PCA</span><span class="p">()),</span>
+    <span class="p">(</span><span class="s1">&#39;clf&#39;</span><span class="p">,</span> <span class="n">GaussianNB</span><span class="p">()),</span>
+<span class="p">])</span>
+
+<span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">ref_res</span><span class="o">=</span><span class="mi">150</span><span class="p">):</span>
+    <span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">l8_224078_20200518</span><span class="p">,</span> <span class="n">nodata</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> <span class="k">as</span> <span class="n">src</span><span class="p">:</span>
+        <span class="n">X</span><span class="p">,</span> <span class="n">Xy</span><span class="p">,</span> <span class="n">clf</span> <span class="o">=</span> <span class="n">fit</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="n">pl</span><span class="p">,</span> <span class="n">labels_poly</span><span class="p">,</span> <span class="n">col</span><span class="o">=</span><span class="s1">&#39;lc&#39;</span><span class="p">)</span>
+        <span class="n">y</span> <span class="o">=</span> <span class="n">predict</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">clf</span><span class="p">)</span>
+        <span class="n">y</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">robust</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+<a class="reference internal image-reference" href="_images/ml_supervised_predict.png"><img alt="Supervised classification (fit + predict)" src="_images/ml_supervised_predict.png" style="width: 500px;" /></a>
+</section>
+<section id="using-fit-predict-one-step">
+<h3>Using <code class="docutils literal notranslate"><span class="pre">fit_predict()</span></code> (one-step)<a class="headerlink" href="#using-fit-predict-one-step" title="Permalink to this heading">#</a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">ref_res</span><span class="o">=</span><span class="mi">150</span><span class="p">):</span>
+    <span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">l8_224078_20200518</span><span class="p">,</span> <span class="n">nodata</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> <span class="k">as</span> <span class="n">src</span><span class="p">:</span>
+        <span class="n">y</span> <span class="o">=</span> <span class="n">fit_predict</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="n">pl</span><span class="p">,</span> <span class="n">labels_poly</span><span class="p">,</span> <span class="n">col</span><span class="o">=</span><span class="s1">&#39;lc&#39;</span><span class="p">)</span>
+        <span class="n">y</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">robust</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+<a class="reference internal image-reference" href="_images/ml_fit_predict.png"><img alt="Supervised classification (fit_predict)" src="_images/ml_fit_predict.png" style="width: 500px;" /></a>
+</section>
+</section>
+<section id="unsupervised-classification-kmeans">
+<h2>Unsupervised classification (KMeans)<a class="headerlink" href="#unsupervised-classification-kmeans" title="Permalink to this heading">#</a></h2>
+<p>No training labels needed. The algorithm identifies clusters directly from
+the pixel values.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">cl</span> <span class="o">=</span> <span class="n">Pipeline</span><span class="p">([(</span><span class="s1">&#39;clf&#39;</span><span class="p">,</span> <span class="n">KMeans</span><span class="p">(</span><span class="n">n_clusters</span><span class="o">=</span><span class="mi">6</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">0</span><span class="p">))])</span>
+
+<span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">ref_res</span><span class="o">=</span><span class="mi">150</span><span class="p">):</span>
+    <span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">l8_224078_20200518</span><span class="p">,</span> <span class="n">nodata</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> <span class="k">as</span> <span class="n">src</span><span class="p">:</span>
+        <span class="n">y</span> <span class="o">=</span> <span class="n">fit_predict</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="n">cl</span><span class="p">)</span>
+        <span class="n">y</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">robust</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+<a class="reference internal image-reference" href="_images/ml_unsupervised_predict.png"><img alt="Unsupervised KMeans classification" src="_images/ml_unsupervised_predict.png" style="width: 500px;" /></a>
+</section>
+<section id="band-stacked-classification">
+<h2>Band-stacked classification<a class="headerlink" href="#band-stacked-classification" title="Permalink to this heading">#</a></h2>
+<p>Stack multiple images along the band dimension with <code class="docutils literal notranslate"><span class="pre">stack_dim='band'</span></code>.
+This concatenates spectral bands from each date into one long feature vector
+per pixel.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">ref_res</span><span class="o">=</span><span class="mi">150</span><span class="p">):</span>
+    <span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span>
+        <span class="p">[</span><span class="n">l8_224078_20200518</span><span class="p">,</span> <span class="n">l8_224078_20200518</span><span class="p">],</span>
+        <span class="n">stack_dim</span><span class="o">=</span><span class="s1">&#39;band&#39;</span><span class="p">,</span>
+        <span class="n">nodata</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+    <span class="p">)</span> <span class="k">as</span> <span class="n">src</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Band-stacked shape:&#39;</span><span class="p">,</span> <span class="n">src</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+        <span class="n">y</span> <span class="o">=</span> <span class="n">fit_predict</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="n">pl</span><span class="p">,</span> <span class="n">labels_poly</span><span class="p">,</span> <span class="n">col</span><span class="o">=</span><span class="s1">&#39;lc&#39;</span><span class="p">)</span>
+        <span class="n">y</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">robust</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+<a class="reference internal image-reference" href="_images/ml_unsupervised_fit_predict.png"><img alt="Band-stacked classification" src="_images/ml_unsupervised_fit_predict.png" style="width: 500px;" /></a>
+</section>
+<section id="cross-validation-and-hyperparameter-tuning">
+<h2>Cross-validation and hyperparameter tuning<a class="headerlink" href="#cross-validation-and-hyperparameter-tuning" title="Permalink to this heading">#</a></h2>
+<p>Use <code class="docutils literal notranslate"><span class="pre">GridSearchCV</span></code> with <code class="docutils literal notranslate"><span class="pre">CrossValidatorWrapper</span></code> to tune pipeline
+hyperparameters.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.model_selection</span><span class="w"> </span><span class="kn">import</span> <span class="n">GridSearchCV</span><span class="p">,</span> <span class="n">KFold</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn_xarray.model_selection</span><span class="w"> </span><span class="kn">import</span> <span class="n">CrossValidatorWrapper</span>
+
+<span class="n">cv</span> <span class="o">=</span> <span class="n">CrossValidatorWrapper</span><span class="p">(</span><span class="n">KFold</span><span class="p">())</span>
+<span class="n">gridsearch</span> <span class="o">=</span> <span class="n">GridSearchCV</span><span class="p">(</span>
+    <span class="n">pl</span><span class="p">,</span>
+    <span class="n">cv</span><span class="o">=</span><span class="n">cv</span><span class="p">,</span>
+    <span class="n">scoring</span><span class="o">=</span><span class="s1">&#39;balanced_accuracy&#39;</span><span class="p">,</span>
+    <span class="n">param_grid</span><span class="o">=</span><span class="p">{</span>
+        <span class="s1">&#39;scaler__with_std&#39;</span><span class="p">:</span> <span class="p">[</span><span class="kc">True</span><span class="p">,</span> <span class="kc">False</span><span class="p">],</span>
+        <span class="s1">&#39;pca__n_components&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span>
+    <span class="p">},</span>
+<span class="p">)</span>
+
+<span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">ref_res</span><span class="o">=</span><span class="mi">150</span><span class="p">):</span>
+    <span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">l8_224078_20200518</span><span class="p">,</span> <span class="n">nodata</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> <span class="k">as</span> <span class="n">src</span><span class="p">:</span>
+        <span class="n">X</span><span class="p">,</span> <span class="n">Xy</span><span class="p">,</span> <span class="n">pipe</span> <span class="o">=</span> <span class="n">fit</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="n">pl</span><span class="p">,</span> <span class="n">labels_poly</span><span class="p">,</span> <span class="n">col</span><span class="o">=</span><span class="s1">&#39;lc&#39;</span><span class="p">)</span>
+
+        <span class="n">gridsearch</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="o">*</span><span class="n">Xy</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Best params:&#39;</span><span class="p">,</span> <span class="n">gridsearch</span><span class="o">.</span><span class="n">best_params_</span><span class="p">)</span>
+
+        <span class="n">pipe</span><span class="o">.</span><span class="n">set_params</span><span class="p">(</span><span class="o">**</span><span class="n">gridsearch</span><span class="o">.</span><span class="n">best_params_</span><span class="p">)</span>
+        <span class="n">y</span> <span class="o">=</span> <span class="n">predict</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">pipe</span><span class="p">)</span>
+        <span class="n">y</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">robust</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+<a class="reference internal image-reference" href="_images/ml_cv_predict.png"><img alt="Tuned classifier prediction" src="_images/ml_cv_predict.png" style="width: 500px;" /></a>
+</section>
+<section id="time-stacked-classification-with-temporal-mode">
+<h2>Time-stacked classification with <code class="docutils literal notranslate"><span class="pre">temporal_mode</span></code><a class="headerlink" href="#time-stacked-classification-with-temporal-mode" title="Permalink to this heading">#</a></h2>
+<p>When opening multiple images with <code class="docutils literal notranslate"><span class="pre">stack_dim='time'</span></code>, the data has shape
+<code class="docutils literal notranslate"><span class="pre">(time,</span> <span class="pre">band,</span> <span class="pre">y,</span> <span class="pre">x)</span></code>. This is the format returned by STAC queries and
+multi-date <code class="docutils literal notranslate"><span class="pre">gw.open()</span></code> calls. The <code class="docutils literal notranslate"><span class="pre">temporal_mode</span></code> parameter controls how
+time is handled during classification:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">'panel'</span></code> (default) — each pixel-time is an independent sample with B
+spectral features. Output retains the time dimension with one prediction
+per time step.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">'flatten'</span></code> — all time steps are flattened into the band dimension,
+creating T×B features per pixel. Output has no time dimension.</p></li>
+</ul>
+<table class="table">
+<colgroup>
+<col style="width: 29.4%" />
+<col style="width: 17.6%" />
+<col style="width: 17.6%" />
+<col style="width: 35.3%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Input</p></th>
+<th class="head"><p><code class="docutils literal notranslate"><span class="pre">temporal_mode</span></code></p></th>
+<th class="head"><p>Features</p></th>
+<th class="head"><p>Output shape</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">(time=T,</span> <span class="pre">band=B,</span> <span class="pre">y,</span> <span class="pre">x)</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">'panel'</span></code></p></td>
+<td><p>B</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">(time=T,</span> <span class="pre">band='targ',</span> <span class="pre">y,</span> <span class="pre">x)</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">(time=T,</span> <span class="pre">band=B,</span> <span class="pre">y,</span> <span class="pre">x)</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">'flatten'</span></code></p></td>
+<td><p>T × B</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">(band='targ',</span> <span class="pre">y,</span> <span class="pre">x)</span></code></p></td>
+</tr>
+</tbody>
+</table>
+<section id="panel-mode">
+<h3>Panel mode<a class="headerlink" href="#panel-mode" title="Permalink to this heading">#</a></h3>
+<p>Each pixel-time combination is treated as an independent sample. The output
+retains the time dimension, giving one prediction map per time step. Nodata
+pixels are masked automatically (<code class="docutils literal notranslate"><span class="pre">mask_nodataval=True</span></code> by default).</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">pl_panel</span> <span class="o">=</span> <span class="n">Pipeline</span><span class="p">([</span>
+    <span class="p">(</span><span class="s1">&#39;scaler&#39;</span><span class="p">,</span> <span class="n">StandardScaler</span><span class="p">()),</span>
+    <span class="p">(</span><span class="s1">&#39;pca&#39;</span><span class="p">,</span> <span class="n">PCA</span><span class="p">()),</span>
+    <span class="p">(</span><span class="s1">&#39;clf&#39;</span><span class="p">,</span> <span class="n">GaussianNB</span><span class="p">()),</span>
+<span class="p">])</span>
+
+<span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">ref_res</span><span class="o">=</span><span class="mi">150</span><span class="p">):</span>
+    <span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span>
+        <span class="p">[</span><span class="n">l8_224078_20200518</span><span class="p">,</span> <span class="n">l8_224078_20200518</span><span class="p">],</span>
+        <span class="n">stack_dim</span><span class="o">=</span><span class="s1">&#39;time&#39;</span><span class="p">,</span>
+        <span class="n">nodata</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+    <span class="p">)</span> <span class="k">as</span> <span class="n">src</span><span class="p">:</span>
+        <span class="n">y_panel</span> <span class="o">=</span> <span class="n">fit_predict</span><span class="p">(</span>
+            <span class="n">src</span><span class="p">,</span> <span class="n">pl_panel</span><span class="p">,</span> <span class="n">labels_point</span><span class="p">,</span> <span class="n">col</span><span class="o">=</span><span class="s1">&#39;lc&#39;</span><span class="p">,</span>
+            <span class="n">temporal_mode</span><span class="o">=</span><span class="s1">&#39;panel&#39;</span><span class="p">,</span>
+        <span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Shape: </span><span class="si">{</span><span class="n">y_panel</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>  <span class="c1"># (2, 1, 372, 408)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Dims:  </span><span class="si">{</span><span class="n">y_panel</span><span class="o">.</span><span class="n">dims</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>   <span class="c1"># (&#39;time&#39;, &#39;band&#39;, &#39;y&#39;, &#39;x&#39;)</span>
+
+<span class="c1"># Since both time steps use the same image, predictions should match</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Time steps identical:&#39;</span><span class="p">,</span>
+      <span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">y_panel</span><span class="o">.</span><span class="n">isel</span><span class="p">(</span><span class="n">time</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">values</span><span class="p">,</span>
+                  <span class="n">y_panel</span><span class="o">.</span><span class="n">isel</span><span class="p">(</span><span class="n">time</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="n">equal_nan</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
+</pre></div>
+</div>
+<a class="reference internal image-reference" href="_images/ml_panel.png"><img alt="Panel mode predictions (per time step)" src="_images/ml_panel.png" style="width: 700px;" /></a>
+</section>
+<section id="flatten-mode">
+<h3>Flatten mode<a class="headerlink" href="#flatten-mode" title="Permalink to this heading">#</a></h3>
+<p>All time steps are flattened into the band dimension, creating T×B features
+per pixel. This produces a single prediction map regardless of how many
+time steps exist.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">pl_flatten</span> <span class="o">=</span> <span class="n">Pipeline</span><span class="p">([</span>
+    <span class="p">(</span><span class="s1">&#39;scaler&#39;</span><span class="p">,</span> <span class="n">StandardScaler</span><span class="p">()),</span>
+    <span class="p">(</span><span class="s1">&#39;pca&#39;</span><span class="p">,</span> <span class="n">PCA</span><span class="p">(</span><span class="n">n_components</span><span class="o">=</span><span class="mi">1</span><span class="p">)),</span>
+    <span class="p">(</span><span class="s1">&#39;clf&#39;</span><span class="p">,</span> <span class="n">GaussianNB</span><span class="p">()),</span>
+<span class="p">])</span>
+
+<span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">ref_res</span><span class="o">=</span><span class="mi">150</span><span class="p">):</span>
+    <span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span>
+        <span class="p">[</span><span class="n">l8_224078_20200518</span><span class="p">,</span> <span class="n">l8_224078_20200518</span><span class="p">],</span>
+        <span class="n">stack_dim</span><span class="o">=</span><span class="s1">&#39;time&#39;</span><span class="p">,</span>
+        <span class="n">nodata</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+    <span class="p">)</span> <span class="k">as</span> <span class="n">src</span><span class="p">:</span>
+        <span class="n">y_flat</span> <span class="o">=</span> <span class="n">fit_predict</span><span class="p">(</span>
+            <span class="n">src</span><span class="p">,</span> <span class="n">pl_flatten</span><span class="p">,</span> <span class="n">labels_point</span><span class="p">,</span> <span class="n">col</span><span class="o">=</span><span class="s1">&#39;lc&#39;</span><span class="p">,</span>
+            <span class="n">temporal_mode</span><span class="o">=</span><span class="s1">&#39;flatten&#39;</span><span class="p">,</span>
+        <span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Shape: </span><span class="si">{</span><span class="n">y_flat</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>  <span class="c1"># (1, 372, 408)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Dims:  </span><span class="si">{</span><span class="n">y_flat</span><span class="o">.</span><span class="n">dims</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>   <span class="c1"># (&#39;band&#39;, &#39;y&#39;, &#39;x&#39;)</span>
+</pre></div>
+</div>
+<a class="reference internal image-reference" href="_images/ml_flatten.png"><img alt="Flatten mode prediction (all times as features)" src="_images/ml_flatten.png" style="width: 500px;" /></a>
+</section>
+<section id="unsupervised-clustering-with-time-stacked-data">
+<h3>Unsupervised clustering with time-stacked data<a class="headerlink" href="#unsupervised-clustering-with-time-stacked-data" title="Permalink to this heading">#</a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">cl_time</span> <span class="o">=</span> <span class="n">Pipeline</span><span class="p">([</span>
+    <span class="p">(</span><span class="s1">&#39;scaler&#39;</span><span class="p">,</span> <span class="n">StandardScaler</span><span class="p">()),</span>
+    <span class="p">(</span><span class="s1">&#39;clf&#39;</span><span class="p">,</span> <span class="n">KMeans</span><span class="p">(</span><span class="n">n_clusters</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">0</span><span class="p">)),</span>
+<span class="p">])</span>
+
+<span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">ref_res</span><span class="o">=</span><span class="mi">150</span><span class="p">):</span>
+    <span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">open</span><span class="p">(</span>
+        <span class="p">[</span><span class="n">l8_224078_20200518</span><span class="p">,</span> <span class="n">l8_224078_20200518</span><span class="p">],</span>
+        <span class="n">stack_dim</span><span class="o">=</span><span class="s1">&#39;time&#39;</span><span class="p">,</span>
+        <span class="n">nodata</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+    <span class="p">)</span> <span class="k">as</span> <span class="n">src</span><span class="p">:</span>
+        <span class="n">y_cl</span> <span class="o">=</span> <span class="n">fit_predict</span><span class="p">(</span>
+            <span class="n">data</span><span class="o">=</span><span class="n">src</span><span class="p">,</span> <span class="n">clf</span><span class="o">=</span><span class="n">cl_time</span><span class="p">,</span>
+            <span class="n">temporal_mode</span><span class="o">=</span><span class="s1">&#39;panel&#39;</span><span class="p">,</span>
+        <span class="p">)</span>
+</pre></div>
+</div>
+<a class="reference internal image-reference" href="_images/ml_cluster_time.png"><img alt="Unsupervised panel clustering over time" src="_images/ml_cluster_time.png" style="width: 700px;" /></a>
+</section>
+<section id="compare-panel-vs-flatten">
+<h3>Compare panel vs flatten<a class="headerlink" href="#compare-panel-vs-flatten" title="Permalink to this heading">#</a></h3>
+<a class="reference internal image-reference" href="_images/ml_supervised_time.png"><img alt="Panel vs flatten comparison" src="_images/ml_supervised_time.png" style="width: 700px;" /></a>
+</section>
+</section>
+<section id="classification-with-stac-satellite-imagery">
+<h2>Classification with STAC satellite imagery<a class="headerlink" href="#classification-with-stac-satellite-imagery" title="Permalink to this heading">#</a></h2>
+<p>GeoWombat can stream satellite imagery directly from cloud catalogs using
+<code class="docutils literal notranslate"><span class="pre">open_stac()</span></code>. The returned data has shape <code class="docutils literal notranslate"><span class="pre">(time,</span> <span class="pre">band,</span> <span class="pre">y,</span> <span class="pre">x)</span></code> and works
+directly with <code class="docutils literal notranslate"><span class="pre">fit_predict()</span></code>. No file downloads are needed — data is read
+from Cloud Optimized GeoTIFFs (COGs) on the fly.</p>
+<p>To install STAC dependencies:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="s2">&quot;geowombat[stac]&quot;</span>
+</pre></div>
+</div>
+<section id="search-and-load-imagery">
+<h3>Search and load imagery<a class="headerlink" href="#search-and-load-imagery" title="Permalink to this heading">#</a></h3>
+<p>Use <code class="docutils literal notranslate"><span class="pre">open_stac()</span></code> to search a STAC catalog and load the matching scenes.
+Set <code class="docutils literal notranslate"><span class="pre">compute=True</span></code> to download the data into memory with a progress bar.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">geowombat.core.stac</span><span class="w"> </span><span class="kn">import</span> <span class="n">open_stac</span>
+
+<span class="c1"># Search for Sentinel-2 imagery over Washington, DC</span>
+<span class="n">data</span><span class="p">,</span> <span class="n">df</span> <span class="o">=</span> <span class="n">open_stac</span><span class="p">(</span>
+    <span class="n">stac_catalog</span><span class="o">=</span><span class="s2">&quot;element84_v1&quot;</span><span class="p">,</span>
+    <span class="n">collection</span><span class="o">=</span><span class="s2">&quot;sentinel_s2_l2a&quot;</span><span class="p">,</span>
+    <span class="n">bounds</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mf">77.1</span><span class="p">,</span> <span class="mf">38.85</span><span class="p">,</span> <span class="o">-</span><span class="mf">76.95</span><span class="p">,</span> <span class="mf">38.95</span><span class="p">),</span>
+    <span class="n">epsg</span><span class="o">=</span><span class="mi">32618</span><span class="p">,</span>
+    <span class="n">bands</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;blue&quot;</span><span class="p">,</span> <span class="s2">&quot;green&quot;</span><span class="p">,</span> <span class="s2">&quot;red&quot;</span><span class="p">,</span> <span class="s2">&quot;nir&quot;</span><span class="p">],</span>
+    <span class="n">start_date</span><span class="o">=</span><span class="s2">&quot;2023-06-01&quot;</span><span class="p">,</span>
+    <span class="n">end_date</span><span class="o">=</span><span class="s2">&quot;2023-07-31&quot;</span><span class="p">,</span>
+    <span class="n">cloud_cover_perc</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span>
+    <span class="n">resolution</span><span class="o">=</span><span class="mf">100.0</span><span class="p">,</span>
+    <span class="n">chunksize</span><span class="o">=</span><span class="mi">256</span><span class="p">,</span>
+    <span class="n">max_items</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+    <span class="n">compute</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Shape: </span><span class="si">{</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>   <span class="c1"># (2, 4, 115, 134)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Dims:  </span><span class="si">{</span><span class="n">data</span><span class="o">.</span><span class="n">dims</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>    <span class="c1"># (&#39;time&#39;, &#39;band&#39;, &#39;y&#39;, &#39;x&#39;)</span>
+</pre></div>
+</div>
+<a class="reference internal image-reference" href="_images/stac_sentinel2_rgb.png"><img alt="_images/stac_sentinel2_rgb.png" src="_images/stac_sentinel2_rgb.png" style="width: 400px;" /></a>
+</section>
+<section id="unsupervised-classification-on-a-single-stac-image">
+<h3>Unsupervised classification on a single STAC image<a class="headerlink" href="#unsupervised-classification-on-a-single-stac-image" title="Permalink to this heading">#</a></h3>
+<p>Select one time step with <code class="docutils literal notranslate"><span class="pre">.isel(time=0)</span></code> and pass it directly to
+<code class="docutils literal notranslate"><span class="pre">fit_predict()</span></code>. No training labels are needed for unsupervised classifiers.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.cluster</span><span class="w"> </span><span class="kn">import</span> <span class="n">MiniBatchKMeans</span>
+
+<span class="n">cl_stac</span> <span class="o">=</span> <span class="n">Pipeline</span><span class="p">([</span>
+    <span class="p">(</span><span class="s2">&quot;clf&quot;</span><span class="p">,</span> <span class="n">MiniBatchKMeans</span><span class="p">(</span><span class="n">n_clusters</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">0</span><span class="p">)),</span>
+<span class="p">])</span>
+
+<span class="n">single_image</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">isel</span><span class="p">(</span><span class="n">time</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">y_single</span> <span class="o">=</span> <span class="n">fit_predict</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">single_image</span><span class="p">,</span> <span class="n">clf</span><span class="o">=</span><span class="n">cl_stac</span><span class="p">)</span>
+<span class="n">y_single</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">robust</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+<a class="reference internal image-reference" href="_images/stac_kmeans_single.png"><img alt="_images/stac_kmeans_single.png" src="_images/stac_kmeans_single.png" style="width: 400px;" /></a>
+</section>
+</section>
+<section id="save-prediction-output">
+<h2>Save prediction output<a class="headerlink" href="#save-prediction-output" title="Permalink to this heading">#</a></h2>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">y</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="s1">&#39;output.tif&#39;</span><span class="p">,</span> <span class="n">overwrite</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+</section>
+
+
+                </article>
+              
+
+              
+              
+                <footer class="bd-footer-article">
+                  <!-- Previous / next buttons -->
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="apply.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">User functions</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="dl.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Deep learning classifiers</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+  <div class="sidebar-secondary-item">
+  <div class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> Contents
+  </div>
+  <nav class="bd-toc-nav page-toc">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#recommended-classifiers-for-remote-sensing">Recommended classifiers for remote sensing</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#supervised">Supervised</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#unsupervised">Unsupervised</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#setup">Setup</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#nodata-handling">Nodata handling</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#supervised-classification">Supervised classification</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#using-fit-then-predict-two-step">Using <code class="docutils literal notranslate"><span class="pre">fit()</span></code> then <code class="docutils literal notranslate"><span class="pre">predict()</span></code> (two-step)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#using-fit-predict-one-step">Using <code class="docutils literal notranslate"><span class="pre">fit_predict()</span></code> (one-step)</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#unsupervised-classification-kmeans">Unsupervised classification (KMeans)</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#band-stacked-classification">Band-stacked classification</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cross-validation-and-hyperparameter-tuning">Cross-validation and hyperparameter tuning</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#time-stacked-classification-with-temporal-mode">Time-stacked classification with <code class="docutils literal notranslate"><span class="pre">temporal_mode</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#panel-mode">Panel mode</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#flatten-mode">Flatten mode</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#unsupervised-clustering-with-time-stacked-data">Unsupervised clustering with time-stacked data</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#compare-panel-vs-flatten">Compare panel vs flatten</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#classification-with-stac-satellite-imagery">Classification with STAC satellite imagery</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#search-and-load-imagery">Search and load imagery</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#unsupervised-classification-on-a-single-stac-image">Unsupervised classification on a single STAC image</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#save-prediction-output">Save prediction output</a></li>
+</ul>
+  </nav></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            <div class="bd-footer-content__inner">
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+  <p class="copyright">
+    
+      © Copyright 2020-2026, GeoWombat.
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+</div></div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="_static/scripts/bootstrap.js?digest=12da95d707ffb74b382d"></script>
+<script src="_static/scripts/pydata-sphinx-theme.js?digest=12da95d707ffb74b382d"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>

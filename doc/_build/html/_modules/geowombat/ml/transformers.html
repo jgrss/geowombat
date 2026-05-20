@@ -1,0 +1,816 @@
+
+
+<!DOCTYPE html>
+
+
+<html lang="en" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>geowombat.ml.transformers</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../../_static/styles/theme.css?digest=12da95d707ffb74b382d" rel="stylesheet" />
+<link href="../../../_static/styles/bootstrap.css?digest=12da95d707ffb74b382d" rel="stylesheet" />
+<link href="../../../_static/styles/pydata-sphinx-theme.css?digest=12da95d707ffb74b382d" rel="stylesheet" />
+
+  
+  <link href="../../../_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=12da95d707ffb74b382d" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css" />
+    <link rel="stylesheet" href="../../../_static/styles/sphinx-book-theme.css?digest=14f4ca6b54d191a8c7657f6c759bf11a5fb86285" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/custom.css" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=12da95d707ffb74b382d" />
+<link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=12da95d707ffb74b382d" />
+
+    <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+    <script src="../../../_static/doctools.js"></script>
+    <script src="../../../_static/sphinx_highlight.js"></script>
+    <script src="../../../_static/clipboard.min.js"></script>
+    <script src="../../../_static/copybutton.js"></script>
+    <script src="../../../_static/scripts/sphinx-book-theme.js?digest=5a5c038af52cf7bc1a1ec88eea08e6366ee68824"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/geowombat/ml/transformers';</script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__primary"
+          id="__primary"/>
+  <label class="overlay overlay-primary" for="__primary"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__secondary"
+          id="__secondary"/>
+  <label class="overlay overlay-secondary" for="__secondary"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="../../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search..."
+         aria-label="Search..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+  
+    <nav class="bd-header navbar navbar-expand-lg bd-navbar">
+    </nav>
+  
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      <div class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+  
+
+<a class="navbar-brand logo" href="../../../index.html">
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../../../_static/logo.png" class="logo__image only-light" alt="GeoWombat"/>
+    <script>document.write(`<img src="../../../_static/logo.png" class="logo__image only-dark" alt="GeoWombat"/>`);</script>
+  
+  
+</a></div>
+        <div class="sidebar-primary-item"><nav class="bd-links" id="bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        <p aria-level="2" class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../../install.html">Installing GeoWombat</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../quick-overview.html">Quick overview</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../../tutorial.html">Tutorial</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-1"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../tutorial-why.html">Why GeoWombat?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../tutorial-open.html">Opening rasters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../tutorial-edit.html">Editing rasters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../tutorial-config.html">Configuration manager</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../tutorial-gw.html">GeoWombat DataArray accessor</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../tutorial-crs.html">Coordinate Reference Systems</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../tutorial-plot.html">Plotting raster data</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../../examples.html">Examples</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-2"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../io.html">Raster I/O</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../io-distributed.html">Distributed processing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../extraction.html">Data extraction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../band-math.html">Band math</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../apply.html">User functions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../ml.html">Machine learning</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../dl.html">Deep learning classifiers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../object-detection.html">Object detection</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../moving.html">Moving windows</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../radiometry.html">Radiometry</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../coreg.html">Co-registration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../tasks.html">Pipeline tasks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../web.html">Accessing STAC Catalogs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../external.html">External examples</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../gpu.html">Time series processes on the GPU</a></li>
+</ul>
+</li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Changes</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../../changelog.html">Changelog</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../issues.html">Issues</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Reference</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../../api.html">API reference</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-3"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.core.geoxarray.GeoWombatAccessor.html">GeoWombat DataArray (DataArray.gw)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.load.html">load</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.extract.html">extract</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.sample.html">sample</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.calc_area.html">calc_area</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.subset.html">subset</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.clip.html">clip</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.clip_by_polygon.html">clip_by_polygon</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.mask.html">mask</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.replace.html">replace</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.recode.html">recode</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.coregister.html">coregister</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.polygons_to_points.html">polygons_to_points</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.apply.html">apply</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.transform_crs.html">transform_crs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.save.html">save</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.to_raster.html">to_raster</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.to_netcdf.html">to_netcdf</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.to_vrt.html">to_vrt</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.array_to_polygon.html">array_to_polygon</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.polygon_to_array.html">polygon_to_array</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.moving.html">moving</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.norm_diff.html">norm_diff</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.avi.html">avi</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.evi.html">evi</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.evi2.html">evi2</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.kndvi.html">kndvi</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.nbr.html">nbr</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.ndvi.html">ndvi</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.wi.html">wi</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.tasseled_cap.html">tasseled_cap</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.coords_to_indices.html">coords_to_indices</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.indices_to_coords.html">indices_to_coords</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.bounds_to_coords.html">bounds_to_coords</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.lonlat_to_xy.html">lonlat_to_xy</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.xy_to_lonlat.html">xy_to_lonlat</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.open.html">open</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.series.html">series</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.TimeModulePipeline.html">TimeModulePipeline</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.TimeModule.html">TimeModule</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.core.stac.composite_stac.html">composite_stac</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.core.stac.merge_stac.html">merge_stac</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.core.stac.open_stac.html">open_stac</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.core.stac.STACCollectionURLNames.html">STACCollectionURLNames</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.core.stac.STACCollections.html">STACCollections</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.core.stac.STACNames.html">STACNames</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.core.stac.StrEnum.html">StrEnum</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.ml.fit.html">fit</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.ml.fit_predict.html">fit_predict</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.ml.predict.html">predict</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.ml.TabNetClassifier.html">TabNetClassifier</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.ml.LTAEClassifier.html">LTAEClassifier</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.ml.TorchGeoClassifier.html">TorchGeoClassifier</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.detect.boxes_from_polygons.html">boxes_from_polygons</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.detect.build_dataset.html">build_dataset</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.detect.build_yolo_dataset.html">build_yolo_dataset</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.detect.detection_accuracy.html">detection_accuracy</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.detect.export_for_review.html">export_for_review</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.detect.fit.html">fit</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.detect.fit_predict.html">fit_predict</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.detect.plot_detections.html">plot_detections</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.detect.predict.html">predict</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.detect.recompute_from_review.html">recompute_from_review</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.detect.SAMRefiner.html">SAMRefiner</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.detect.TorchGeoDetector.html">TorchGeoDetector</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.detect.YOLODetector.html">YOLODetector</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.radiometry.landsat_pixel_angles.html">landsat_pixel_angles</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.radiometry.sentinel_pixel_angles.html">sentinel_pixel_angles</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.radiometry.BRDF.html">BRDF</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.radiometry.Topo.html">Topo</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.radiometry.LinearAdjustments.html">LinearAdjustments</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.radiometry.RadTransforms.html">RadTransforms</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.radiometry.DOS.html">DOS</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.radiometry.SixS.html">SixS</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.radiometry.QAMasker.html">QAMasker</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.radiometry.QABits.html">QABits</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.radiometry.SCLValues.html">SCLValues</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.radiometry.HLSFmaskBits.html">HLSFmaskBits</a></li>
+</ul>
+</li>
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><label class="sidebar-toggle primary-toggle btn btn-sm" for="__primary" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</label></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+<a href="https://github.com/jgrss/geowombat" target="_blank"
+   class="btn btn-sm btn-source-repository-button"
+   title="Source repository"
+   data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fab fa-github"></i>
+  </span>
+
+</a>
+
+
+
+
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button"
+  title="Fullscreen mode"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+
+<script>
+document.write(`
+  <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
+    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
+    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
+  </button>
+`);
+</script>
+
+<script>
+document.write(`
+  <button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+  </button>
+`);
+</script>
+
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1></h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article" role="main">
+                  
+  <h1>Source code for geowombat.ml.transformers</h1><div class="highlight"><pre>
+<span></span><span class="ch">#!/usr/bin/env python3</span>
+<span class="c1"># -*- coding: utf-8 -*-</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Created on Mon Aug 10 13:41:40 2020</span>
+<span class="sd">adapted from sklearn-xarray/preprocessing</span>
+<span class="sd">@author: mmann1123</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">xarray</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">xr</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.base</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseEstimator</span><span class="p">,</span> <span class="n">TransformerMixin</span>
+
+
+<div class="viewcode-block" id="is_dataarray"><a class="viewcode-back" href="../../../api/geowombat.ml.html#geowombat.ml.transformers.is_dataarray">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">is_dataarray</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">require_attrs</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; Check whether an object is a DataArray.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    X : anything</span>
+<span class="sd">        The object to be checked.</span>
+
+<span class="sd">    require_attrs : list of str, optional</span>
+<span class="sd">        The attributes the object has to have in order to pass as a DataArray.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    bool</span>
+<span class="sd">        Whether the object is a DataArray or not.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">if</span> <span class="n">require_attrs</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">require_attrs</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;values&quot;</span><span class="p">,</span> <span class="s2">&quot;coords&quot;</span><span class="p">,</span> <span class="s2">&quot;dims&quot;</span><span class="p">,</span> <span class="s2">&quot;to_dataset&quot;</span><span class="p">]</span>
+
+    <span class="k">return</span> <span class="nb">all</span><span class="p">([</span><span class="nb">hasattr</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">require_attrs</span><span class="p">])</span></div>
+
+
+<div class="viewcode-block" id="is_dataset"><a class="viewcode-back" href="../../../api/geowombat.ml.html#geowombat.ml.transformers.is_dataset">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">is_dataset</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">require_attrs</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; Check whether an object is a Dataset.</span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    X : anything</span>
+<span class="sd">        The object to be checked.</span>
+<span class="sd">    require_attrs : list of str, optional</span>
+<span class="sd">        The attributes the object has to have in order to pass as a Dataset.</span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    bool</span>
+<span class="sd">        Whether the object is a Dataset or not.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">if</span> <span class="n">require_attrs</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">require_attrs</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;data_vars&quot;</span><span class="p">,</span> <span class="s2">&quot;coords&quot;</span><span class="p">,</span> <span class="s2">&quot;dims&quot;</span><span class="p">,</span> <span class="s2">&quot;to_array&quot;</span><span class="p">]</span>
+
+    <span class="k">return</span> <span class="nb">all</span><span class="p">([</span><span class="nb">hasattr</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">require_attrs</span><span class="p">])</span></div>
+
+
+<div class="viewcode-block" id="BaseTransformer"><a class="viewcode-back" href="../../../api/geowombat.ml.html#geowombat.ml.transformers.BaseTransformer">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">BaseTransformer</span><span class="p">(</span><span class="n">BaseEstimator</span><span class="p">,</span> <span class="n">TransformerMixin</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; Base class for transformers. &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_call_groupwise</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">function</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Call a function function on groups of data. &quot;&quot;&quot;</span>
+
+        <span class="n">group_idx</span> <span class="o">=</span> <span class="n">get_group_indices</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">groupby</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">group_dim</span><span class="p">)</span>
+        <span class="n">Xt_list</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">group_idx</span><span class="p">:</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">isel</span><span class="p">(</span><span class="o">**</span><span class="p">{</span><span class="bp">self</span><span class="o">.</span><span class="n">group_dim</span><span class="p">:</span> <span class="n">i</span><span class="p">})</span>
+            <span class="n">Xt_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">function</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
+
+        <span class="k">return</span> <span class="n">xr</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span><span class="n">Xt_list</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">group_dim</span><span class="p">)</span>
+
+<div class="viewcode-block" id="BaseTransformer.fit"><a class="viewcode-back" href="../../../api/geowombat.ml.html#geowombat.ml.transformers.BaseTransformer.fit">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">fit_params</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Fit estimator to data.</span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        X : xarray DataArray or Dataset</span>
+<span class="sd">            Training set.</span>
+<span class="sd">        y : xarray DataArray or Dataset</span>
+<span class="sd">            Target values.</span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        self:</span>
+<span class="sd">            The estimator itself.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="n">is_dataset</span><span class="p">(</span><span class="n">X</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">type_</span> <span class="o">=</span> <span class="s2">&quot;Dataset&quot;</span>
+        <span class="k">elif</span> <span class="n">is_dataarray</span><span class="p">(</span><span class="n">X</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">type_</span> <span class="o">=</span> <span class="s2">&quot;DataArray&quot;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;The input appears to be neither a DataArray nor a Dataset.&quot;</span>
+            <span class="p">)</span>
+
+        <span class="k">return</span> <span class="bp">self</span></div>
+
+<div class="viewcode-block" id="BaseTransformer.transform"><a class="viewcode-back" href="../../../api/geowombat.ml.html#geowombat.ml.transformers.BaseTransformer.transform">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">transform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Transform input data.</span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        X : xarray DataArray or Dataset</span>
+<span class="sd">            The input data.</span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        Xt : xarray DataArray or Dataset</span>
+<span class="sd">            The transformed data.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">type_</span> <span class="o">==</span> <span class="s2">&quot;Dataset&quot;</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">is_dataset</span><span class="p">(</span><span class="n">X</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;This estimator was fitted for Dataset inputs, but the &quot;</span>
+                <span class="s2">&quot;provided X does not seem to be a Dataset.&quot;</span>
+            <span class="p">)</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">type_</span> <span class="o">==</span> <span class="s2">&quot;DataArray&quot;</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">is_dataarray</span><span class="p">(</span><span class="n">X</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;This estimator was fitted for DataArray inputs, but the &quot;</span>
+                <span class="s2">&quot;provided X does not seem to be a DataArray.&quot;</span>
+            <span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">groupby</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_call_groupwise</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_transform</span><span class="p">,</span> <span class="n">X</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_transform</span><span class="p">(</span><span class="n">X</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="Featurizer_GW"><a class="viewcode-back" href="../../../api/geowombat.ml.html#geowombat.ml.transformers.Featurizer_GW">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">Featurizer_GW</span><span class="p">(</span><span class="n">BaseTransformer</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; Stack all dimensions and variables except for sample dimension.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    sample_dim : str, list, tuple</span>
+<span class="sd">        Name of the dimension used to define how the data is sampled.</span>
+<span class="sd">        For instance, an individual&#39;s activity recorded over time would</span>
+<span class="sd">        be sampled based on the dimension time.</span>
+
+<span class="sd">        If your sample dim has multiple dimensions, for instance x,y,time</span>
+<span class="sd">        these can be passed as a list or tuple. Before stacking, a new</span>
+<span class="sd">        multiindex z will be created for these dimensions.</span>
+
+<span class="sd">    feature_dim : str</span>
+<span class="sd">        Name of the feature dimension created to store the stacked data.</span>
+
+<span class="sd">    var_name : str</span>
+<span class="sd">        Name of the new variable (for Datasets).</span>
+
+<span class="sd">    order : list or tuple</span>
+<span class="sd">        Order of dimension stacking.</span>
+
+<span class="sd">    return_array: bool</span>
+<span class="sd">        Whether to return a DataArray when a Dataset was passed.</span>
+
+<span class="sd">    groupby : str or list, optional</span>
+<span class="sd">        Name of coordinate or list of coordinates by which the groups are</span>
+<span class="sd">        determined.</span>
+
+<span class="sd">    group_dim : str, optional</span>
+<span class="sd">        Name of dimension along which the groups are indexed.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span>
+            <span class="n">sample_dim</span><span class="o">=</span><span class="s2">&quot;sample&quot;</span><span class="p">,</span>
+            <span class="n">feature_dim</span><span class="o">=</span><span class="s2">&quot;feature&quot;</span><span class="p">,</span>
+            <span class="n">var_name</span><span class="o">=</span><span class="s2">&quot;Features&quot;</span><span class="p">,</span>
+            <span class="n">order</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">return_array</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+            <span class="n">groupby</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">group_dim</span><span class="o">=</span><span class="s2">&quot;sample&quot;</span><span class="p">,</span>
+
+    <span class="p">):</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">sample_dim</span> <span class="o">=</span> <span class="n">sample_dim</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">feature_dim</span> <span class="o">=</span> <span class="n">feature_dim</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">var_name</span> <span class="o">=</span> <span class="n">var_name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">order</span> <span class="o">=</span> <span class="n">order</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">return_array</span> <span class="o">=</span> <span class="n">return_array</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">groupby</span> <span class="o">=</span> <span class="n">groupby</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">group_dim</span> <span class="o">=</span> <span class="n">group_dim</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_transform_var</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Transform a single variable. &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">order</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">stack_dims</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">order</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sample_dim</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">sample_dim</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">sample_dim</span><span class="p">]</span>
+            <span class="n">stack_dims</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">dims</span><span class="p">)</span> <span class="o">-</span> <span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sample_dim</span><span class="p">))</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">stack_dims</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="c1"># TODO write a test for this (nothing to stack)</span>
+            <span class="n">Xt</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+            <span class="n">Xt</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">feature_dim</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="k">return</span> <span class="n">Xt</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">X</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span><span class="o">**</span><span class="p">{</span><span class="bp">self</span><span class="o">.</span><span class="n">feature_dim</span><span class="p">:</span> <span class="n">stack_dims</span><span class="p">})</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_inverse_transform_var</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Inverse transform a single variable. &quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="n">X</span><span class="o">.</span><span class="n">unstack</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">feature_dim</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_transform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Transform. &quot;&quot;&quot;</span>
+
+        <span class="c1"># stack all dimensions except for sample dimension</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">type_</span> <span class="o">==</span> <span class="s2">&quot;Dataset&quot;</span><span class="p">:</span>
+
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sample_dim</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sample_dim</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">):</span>
+                <span class="n">X</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span><span class="n">sample</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">sample_dim</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">sample_dim</span> <span class="o">=</span> <span class="s1">&#39;sample&#39;</span>
+
+            <span class="n">X</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span>
+                <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_transform_var</span><span class="p">(</span><span class="n">X</span><span class="p">[</span><span class="n">v</span><span class="p">])</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">X</span><span class="o">.</span><span class="n">data_vars</span><span class="p">],</span>
+                <span class="n">dim</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">feature_dim</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">return_array</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">X</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">X</span><span class="o">.</span><span class="n">to_dataset</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">var_name</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sample_dim</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sample_dim</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">):</span>
+                <span class="n">X</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span><span class="n">sample</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">sample_dim</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">sample_dim</span> <span class="o">=</span> <span class="s1">&#39;sample&#39;</span>
+
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_transform_var</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_inverse_transform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Reverse transform. &quot;&quot;&quot;</span>
+
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
+            <span class="s2">&quot;inverse_transform has not yet been implemented for this estimator&quot;</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="featurize_gw"><a class="viewcode-back" href="../../../api/geowombat.ml.html#geowombat.ml.transformers.featurize_gw">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">featurize_gw</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">return_estimator</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="o">**</span><span class="n">fit_params</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; Stacks all dimensions and variables except for sample dimension.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    X : xarray DataArray or Dataset</span>
+<span class="sd">        The input data.</span>
+
+<span class="sd">    return_estimator : bool</span>
+<span class="sd">        Whether to return the fitted estimator along with the transformed data.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    Xt : xarray DataArray or Dataset</span>
+<span class="sd">        The transformed data.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">estimator</span> <span class="o">=</span> <span class="n">Featurizer_GW</span><span class="p">(</span><span class="o">**</span><span class="n">fit_params</span><span class="p">)</span>
+
+    <span class="n">Xt</span> <span class="o">=</span> <span class="n">estimator</span><span class="o">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">return_estimator</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">Xt</span><span class="p">,</span> <span class="n">estimator</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">Xt</span></div>
+
+
+<span class="c1"># %%</span>
+
+
+<div class="viewcode-block" id="Stackerizer"><a class="viewcode-back" href="../../../api/geowombat.ml.html#geowombat.ml.transformers.Stackerizer">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">Stackerizer</span><span class="p">(</span><span class="n">BaseTransformer</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; Transformer to handle higher dimensional data, for instance data</span>
+<span class="sd">        sampled in time and location (&#39;x&#39;,&#39;y&#39;,&#39;time&#39;), that must be stacked</span>
+<span class="sd">        before running Featurizer, and unstacked after prediction.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    sample_dim : list, tuple</span>
+<span class="sd">        List (tuple) of the dimensions used to define how the data is sampled.</span>
+
+<span class="sd">        If your sample dim has multiple dimensions, for instance x,y,time</span>
+<span class="sd">        these can be passed as a list or tuple. Before stacking, a new</span>
+<span class="sd">        multiindex &#39;sample&#39; will be created for these dimensions.</span>
+
+<span class="sd">    direction : str, optional</span>
+<span class="sd">        &quot;stack&quot; or &quot;unstack&quot; defines the direction of transformation.</span>
+<span class="sd">        Default is &quot;stack&quot;</span>
+
+<span class="sd">    sample_dim : str</span>
+<span class="sd">        Name of multiindex used to stack sample dims. Defaults to &quot;sample&quot;</span>
+
+<span class="sd">    transposed : bool</span>
+<span class="sd">        Should the output be transposed after stacking. Default is True.</span>
+
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    Xt : xarray DataArray or Dataset</span>
+<span class="sd">        The transformed data.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span>
+            <span class="n">stack_dims</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">direction</span><span class="o">=</span><span class="s2">&quot;stack&quot;</span><span class="p">,</span>
+            <span class="n">sample_dim</span><span class="o">=</span><span class="s2">&quot;sample&quot;</span><span class="p">,</span>
+            <span class="n">transposed</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="n">groupby</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>  <span class="c1"># required by transformer, but not sure how you want to avoid</span>
+
+    <span class="p">):</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">stack_dims</span> <span class="o">=</span> <span class="n">stack_dims</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">direction</span> <span class="o">=</span> <span class="n">direction</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sample_dim</span> <span class="o">=</span> <span class="n">sample_dim</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">transposed</span> <span class="o">=</span> <span class="n">transposed</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">groupby</span> <span class="o">=</span> <span class="n">groupby</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_transform_var</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Stack along multiple dimensions. &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stack_dims</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">stack_dims</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">stack_dims</span><span class="p">]</span>
+
+        <span class="k">return</span> <span class="n">X</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span><span class="o">**</span><span class="p">{</span><span class="bp">self</span><span class="o">.</span><span class="n">sample_dim</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">stack_dims</span><span class="p">})</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_inverse_transform_var</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Unstack along sample dimension &quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="n">X</span><span class="o">.</span><span class="n">unstack</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sample_dim</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_transform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Transform. &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">direction</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;stack&#39;</span><span class="p">,</span> <span class="s1">&#39;unstack&#39;</span><span class="p">]:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;direction must be one of </span><span class="si">%r</span><span class="s2">.&quot;</span> <span class="o">%</span> <span class="p">[</span><span class="s1">&#39;stack&#39;</span><span class="p">,</span> <span class="s1">&#39;unstack&#39;</span><span class="p">])</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">all</span><span class="p">(</span><span class="n">item</span> <span class="ow">in</span> <span class="n">X</span><span class="o">.</span><span class="n">dims</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">stack_dims</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;stack_dims must be one of </span><span class="si">%s</span><span class="s2">.&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">dims</span><span class="p">,))</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">type_</span> <span class="o">==</span> <span class="s2">&quot;Dataset&quot;</span><span class="p">:</span>
+            <span class="c1"># ! not sure how to test datasets !</span>
+
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">direction</span> <span class="o">==</span> <span class="s1">&#39;stack&#39;</span><span class="p">:</span>
+
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">transposed</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_transform_var</span><span class="p">(</span><span class="n">X</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_transform_var</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_inverse_transform_var</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+
+        <span class="k">else</span><span class="p">:</span>
+
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">direction</span> <span class="o">==</span> <span class="s1">&#39;stack&#39;</span><span class="p">:</span>
+
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">transposed</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_transform_var</span><span class="p">(</span><span class="n">X</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_transform_var</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_inverse_transform_var</span><span class="p">(</span><span class="n">X</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="stackerizer"><a class="viewcode-back" href="../../../api/geowombat.ml.html#geowombat.ml.transformers.stackerizer">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">stackerizer</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">return_estimator</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="o">**</span><span class="n">fit_params</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; Stacks all dimensions and variables except for sample dimension.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    X : xarray DataArray or Dataset&quot;&quot;</span>
+<span class="sd">        The input data.</span>
+
+<span class="sd">    return_estimator : bool</span>
+<span class="sd">        Whether to return the fitted estimator along with the transformed data.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    Xt : xarray DataArray or Dataset</span>
+<span class="sd">        The transformed data.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">estimator</span> <span class="o">=</span> <span class="n">Stackerizer</span><span class="p">(</span><span class="o">**</span><span class="n">fit_params</span><span class="p">)</span>
+
+    <span class="n">Xt</span> <span class="o">=</span> <span class="n">estimator</span><span class="o">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">return_estimator</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">Xt</span><span class="p">,</span> <span class="n">estimator</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">Xt</span></div>
+</pre></div>
+
+                </article>
+              
+
+              
+              
+                <footer class="bd-footer-article">
+                  <!-- Previous / next buttons -->
+<div class="prev-next-area">
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            <div class="bd-footer-content__inner">
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+  <p class="copyright">
+    
+      © Copyright 2020-2026, GeoWombat.
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+</div></div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../../../_static/scripts/bootstrap.js?digest=12da95d707ffb74b382d"></script>
+<script src="../../../_static/scripts/pydata-sphinx-theme.js?digest=12da95d707ffb74b382d"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>

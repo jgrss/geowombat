@@ -90,47 +90,32 @@ html_logo = '_static/logo.png'
 # html_favicon = ''
 pygments_style = 'sphinx'
 
-# Theme options are theme-specific and customize the look and feel of a theme
-# further.  For a list of options available for each theme, see the
-# documentation.
+# Theme options. Only keys that ``sphinx_book_theme`` actually accepts;
+# many alabaster-theme leftovers (page_width, font_*, anchor_*,
+# extra_navbar, github_banner, etc.) were silently dropped and showed
+# up as "unsupported theme option" warnings on every build.
 html_theme_options = {
-    'page_width': '60%',
-    'sidebar_width': '20%',
-    'head_font_family': 'Helvetica',
-    'font_size': '1.1em',
-    'font_family': 'Helvetica',
-    'code_font_family': [
-        'Consolas',
-        'Menlo',
-        'DejaVu Sans Mono',
-        'Bitstream Vera Sans Mono',
-    ],
-    'code_font_size': '0.9em',
-    'note_bg': '#cccccc',
-    'note_border': '#c0c3e2',
-    'fixed_sidebar': False,
     'logo': {
         'alt_text': 'GeoWombat',
     },
-    'logo_name': False,
-    'github_banner': True,
-    'github_button': True,
-    'github_user': 'jgrss',
-    'github_repo': 'geowombat',
     'repository_url': 'https://github.com/jgrss/geowombat',
     'repository_branch': 'main',
     'use_repository_button': True,
     'use_issues_button': False,
     'home_page_in_toc': False,
-    'extra_navbar': '',
-    'navbar_footer_text': '',
-    'extra_footer': '',
 }
 
 # Prefix `autosectionlabel` targets with the document name, so the same
 # section headings (e.g. "Bug fixes", "Classes") across changelog.rst /
 # api.rst don't collide and emit hundreds of duplicate-label warnings.
 autosectionlabel_prefix_document = True
+# Only generate labels for top-level headings. The changelog has dozens
+# of releases each with a "Bug fixes" / "New" / "Enhancements"
+# subsection, and automodapi adds repeated "Classes" / "Functions"
+# subsections under each module — restricting label generation to h1s
+# kills ~110 duplicate-label warnings without losing any :ref: target
+# that is actually being used.
+autosectionlabel_maxdepth = 1
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,

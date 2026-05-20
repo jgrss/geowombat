@@ -1,0 +1,1245 @@
+
+
+<!DOCTYPE html>
+
+
+<html lang="en" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>geowombat.detect.detectors</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../../_static/styles/theme.css?digest=12da95d707ffb74b382d" rel="stylesheet" />
+<link href="../../../_static/styles/bootstrap.css?digest=12da95d707ffb74b382d" rel="stylesheet" />
+<link href="../../../_static/styles/pydata-sphinx-theme.css?digest=12da95d707ffb74b382d" rel="stylesheet" />
+
+  
+  <link href="../../../_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=12da95d707ffb74b382d" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css" />
+    <link rel="stylesheet" href="../../../_static/styles/sphinx-book-theme.css?digest=14f4ca6b54d191a8c7657f6c759bf11a5fb86285" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/custom.css" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=12da95d707ffb74b382d" />
+<link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=12da95d707ffb74b382d" />
+
+    <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+    <script src="../../../_static/doctools.js"></script>
+    <script src="../../../_static/sphinx_highlight.js"></script>
+    <script src="../../../_static/clipboard.min.js"></script>
+    <script src="../../../_static/copybutton.js"></script>
+    <script src="../../../_static/scripts/sphinx-book-theme.js?digest=5a5c038af52cf7bc1a1ec88eea08e6366ee68824"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/geowombat/detect/detectors';</script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__primary"
+          id="__primary"/>
+  <label class="overlay overlay-primary" for="__primary"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__secondary"
+          id="__secondary"/>
+  <label class="overlay overlay-secondary" for="__secondary"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="../../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search..."
+         aria-label="Search..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+  
+    <nav class="bd-header navbar navbar-expand-lg bd-navbar">
+    </nav>
+  
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      <div class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+  
+
+<a class="navbar-brand logo" href="../../../index.html">
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../../../_static/logo.png" class="logo__image only-light" alt="GeoWombat"/>
+    <script>document.write(`<img src="../../../_static/logo.png" class="logo__image only-dark" alt="GeoWombat"/>`);</script>
+  
+  
+</a></div>
+        <div class="sidebar-primary-item"><nav class="bd-links" id="bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        <p aria-level="2" class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../../install.html">Installing GeoWombat</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../quick-overview.html">Quick overview</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../../tutorial.html">Tutorial</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-1"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../tutorial-why.html">Why GeoWombat?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../tutorial-open.html">Opening rasters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../tutorial-edit.html">Editing rasters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../tutorial-config.html">Configuration manager</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../tutorial-gw.html">GeoWombat DataArray accessor</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../tutorial-crs.html">Coordinate Reference Systems</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../tutorial-plot.html">Plotting raster data</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../../examples.html">Examples</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-2"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../io.html">Raster I/O</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../io-distributed.html">Distributed processing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../extraction.html">Data extraction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../band-math.html">Band math</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../apply.html">User functions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../ml.html">Machine learning</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../dl.html">Deep learning classifiers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../object-detection.html">Object detection</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../moving.html">Moving windows</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../radiometry.html">Radiometry</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../coreg.html">Co-registration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../tasks.html">Pipeline tasks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../web.html">Accessing STAC Catalogs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../external.html">External examples</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../gpu.html">Time series processes on the GPU</a></li>
+</ul>
+</li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Changes</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../../changelog.html">Changelog</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../issues.html">Issues</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Reference</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../../api.html">API reference</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-3"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.core.geoxarray.GeoWombatAccessor.html">GeoWombat DataArray (DataArray.gw)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.load.html">load</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.extract.html">extract</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.sample.html">sample</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.calc_area.html">calc_area</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.subset.html">subset</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.clip.html">clip</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.clip_by_polygon.html">clip_by_polygon</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.mask.html">mask</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.replace.html">replace</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.recode.html">recode</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.coregister.html">coregister</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.polygons_to_points.html">polygons_to_points</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.apply.html">apply</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.transform_crs.html">transform_crs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.save.html">save</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.to_raster.html">to_raster</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.to_netcdf.html">to_netcdf</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.to_vrt.html">to_vrt</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.array_to_polygon.html">array_to_polygon</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.polygon_to_array.html">polygon_to_array</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.moving.html">moving</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.norm_diff.html">norm_diff</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.avi.html">avi</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.evi.html">evi</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.evi2.html">evi2</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.kndvi.html">kndvi</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.nbr.html">nbr</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.ndvi.html">ndvi</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.wi.html">wi</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.tasseled_cap.html">tasseled_cap</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.coords_to_indices.html">coords_to_indices</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.indices_to_coords.html">indices_to_coords</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.bounds_to_coords.html">bounds_to_coords</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.lonlat_to_xy.html">lonlat_to_xy</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.xy_to_lonlat.html">xy_to_lonlat</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.open.html">open</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.series.html">series</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.TimeModulePipeline.html">TimeModulePipeline</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.TimeModule.html">TimeModule</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.core.stac.composite_stac.html">composite_stac</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.core.stac.merge_stac.html">merge_stac</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.core.stac.open_stac.html">open_stac</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.core.stac.STACCollectionURLNames.html">STACCollectionURLNames</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.core.stac.STACCollections.html">STACCollections</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.core.stac.STACNames.html">STACNames</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.core.stac.StrEnum.html">StrEnum</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.ml.fit.html">fit</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.ml.fit_predict.html">fit_predict</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.ml.predict.html">predict</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.ml.TabNetClassifier.html">TabNetClassifier</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.ml.LTAEClassifier.html">LTAEClassifier</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.ml.TorchGeoClassifier.html">TorchGeoClassifier</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.detect.boxes_from_polygons.html">boxes_from_polygons</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.detect.build_dataset.html">build_dataset</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.detect.build_yolo_dataset.html">build_yolo_dataset</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.detect.detection_accuracy.html">detection_accuracy</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.detect.export_for_review.html">export_for_review</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.detect.fit.html">fit</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.detect.fit_predict.html">fit_predict</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.detect.plot_detections.html">plot_detections</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.detect.predict.html">predict</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.detect.recompute_from_review.html">recompute_from_review</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.detect.SAMRefiner.html">SAMRefiner</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.detect.TorchGeoDetector.html">TorchGeoDetector</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.detect.YOLODetector.html">YOLODetector</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.radiometry.landsat_pixel_angles.html">landsat_pixel_angles</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.radiometry.sentinel_pixel_angles.html">sentinel_pixel_angles</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.radiometry.BRDF.html">BRDF</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.radiometry.Topo.html">Topo</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.radiometry.LinearAdjustments.html">LinearAdjustments</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.radiometry.RadTransforms.html">RadTransforms</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.radiometry.DOS.html">DOS</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.radiometry.SixS.html">SixS</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.radiometry.QAMasker.html">QAMasker</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.radiometry.QABits.html">QABits</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.radiometry.SCLValues.html">SCLValues</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.radiometry.HLSFmaskBits.html">HLSFmaskBits</a></li>
+</ul>
+</li>
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><label class="sidebar-toggle primary-toggle btn btn-sm" for="__primary" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</label></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+<a href="https://github.com/jgrss/geowombat" target="_blank"
+   class="btn btn-sm btn-source-repository-button"
+   title="Source repository"
+   data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fab fa-github"></i>
+  </span>
+
+</a>
+
+
+
+
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button"
+  title="Fullscreen mode"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+
+<script>
+document.write(`
+  <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
+    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
+    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
+  </button>
+`);
+</script>
+
+<script>
+document.write(`
+  <button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+  </button>
+`);
+</script>
+
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1></h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article" role="main">
+                  
+  <h1>Source code for geowombat.detect.detectors</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Object detectors for geowombat.</span>
+
+<span class="sd">Wraps Ultralytics YOLO and TorchGeo detection models behind a single</span>
+<span class="sd">geospatial-aware API: tiled windowed inference with cross-tile NMS and</span>
+<span class="sd">georeferenced ``GeoDataFrame`` outputs.</span>
+
+<span class="sd">Requires: ``pip install geowombat[detect]`` (YOLO/TorchGeo)</span>
+<span class="sd">          ``pip install geowombat[sam]`` (SAMRefiner)</span>
+
+<span class="sd">Example</span>
+<span class="sd">-------</span>
+<span class="sd">&gt;&gt;&gt; import geowombat as gw</span>
+<span class="sd">&gt;&gt;&gt; from geowombat.detect import YOLODetector</span>
+<span class="sd">&gt;&gt;&gt; det = YOLODetector(weights=&#39;yolov8n.pt&#39;)</span>
+<span class="sd">&gt;&gt;&gt; with gw.open(&#39;aerial.tif&#39;) as src:</span>
+<span class="sd">...     boxes = det.predict(src, tile_size=640, conf=0.25,</span>
+<span class="sd">...                         band_indices=[2, 1, 0], scale=(0, 3000))</span>
+<span class="sd">&gt;&gt;&gt; boxes.to_file(&#39;detections.gpkg&#39;)</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">geopandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">gpd</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">shapely.geometry</span><span class="w"> </span><span class="kn">import</span> <span class="n">Polygon</span><span class="p">,</span> <span class="n">box</span> <span class="k">as</span> <span class="n">shapely_box</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">..ml._labels</span><span class="w"> </span><span class="kn">import</span> <span class="n">resolve_band_indices</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">._tiling</span><span class="w"> </span><span class="kn">import</span> <span class="n">overlapped_windows</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.data</span><span class="w"> </span><span class="kn">import</span> <span class="n">_prepare_rgb_tile</span>
+
+
+<span class="c1"># ---------------------------------------------------------------------------</span>
+<span class="c1"># Shared helpers</span>
+<span class="c1"># ---------------------------------------------------------------------------</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_pixel_box_to_polygon</span><span class="p">(</span><span class="n">affine</span><span class="p">,</span> <span class="n">tile_x0</span><span class="p">,</span> <span class="n">tile_y0</span><span class="p">,</span> <span class="n">x1</span><span class="p">,</span> <span class="n">y1</span><span class="p">,</span> <span class="n">x2</span><span class="p">,</span> <span class="n">y2</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Convert pixel-space corners on a tile to a CRS polygon.&quot;&quot;&quot;</span>
+    <span class="n">ul_x</span><span class="p">,</span> <span class="n">ul_y</span> <span class="o">=</span> <span class="n">affine</span> <span class="o">*</span> <span class="p">(</span><span class="n">tile_x0</span> <span class="o">+</span> <span class="n">x1</span><span class="p">,</span> <span class="n">tile_y0</span> <span class="o">+</span> <span class="n">y1</span><span class="p">)</span>
+    <span class="n">lr_x</span><span class="p">,</span> <span class="n">lr_y</span> <span class="o">=</span> <span class="n">affine</span> <span class="o">*</span> <span class="p">(</span><span class="n">tile_x0</span> <span class="o">+</span> <span class="n">x2</span><span class="p">,</span> <span class="n">tile_y0</span> <span class="o">+</span> <span class="n">y2</span><span class="p">)</span>
+    <span class="n">xmin</span><span class="p">,</span> <span class="n">xmax</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">((</span><span class="n">ul_x</span><span class="p">,</span> <span class="n">lr_x</span><span class="p">))</span>
+    <span class="n">ymin</span><span class="p">,</span> <span class="n">ymax</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">((</span><span class="n">ul_y</span><span class="p">,</span> <span class="n">lr_y</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">shapely_box</span><span class="p">(</span><span class="n">xmin</span><span class="p">,</span> <span class="n">ymin</span><span class="p">,</span> <span class="n">xmax</span><span class="p">,</span> <span class="n">ymax</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_pixel_quad_to_polygon</span><span class="p">(</span><span class="n">affine</span><span class="p">,</span> <span class="n">tile_x0</span><span class="p">,</span> <span class="n">tile_y0</span><span class="p">,</span> <span class="n">quad_xy</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Convert pixel-space (4,2) corner array on a tile to CRS polygon.&quot;&quot;&quot;</span>
+    <span class="n">coords</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="ow">in</span> <span class="n">quad_xy</span><span class="p">:</span>
+        <span class="n">cx</span><span class="p">,</span> <span class="n">cy</span> <span class="o">=</span> <span class="n">affine</span> <span class="o">*</span> <span class="p">(</span><span class="n">tile_x0</span> <span class="o">+</span> <span class="n">x</span><span class="p">,</span> <span class="n">tile_y0</span> <span class="o">+</span> <span class="n">y</span><span class="p">)</span>
+        <span class="n">coords</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">cx</span><span class="p">,</span> <span class="n">cy</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">Polygon</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_iou_geom</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;IoU between two shapely geometries (assumed in same CRS).&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">a</span><span class="o">.</span><span class="n">is_empty</span> <span class="ow">or</span> <span class="n">b</span><span class="o">.</span><span class="n">is_empty</span><span class="p">:</span>
+        <span class="k">return</span> <span class="mf">0.0</span>
+    <span class="n">inter</span> <span class="o">=</span> <span class="n">a</span><span class="o">.</span><span class="n">intersection</span><span class="p">(</span><span class="n">b</span><span class="p">)</span><span class="o">.</span><span class="n">area</span>
+    <span class="k">if</span> <span class="n">inter</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">return</span> <span class="mf">0.0</span>
+    <span class="n">union</span> <span class="o">=</span> <span class="n">a</span><span class="o">.</span><span class="n">area</span> <span class="o">+</span> <span class="n">b</span><span class="o">.</span><span class="n">area</span> <span class="o">-</span> <span class="n">inter</span>
+    <span class="k">return</span> <span class="n">inter</span> <span class="o">/</span> <span class="n">union</span> <span class="k">if</span> <span class="n">union</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="mf">0.0</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_nms_geodataframe</span><span class="p">(</span><span class="n">gdf</span><span class="p">,</span> <span class="n">iou_threshold</span><span class="o">=</span><span class="mf">0.5</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Greedy NMS across a GeoDataFrame, class-aware.</span>
+
+<span class="sd">    Expects columns: ``geometry``, ``score``, ``class_id``.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">gdf</span><span class="o">.</span><span class="n">empty</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">gdf</span>
+    <span class="n">keep_idx</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">cls_id</span><span class="p">,</span> <span class="n">sub</span> <span class="ow">in</span> <span class="n">gdf</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s1">&#39;class_id&#39;</span><span class="p">,</span> <span class="n">sort</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="n">sub</span> <span class="o">=</span> <span class="n">sub</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="s1">&#39;score&#39;</span><span class="p">,</span> <span class="n">ascending</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="n">kept_geoms</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">sub</span><span class="o">.</span><span class="n">iterrows</span><span class="p">():</span>
+            <span class="n">geom</span> <span class="o">=</span> <span class="n">row</span><span class="o">.</span><span class="n">geometry</span>
+            <span class="n">keep</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="k">for</span> <span class="n">kg</span> <span class="ow">in</span> <span class="n">kept_geoms</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">_iou_geom</span><span class="p">(</span><span class="n">geom</span><span class="p">,</span> <span class="n">kg</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">iou_threshold</span><span class="p">:</span>
+                    <span class="n">keep</span> <span class="o">=</span> <span class="kc">False</span>
+                    <span class="k">break</span>
+            <span class="k">if</span> <span class="n">keep</span><span class="p">:</span>
+                <span class="n">keep_idx</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">idx</span><span class="p">)</span>
+                <span class="n">kept_geoms</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">geom</span><span class="p">)</span>
+    <span class="n">out</span> <span class="o">=</span> <span class="n">gdf</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">keep_idx</span><span class="p">]</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span>
+        <span class="s1">&#39;score&#39;</span><span class="p">,</span> <span class="n">ascending</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="p">)</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">out</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_resolve_device</span><span class="p">(</span><span class="n">device</span><span class="p">):</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
+    <span class="k">except</span> <span class="ne">ImportError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ImportError</span><span class="p">(</span>
+            <span class="s2">&quot;Detectors require PyTorch. Install with &quot;</span>
+            <span class="s2">&quot;`pip install geowombat[detect]`.&quot;</span>
+        <span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span>
+    <span class="k">if</span> <span class="n">device</span> <span class="o">!=</span> <span class="s1">&#39;auto&#39;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">device</span>
+    <span class="k">if</span> <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">is_available</span><span class="p">():</span>
+        <span class="k">return</span> <span class="s1">&#39;cuda&#39;</span>
+    <span class="c1"># CPU fallback — but check if there&#39;s an NVIDIA GPU on the system</span>
+    <span class="c1"># that this torch build just can&#39;t see. That&#39;s almost always a</span>
+    <span class="c1"># CPU-only torch install; tell the user how to fix it.</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">shutil</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">subprocess</span>
+    <span class="k">if</span> <span class="n">shutil</span><span class="o">.</span><span class="n">which</span><span class="p">(</span><span class="s1">&#39;nvidia-smi&#39;</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">r</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span>
+                <span class="p">[</span><span class="s1">&#39;nvidia-smi&#39;</span><span class="p">,</span> <span class="s1">&#39;--query-gpu=name&#39;</span><span class="p">,</span> <span class="s1">&#39;--format=csv,noheader&#39;</span><span class="p">],</span>
+                <span class="n">capture_output</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="k">except</span> <span class="p">(</span><span class="n">subprocess</span><span class="o">.</span><span class="n">SubprocessError</span><span class="p">,</span> <span class="ne">OSError</span><span class="p">):</span>
+            <span class="n">r</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="n">r</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">r</span><span class="o">.</span><span class="n">returncode</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">r</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">strip</span><span class="p">():</span>
+            <span class="n">gpu_name</span> <span class="o">=</span> <span class="n">r</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">splitlines</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;geowombat: NVIDIA GPU detected (</span><span class="si">{</span><span class="n">gpu_name</span><span class="si">}</span><span class="s2">) but PyTorch &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;can&#39;t use it — falling back to CPU. You likely have a &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;CPU-only torch build. Install a CUDA build, e.g.:</span><span class="se">\n</span><span class="s2">&quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;  pip install torch --index-url &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;https://download.pytorch.org/whl/cu124</span><span class="se">\n</span><span class="s2">&quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;(see https://pytorch.org/get-started/locally/ for your &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;CUDA version).&quot;</span><span class="p">,</span>
+                <span class="ne">UserWarning</span><span class="p">,</span> <span class="n">stacklevel</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+            <span class="p">)</span>
+    <span class="k">return</span> <span class="s1">&#39;cpu&#39;</span>
+
+
+<span class="c1"># ---------------------------------------------------------------------------</span>
+<span class="c1"># Base class</span>
+<span class="c1"># ---------------------------------------------------------------------------</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">GeoWombatDetector</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Base class for geowombat object detectors.</span>
+
+<span class="sd">    Subclasses must implement ``_detect_tile(rgb_array)`` returning a</span>
+<span class="sd">    list of ``(x1, y1, x2, y2, score, class_id)`` tuples (axis-aligned)</span>
+<span class="sd">    or ``(quad_xy_array, score, class_id)`` for oriented boxes. They</span>
+<span class="sd">    should also set ``class_names`` (list[str]) and ``oriented`` (bool).</span>
+
+<span class="sd">    Subclasses can optionally override ``_detect_batch`` to run a list</span>
+<span class="sd">    of tiles through the underlying model in one call (much faster on</span>
+<span class="sd">    GPU, modestly faster on CPU). The default falls back to a per-tile</span>
+<span class="sd">    loop.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">class_names</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">oriented</span> <span class="o">=</span> <span class="kc">False</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_detect_tile</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rgb_array</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_detect_batch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rgb_list</span><span class="p">,</span> <span class="n">conf</span><span class="o">=</span><span class="mf">0.25</span><span class="p">,</span> <span class="n">max_det</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Default: per-tile loop. Override for true batched inference.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">[</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_detect_tile</span><span class="p">(</span><span class="n">rgb</span><span class="p">,</span> <span class="n">conf</span><span class="o">=</span><span class="n">conf</span><span class="p">,</span> <span class="n">max_det</span><span class="o">=</span><span class="n">max_det</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">rgb</span> <span class="ow">in</span> <span class="n">rgb_list</span>
+        <span class="p">]</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">predict</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">src</span><span class="p">,</span>
+        <span class="n">tile_size</span><span class="o">=</span><span class="mi">640</span><span class="p">,</span>
+        <span class="n">overlap</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span>
+        <span class="n">conf</span><span class="o">=</span><span class="mf">0.25</span><span class="p">,</span>
+        <span class="n">band_indices</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">scale</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">nms_iou</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span>
+        <span class="n">max_det</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">batch_size</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>
+        <span class="n">progress</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Run tiled, georeferenced inference over a raster.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        src : xarray.DataArray</span>
+<span class="sd">            Raster opened with ``gw.open()``.</span>
+<span class="sd">        tile_size : int</span>
+<span class="sd">            Square tile edge in pixels. Default 640.</span>
+<span class="sd">        overlap : float</span>
+<span class="sd">            Fractional overlap between adjacent tiles. Default 0.2.</span>
+<span class="sd">        conf : float</span>
+<span class="sd">            Confidence threshold for tile-level detections. Default 0.25.</span>
+<span class="sd">        band_indices : list of int, optional</span>
+<span class="sd">            Three band indices for R, G, B. See ``build_yolo_dataset``.</span>
+<span class="sd">        scale : tuple of (lo, hi), optional</span>
+<span class="sd">            Linear stretch before inference.</span>
+<span class="sd">        nms_iou : float</span>
+<span class="sd">            IoU threshold for cross-tile NMS. Default 0.5.</span>
+<span class="sd">        max_det : int, optional</span>
+<span class="sd">            Cap on detections per tile (passed to the underlying model</span>
+<span class="sd">            when supported). Default unlimited.</span>
+<span class="sd">        batch_size : int</span>
+<span class="sd">            Number of tiles sent through the model per inference call.</span>
+<span class="sd">            Larger batches keep the GPU busy and reduce per-tile Python</span>
+<span class="sd">            overhead. On CPU, modest batching also helps. Default 4.</span>
+<span class="sd">        progress : bool</span>
+<span class="sd">            Show a tqdm progress bar. Default False.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        geopandas.GeoDataFrame</span>
+<span class="sd">            One row per detection with columns ``geometry, class_id,</span>
+<span class="sd">            class_name, score, tile_id`` in the source CRS.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">affine</span> <span class="o">=</span> <span class="n">src</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">affine</span>
+        <span class="n">crs</span> <span class="o">=</span> <span class="n">src</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">crs_to_pyproj</span>
+        <span class="n">band_indices</span> <span class="o">=</span> <span class="n">resolve_band_indices</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="n">band_indices</span><span class="p">)</span>
+
+        <span class="n">tiles</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">overlapped_windows</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="n">tile_size</span><span class="p">,</span> <span class="n">overlap</span><span class="p">))</span>
+        <span class="n">iterator</span> <span class="o">=</span> <span class="n">tiles</span>
+        <span class="k">if</span> <span class="n">progress</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="kn">from</span><span class="w"> </span><span class="nn">tqdm</span><span class="w"> </span><span class="kn">import</span> <span class="n">tqdm</span>
+                <span class="n">iterator</span> <span class="o">=</span> <span class="n">tqdm</span><span class="p">(</span><span class="n">tiles</span><span class="p">,</span> <span class="n">desc</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+                <span class="k">pass</span>
+
+        <span class="n">records</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="c1"># Per-tile metadata buffered alongside the RGB array, so a flushed</span>
+        <span class="c1"># batch knows where each tile&#39;s detections belong in the source CRS.</span>
+        <span class="n">batch_rgbs</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">batch_meta</span> <span class="o">=</span> <span class="p">[]</span>  <span class="c1"># list of (tile_id, x0, y0, w_block, h_block)</span>
+
+        <span class="k">def</span><span class="w"> </span><span class="nf">_flush</span><span class="p">(</span><span class="n">rgbs</span><span class="p">,</span> <span class="n">meta</span><span class="p">):</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">rgbs</span><span class="p">:</span>
+                <span class="k">return</span>
+            <span class="n">batch_dets</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_detect_batch</span><span class="p">(</span>
+                <span class="n">rgbs</span><span class="p">,</span> <span class="n">conf</span><span class="o">=</span><span class="n">conf</span><span class="p">,</span> <span class="n">max_det</span><span class="o">=</span><span class="n">max_det</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="k">for</span> <span class="p">(</span><span class="n">tile_id</span><span class="p">,</span> <span class="n">x0</span><span class="p">,</span> <span class="n">y0</span><span class="p">,</span> <span class="n">w_block</span><span class="p">,</span> <span class="n">h_block</span><span class="p">),</span> <span class="n">dets</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span>
+                <span class="n">meta</span><span class="p">,</span> <span class="n">batch_dets</span><span class="p">,</span>
+            <span class="p">):</span>
+                <span class="k">for</span> <span class="n">det</span> <span class="ow">in</span> <span class="n">dets</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">oriented</span><span class="p">:</span>
+                        <span class="n">quad</span><span class="p">,</span> <span class="n">score</span><span class="p">,</span> <span class="n">cls_id</span> <span class="o">=</span> <span class="n">det</span>
+                        <span class="c1"># Reject detections whose center falls in padded</span>
+                        <span class="c1"># region (outside the true image footprint).</span>
+                        <span class="n">cx</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">quad</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]))</span>
+                        <span class="n">cy</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">quad</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]))</span>
+                        <span class="k">if</span> <span class="n">cx</span> <span class="o">&gt;</span> <span class="n">w_block</span> <span class="ow">or</span> <span class="n">cy</span> <span class="o">&gt;</span> <span class="n">h_block</span><span class="p">:</span>
+                            <span class="k">continue</span>
+                        <span class="n">geom</span> <span class="o">=</span> <span class="n">_pixel_quad_to_polygon</span><span class="p">(</span>
+                            <span class="n">affine</span><span class="p">,</span> <span class="n">x0</span><span class="p">,</span> <span class="n">y0</span><span class="p">,</span> <span class="n">quad</span><span class="p">,</span>
+                        <span class="p">)</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">bx1</span><span class="p">,</span> <span class="n">by1</span><span class="p">,</span> <span class="n">bx2</span><span class="p">,</span> <span class="n">by2</span><span class="p">,</span> <span class="n">score</span><span class="p">,</span> <span class="n">cls_id</span> <span class="o">=</span> <span class="n">det</span>
+                        <span class="n">cx</span> <span class="o">=</span> <span class="p">(</span><span class="n">bx1</span> <span class="o">+</span> <span class="n">bx2</span><span class="p">)</span> <span class="o">/</span> <span class="mf">2.0</span>
+                        <span class="n">cy</span> <span class="o">=</span> <span class="p">(</span><span class="n">by1</span> <span class="o">+</span> <span class="n">by2</span><span class="p">)</span> <span class="o">/</span> <span class="mf">2.0</span>
+                        <span class="k">if</span> <span class="n">cx</span> <span class="o">&gt;</span> <span class="n">w_block</span> <span class="ow">or</span> <span class="n">cy</span> <span class="o">&gt;</span> <span class="n">h_block</span><span class="p">:</span>
+                            <span class="k">continue</span>
+                        <span class="n">geom</span> <span class="o">=</span> <span class="n">_pixel_box_to_polygon</span><span class="p">(</span>
+                            <span class="n">affine</span><span class="p">,</span> <span class="n">x0</span><span class="p">,</span> <span class="n">y0</span><span class="p">,</span> <span class="n">bx1</span><span class="p">,</span> <span class="n">by1</span><span class="p">,</span> <span class="n">bx2</span><span class="p">,</span> <span class="n">by2</span><span class="p">,</span>
+                        <span class="p">)</span>
+
+                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">class_names</span> <span class="ow">and</span> <span class="n">cls_id</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">class_names</span><span class="p">):</span>
+                        <span class="n">name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">class_names</span><span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">cls_id</span><span class="p">)]</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">name</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">cls_id</span><span class="p">))</span>
+
+                    <span class="n">records</span><span class="o">.</span><span class="n">append</span><span class="p">({</span>
+                        <span class="s1">&#39;geometry&#39;</span><span class="p">:</span> <span class="n">geom</span><span class="p">,</span>
+                        <span class="s1">&#39;class_id&#39;</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">cls_id</span><span class="p">),</span>
+                        <span class="s1">&#39;class_name&#39;</span><span class="p">:</span> <span class="n">name</span><span class="p">,</span>
+                        <span class="s1">&#39;score&#39;</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">score</span><span class="p">),</span>
+                        <span class="s1">&#39;tile_id&#39;</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">tile_id</span><span class="p">),</span>
+                    <span class="p">})</span>
+
+        <span class="k">for</span> <span class="n">tile_id</span><span class="p">,</span> <span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">win</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">iterator</span><span class="p">):</span>
+            <span class="n">y0</span> <span class="o">=</span> <span class="n">win</span><span class="o">.</span><span class="n">row_off</span>
+            <span class="n">x0</span> <span class="o">=</span> <span class="n">win</span><span class="o">.</span><span class="n">col_off</span>
+            <span class="n">y1</span> <span class="o">=</span> <span class="n">y0</span> <span class="o">+</span> <span class="n">win</span><span class="o">.</span><span class="n">height</span>
+            <span class="n">x1</span> <span class="o">=</span> <span class="n">x0</span> <span class="o">+</span> <span class="n">win</span><span class="o">.</span><span class="n">width</span>
+            <span class="n">block</span> <span class="o">=</span> <span class="n">src</span><span class="o">.</span><span class="n">isel</span><span class="p">(</span>
+                <span class="n">y</span><span class="o">=</span><span class="nb">slice</span><span class="p">(</span><span class="n">y0</span><span class="p">,</span> <span class="n">y1</span><span class="p">),</span> <span class="n">x</span><span class="o">=</span><span class="nb">slice</span><span class="p">(</span><span class="n">x0</span><span class="p">,</span> <span class="n">x1</span><span class="p">),</span>
+            <span class="p">)</span><span class="o">.</span><span class="n">values</span>
+            <span class="k">if</span> <span class="n">block</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">4</span><span class="p">:</span>
+                <span class="n">block</span> <span class="o">=</span> <span class="n">block</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+            <span class="n">h_block</span><span class="p">,</span> <span class="n">w_block</span> <span class="o">=</span> <span class="n">block</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">block</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+            <span class="n">pad_h</span> <span class="o">=</span> <span class="n">tile_size</span> <span class="o">-</span> <span class="n">h_block</span>
+            <span class="n">pad_w</span> <span class="o">=</span> <span class="n">tile_size</span> <span class="o">-</span> <span class="n">w_block</span>
+            <span class="k">if</span> <span class="n">pad_h</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">pad_w</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">padded</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span>
+                    <span class="p">(</span><span class="n">block</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">tile_size</span><span class="p">,</span> <span class="n">tile_size</span><span class="p">),</span>
+                    <span class="n">dtype</span><span class="o">=</span><span class="n">block</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span>
+                <span class="p">)</span>
+                <span class="n">padded</span><span class="p">[:,</span> <span class="p">:</span><span class="n">h_block</span><span class="p">,</span> <span class="p">:</span><span class="n">w_block</span><span class="p">]</span> <span class="o">=</span> <span class="n">block</span>
+                <span class="n">block</span> <span class="o">=</span> <span class="n">padded</span>
+
+            <span class="n">rgb</span> <span class="o">=</span> <span class="n">_prepare_rgb_tile</span><span class="p">(</span><span class="n">block</span><span class="p">,</span> <span class="n">band_indices</span><span class="p">,</span> <span class="n">scale</span><span class="p">)</span>
+
+            <span class="n">batch_rgbs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">rgb</span><span class="p">)</span>
+            <span class="n">batch_meta</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">tile_id</span><span class="p">,</span> <span class="n">x0</span><span class="p">,</span> <span class="n">y0</span><span class="p">,</span> <span class="n">w_block</span><span class="p">,</span> <span class="n">h_block</span><span class="p">))</span>
+
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">batch_rgbs</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="n">batch_size</span><span class="p">:</span>
+                <span class="n">_flush</span><span class="p">(</span><span class="n">batch_rgbs</span><span class="p">,</span> <span class="n">batch_meta</span><span class="p">)</span>
+                <span class="n">batch_rgbs</span><span class="p">,</span> <span class="n">batch_meta</span> <span class="o">=</span> <span class="p">[],</span> <span class="p">[]</span>
+
+        <span class="n">_flush</span><span class="p">(</span><span class="n">batch_rgbs</span><span class="p">,</span> <span class="n">batch_meta</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">records</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">gpd</span><span class="o">.</span><span class="n">GeoDataFrame</span><span class="p">(</span>
+                <span class="p">{</span>
+                    <span class="s1">&#39;geometry&#39;</span><span class="p">:</span> <span class="n">gpd</span><span class="o">.</span><span class="n">GeoSeries</span><span class="p">([],</span> <span class="n">crs</span><span class="o">=</span><span class="n">crs</span><span class="p">),</span>
+                    <span class="s1">&#39;class_id&#39;</span><span class="p">:</span> <span class="p">[],</span>
+                    <span class="s1">&#39;class_name&#39;</span><span class="p">:</span> <span class="p">[],</span>
+                    <span class="s1">&#39;score&#39;</span><span class="p">:</span> <span class="p">[],</span>
+                    <span class="s1">&#39;tile_id&#39;</span><span class="p">:</span> <span class="p">[],</span>
+                <span class="p">},</span>
+                <span class="n">geometry</span><span class="o">=</span><span class="s1">&#39;geometry&#39;</span><span class="p">,</span> <span class="n">crs</span><span class="o">=</span><span class="n">crs</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="n">gdf</span> <span class="o">=</span> <span class="n">gpd</span><span class="o">.</span><span class="n">GeoDataFrame</span><span class="p">(</span><span class="n">records</span><span class="p">,</span> <span class="n">geometry</span><span class="o">=</span><span class="s1">&#39;geometry&#39;</span><span class="p">,</span> <span class="n">crs</span><span class="o">=</span><span class="n">crs</span><span class="p">)</span>
+        <span class="n">gdf</span> <span class="o">=</span> <span class="n">_nms_geodataframe</span><span class="p">(</span><span class="n">gdf</span><span class="p">,</span> <span class="n">iou_threshold</span><span class="o">=</span><span class="n">nms_iou</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">gdf</span>
+
+
+<span class="c1"># ---------------------------------------------------------------------------</span>
+<span class="c1"># YOLO (Ultralytics)</span>
+<span class="c1"># ---------------------------------------------------------------------------</span>
+
+<div class="viewcode-block" id="YOLODetector"><a class="viewcode-back" href="../../../api/geowombat.detect.YOLODetector.html#geowombat.detect.YOLODetector">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">YOLODetector</span><span class="p">(</span><span class="n">GeoWombatDetector</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Ultralytics YOLO detector for georeferenced rasters.</span>
+
+<span class="sd">    Supports axis-aligned (default) and oriented bounding boxes. The</span>
+<span class="sd">    underlying model is any path accepted by ``ultralytics.YOLO`` —</span>
+<span class="sd">    pretrained weights (&#39;yolov8n.pt&#39;, &#39;yolo11n.pt&#39;, &#39;yolov8n-obb.pt&#39;)</span>
+<span class="sd">    or a custom-trained checkpoint.</span>
+
+<span class="sd">    NOTE: Ultralytics is licensed AGPL-3.0; ensure your use case is</span>
+<span class="sd">    compatible before deploying.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    weights : str or Path</span>
+<span class="sd">        YOLO weights file. Default &#39;yolov8n.pt&#39;.</span>
+<span class="sd">    classes : list of str, optional</span>
+<span class="sd">        Override class names. If None, names come from the model.</span>
+<span class="sd">    oriented : bool</span>
+<span class="sd">        Set to True when using an OBB weight (file ends in ``-obb.pt``).</span>
+<span class="sd">        Auto-detected from the filename if not specified.</span>
+<span class="sd">    device : str</span>
+<span class="sd">        &#39;cpu&#39;, &#39;cuda&#39;, or &#39;auto&#39;. Default &#39;auto&#39;.</span>
+<span class="sd">    imgsz : int</span>
+<span class="sd">        Inference size passed to YOLO. Default matches ``tile_size`` in</span>
+<span class="sd">        ``predict()``.</span>
+
+<span class="sd">    Example</span>
+<span class="sd">    -------</span>
+<span class="sd">    &gt;&gt;&gt; det = YOLODetector(weights=&#39;yolov8n-obb.pt&#39;, oriented=True)</span>
+<span class="sd">    &gt;&gt;&gt; with gw.open(&#39;aerial.tif&#39;) as src:</span>
+<span class="sd">    ...     gdf = det.predict(src, conf=0.3)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">weights</span><span class="o">=</span><span class="s1">&#39;yolov8n.pt&#39;</span><span class="p">,</span> <span class="n">classes</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">oriented</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">device</span><span class="o">=</span><span class="s1">&#39;auto&#39;</span><span class="p">,</span> <span class="n">imgsz</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="kn">from</span><span class="w"> </span><span class="nn">ultralytics</span><span class="w"> </span><span class="kn">import</span> <span class="n">YOLO</span>
+        <span class="k">except</span> <span class="ne">ImportError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ImportError</span><span class="p">(</span>
+                <span class="s2">&quot;YOLODetector requires ultralytics. &quot;</span>
+                <span class="s2">&quot;Install with: pip install geowombat[detect]&quot;</span>
+            <span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">weights</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">weights</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">device</span> <span class="o">=</span> <span class="n">_resolve_device</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">imgsz</span> <span class="o">=</span> <span class="n">imgsz</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_model</span> <span class="o">=</span> <span class="n">YOLO</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">weights</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_model</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="k">pass</span>
+
+        <span class="k">if</span> <span class="n">oriented</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">stem</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">weights</span><span class="p">)</span><span class="o">.</span><span class="n">stem</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+            <span class="n">oriented</span> <span class="o">=</span> <span class="s1">&#39;obb&#39;</span> <span class="ow">in</span> <span class="n">stem</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">oriented</span> <span class="o">=</span> <span class="nb">bool</span><span class="p">(</span><span class="n">oriented</span><span class="p">)</span>
+
+        <span class="n">model_names</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_model</span><span class="p">,</span> <span class="s1">&#39;names&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">or</span> <span class="p">{}</span>
+        <span class="k">if</span> <span class="n">classes</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">class_names</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">classes</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">model_names</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+            <span class="n">ordered</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">model_names</span><span class="o">.</span><span class="n">items</span><span class="p">(),</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">kv</span><span class="p">:</span> <span class="n">kv</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">class_names</span> <span class="o">=</span> <span class="p">[</span><span class="n">v</span> <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">ordered</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">class_names</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">model_names</span><span class="p">)</span>
+
+<div class="viewcode-block" id="YOLODetector.fit"><a class="viewcode-back" href="../../../api/geowombat.detect.YOLODetector.html#geowombat.detect.YOLODetector.fit">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dataset_yaml</span><span class="p">,</span> <span class="n">epochs</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span> <span class="n">imgsz</span><span class="o">=</span><span class="mi">640</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Fine-tune YOLO on a dataset produced by ``build_yolo_dataset``.</span>
+
+<span class="sd">        Thin wrapper around ``ultralytics.YOLO.train``.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        dataset_yaml : str or Path</span>
+<span class="sd">            Path to ``data.yaml`` written by ``build_yolo_dataset``.</span>
+<span class="sd">        epochs : int</span>
+<span class="sd">            Training epochs. Default 50.</span>
+<span class="sd">        imgsz : int</span>
+<span class="sd">            Training image size. Default 640.</span>
+<span class="sd">        **kwargs</span>
+<span class="sd">            Additional kwargs forwarded to ``YOLO.train``.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">results</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_model</span><span class="o">.</span><span class="n">train</span><span class="p">(</span>
+            <span class="n">data</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">dataset_yaml</span><span class="p">),</span>
+            <span class="n">epochs</span><span class="o">=</span><span class="n">epochs</span><span class="p">,</span>
+            <span class="n">imgsz</span><span class="o">=</span><span class="n">imgsz</span><span class="p">,</span>
+            <span class="n">device</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">,</span>
+            <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="c1"># Refresh class names if the model was retrained with new ones</span>
+        <span class="n">model_names</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_model</span><span class="p">,</span> <span class="s1">&#39;names&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">or</span> <span class="p">{}</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">model_names</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+            <span class="n">ordered</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">model_names</span><span class="o">.</span><span class="n">items</span><span class="p">(),</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">kv</span><span class="p">:</span> <span class="n">kv</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">class_names</span> <span class="o">=</span> <span class="p">[</span><span class="n">v</span> <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">ordered</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">results</span></div>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_result_to_dets</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">r</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Convert a single ultralytics ``Results`` object to our tuple list.&quot;&quot;&quot;</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">oriented</span> <span class="ow">and</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="s1">&#39;obb&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">obb</span> <span class="o">=</span> <span class="n">r</span><span class="o">.</span><span class="n">obb</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">xyxyxyxy</span> <span class="o">=</span> <span class="n">obb</span><span class="o">.</span><span class="n">xyxyxyxy</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>  <span class="c1"># (N, 4, 2)</span>
+                <span class="n">confs</span> <span class="o">=</span> <span class="n">obb</span><span class="o">.</span><span class="n">conf</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
+                <span class="n">clses</span> <span class="o">=</span> <span class="n">obb</span><span class="o">.</span><span class="n">cls</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
+                <span class="k">return</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">quad</span><span class="p">,</span> <span class="n">score</span><span class="p">,</span> <span class="n">cls_id</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">xyxyxyxy</span><span class="p">,</span> <span class="n">confs</span><span class="p">,</span> <span class="n">clses</span><span class="p">):</span>
+                <span class="n">out</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">quad</span><span class="p">),</span> <span class="nb">float</span><span class="p">(</span><span class="n">score</span><span class="p">),</span> <span class="nb">int</span><span class="p">(</span><span class="n">cls_id</span><span class="p">)))</span>
+            <span class="k">return</span> <span class="n">out</span>
+
+        <span class="n">boxes</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="s1">&#39;boxes&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">boxes</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">boxes</span><span class="o">.</span><span class="n">xyxy</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">[]</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">xyxy</span> <span class="o">=</span> <span class="n">boxes</span><span class="o">.</span><span class="n">xyxy</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
+            <span class="n">confs</span> <span class="o">=</span> <span class="n">boxes</span><span class="o">.</span><span class="n">conf</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
+            <span class="n">clses</span> <span class="o">=</span> <span class="n">boxes</span><span class="o">.</span><span class="n">cls</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="p">(</span><span class="n">x1</span><span class="p">,</span> <span class="n">y1</span><span class="p">,</span> <span class="n">x2</span><span class="p">,</span> <span class="n">y2</span><span class="p">),</span> <span class="n">score</span><span class="p">,</span> <span class="n">cls_id</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">xyxy</span><span class="p">,</span> <span class="n">confs</span><span class="p">,</span> <span class="n">clses</span><span class="p">):</span>
+            <span class="n">out</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">x1</span><span class="p">),</span> <span class="nb">float</span><span class="p">(</span><span class="n">y1</span><span class="p">),</span> <span class="nb">float</span><span class="p">(</span><span class="n">x2</span><span class="p">),</span> <span class="nb">float</span><span class="p">(</span><span class="n">y2</span><span class="p">),</span>
+                 <span class="nb">float</span><span class="p">(</span><span class="n">score</span><span class="p">),</span> <span class="nb">int</span><span class="p">(</span><span class="n">cls_id</span><span class="p">))</span>
+            <span class="p">)</span>
+        <span class="k">return</span> <span class="n">out</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_detect_tile</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rgb_array</span><span class="p">,</span> <span class="n">conf</span><span class="o">=</span><span class="mf">0.25</span><span class="p">,</span> <span class="n">max_det</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="c1"># Single-image path for backwards compatibility. The batched</span>
+        <span class="c1"># path in `predict()` goes through `_detect_batch` instead.</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_detect_batch</span><span class="p">(</span>
+            <span class="p">[</span><span class="n">rgb_array</span><span class="p">],</span> <span class="n">conf</span><span class="o">=</span><span class="n">conf</span><span class="p">,</span> <span class="n">max_det</span><span class="o">=</span><span class="n">max_det</span><span class="p">,</span>
+        <span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_detect_batch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rgb_list</span><span class="p">,</span> <span class="n">conf</span><span class="o">=</span><span class="mf">0.25</span><span class="p">,</span> <span class="n">max_det</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">rgb_list</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">[]</span>
+        <span class="n">imgsz</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">imgsz</span> <span class="ow">or</span> <span class="nb">max</span><span class="p">(</span>
+            <span class="n">rgb_list</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">rgb_list</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
+        <span class="p">)</span>
+        <span class="n">predict_kwargs</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
+            <span class="n">source</span><span class="o">=</span><span class="n">rgb_list</span><span class="p">,</span>    <span class="c1"># Ultralytics natively batches a list of arrays</span>
+            <span class="n">conf</span><span class="o">=</span><span class="n">conf</span><span class="p">,</span>
+            <span class="n">imgsz</span><span class="o">=</span><span class="n">imgsz</span><span class="p">,</span>
+            <span class="n">device</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">,</span>
+            <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="n">max_det</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">predict_kwargs</span><span class="p">[</span><span class="s1">&#39;max_det&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">max_det</span><span class="p">)</span>
+        <span class="n">results</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="o">**</span><span class="n">predict_kwargs</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">results</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">[[]</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">rgb_list</span><span class="p">]</span>
+        <span class="c1"># Ultralytics returns one Results per input image when given a list.</span>
+        <span class="k">return</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_result_to_dets</span><span class="p">(</span><span class="n">r</span><span class="p">)</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">results</span><span class="p">]</span></div>
+
+
+<span class="c1"># ---------------------------------------------------------------------------</span>
+<span class="c1"># TorchGeo detection wrapper</span>
+<span class="c1"># ---------------------------------------------------------------------------</span>
+
+<div class="viewcode-block" id="TorchGeoDetector"><a class="viewcode-back" href="../../../api/geowombat.detect.TorchGeoDetector.html#geowombat.detect.TorchGeoDetector">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">TorchGeoDetector</span><span class="p">(</span><span class="n">GeoWombatDetector</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Detection wrapper around TorchGeo / torchvision detection models.</span>
+
+<span class="sd">    Supports Faster R-CNN and RetinaNet via torchvision with optional</span>
+<span class="sd">    pretrained weights from TorchGeo (e.g. xView). Axis-aligned only.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    model : {&#39;faster-rcnn&#39;, &#39;retinanet&#39;}</span>
+<span class="sd">        Detection head. Default &#39;faster-rcnn&#39;.</span>
+<span class="sd">    weights : str, optional</span>
+<span class="sd">        TorchGeo weights enum string (e.g. &#39;FCN_RESNET50_XVIEW&#39;) or path</span>
+<span class="sd">        to a state dict. If None, uses torchvision COCO pretrained.</span>
+<span class="sd">    num_classes : int, optional</span>
+<span class="sd">        Number of classes including background. Required when loading</span>
+<span class="sd">        a custom-trained checkpoint.</span>
+<span class="sd">    classes : list of str, optional</span>
+<span class="sd">        Class names corresponding to non-background ids 1..N.</span>
+<span class="sd">    device : str</span>
+<span class="sd">        &#39;cpu&#39;, &#39;cuda&#39;, or &#39;auto&#39;. Default &#39;auto&#39;.</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    For aerial / satellite imagery, the most useful TorchGeo weights</span>
+<span class="sd">    are typically &#39;FASTERRCNN_RESNET50_FPN_XVIEW&#39; (when available in</span>
+<span class="sd">    your TorchGeo version). Check ``torchgeo.models`` for the current</span>
+<span class="sd">    catalogue.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">oriented</span> <span class="o">=</span> <span class="kc">False</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="s1">&#39;faster-rcnn&#39;</span><span class="p">,</span> <span class="n">weights</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">num_classes</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">classes</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="s1">&#39;auto&#39;</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
+            <span class="kn">import</span><span class="w"> </span><span class="nn">torchvision</span>
+            <span class="kn">from</span><span class="w"> </span><span class="nn">torchvision.models.detection</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+                <span class="n">fasterrcnn_resnet50_fpn</span><span class="p">,</span>
+                <span class="n">retinanet_resnet50_fpn</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="k">except</span> <span class="ne">ImportError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ImportError</span><span class="p">(</span>
+                <span class="s2">&quot;TorchGeoDetector requires torch + torchvision. &quot;</span>
+                <span class="s2">&quot;Install with: pip install geowombat[dl,detect]&quot;</span>
+            <span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_torch</span> <span class="o">=</span> <span class="n">torch</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">device</span> <span class="o">=</span> <span class="n">_resolve_device</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model_name</span> <span class="o">=</span> <span class="n">model</span>
+
+        <span class="n">torchgeo_weights</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">state_dict_path</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">weights</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="c1"># Try TorchGeo enum first; fall back to a file path.</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="kn">import</span><span class="w"> </span><span class="nn">torchgeo.models</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">tgm</span>
+                <span class="n">enum_name</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">member</span> <span class="o">=</span> <span class="n">weights</span><span class="o">.</span><span class="n">partition</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">)</span>
+                <span class="n">wenum</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">tgm</span><span class="p">,</span> <span class="n">enum_name</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">wenum</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">member</span><span class="p">:</span>
+                    <span class="n">torchgeo_weights</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">wenum</span><span class="p">,</span> <span class="n">member</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+                <span class="k">elif</span> <span class="n">wenum</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">torchgeo_weights</span> <span class="o">=</span> <span class="n">wenum</span>
+            <span class="k">except</span> <span class="p">(</span><span class="ne">ImportError</span><span class="p">,</span> <span class="ne">AttributeError</span><span class="p">):</span>
+                <span class="n">torchgeo_weights</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="k">if</span> <span class="n">torchgeo_weights</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">Path</span><span class="p">(</span><span class="n">weights</span><span class="p">)</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+                <span class="n">state_dict_path</span> <span class="o">=</span> <span class="n">weights</span>
+
+        <span class="k">if</span> <span class="n">model</span> <span class="o">==</span> <span class="s1">&#39;faster-rcnn&#39;</span><span class="p">:</span>
+            <span class="n">net</span> <span class="o">=</span> <span class="n">fasterrcnn_resnet50_fpn</span><span class="p">(</span>
+                <span class="n">weights</span><span class="o">=</span><span class="s1">&#39;DEFAULT&#39;</span> <span class="k">if</span> <span class="p">(</span><span class="n">torchgeo_weights</span> <span class="ow">is</span> <span class="kc">None</span>
+                                      <span class="ow">and</span> <span class="n">state_dict_path</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)</span>
+                <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+                <span class="n">num_classes</span><span class="o">=</span><span class="n">num_classes</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="k">elif</span> <span class="n">model</span> <span class="o">==</span> <span class="s1">&#39;retinanet&#39;</span><span class="p">:</span>
+            <span class="n">net</span> <span class="o">=</span> <span class="n">retinanet_resnet50_fpn</span><span class="p">(</span>
+                <span class="n">weights</span><span class="o">=</span><span class="s1">&#39;DEFAULT&#39;</span> <span class="k">if</span> <span class="p">(</span><span class="n">torchgeo_weights</span> <span class="ow">is</span> <span class="kc">None</span>
+                                      <span class="ow">and</span> <span class="n">state_dict_path</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)</span>
+                <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+                <span class="n">num_classes</span><span class="o">=</span><span class="n">num_classes</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Unknown model &#39;</span><span class="si">{</span><span class="n">model</span><span class="si">}</span><span class="s2">&#39;. Use &#39;faster-rcnn&#39; or &#39;retinanet&#39;.&quot;</span>
+            <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">torchgeo_weights</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">state</span> <span class="o">=</span> <span class="n">torchgeo_weights</span><span class="o">.</span><span class="n">get_state_dict</span><span class="p">(</span><span class="n">progress</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                <span class="n">net</span><span class="o">.</span><span class="n">load_state_dict</span><span class="p">(</span><span class="n">state</span><span class="p">,</span> <span class="n">strict</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;Could not load TorchGeo weights &#39;</span><span class="si">{</span><span class="n">weights</span><span class="si">}</span><span class="s2">&#39;: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">. &quot;</span>
+                    <span class="s2">&quot;Falling back to torchvision defaults.&quot;</span>
+                <span class="p">)</span>
+        <span class="k">elif</span> <span class="n">state_dict_path</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">state</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">state_dict_path</span><span class="p">,</span> <span class="n">map_location</span><span class="o">=</span><span class="s1">&#39;cpu&#39;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">state</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span> <span class="ow">and</span> <span class="s1">&#39;state_dict&#39;</span> <span class="ow">in</span> <span class="n">state</span><span class="p">:</span>
+                <span class="n">state</span> <span class="o">=</span> <span class="n">state</span><span class="p">[</span><span class="s1">&#39;state_dict&#39;</span><span class="p">]</span>
+            <span class="n">net</span><span class="o">.</span><span class="n">load_state_dict</span><span class="p">(</span><span class="n">state</span><span class="p">,</span> <span class="n">strict</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_model</span> <span class="o">=</span> <span class="n">net</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">)</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="n">classes</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">class_names</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">classes</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># COCO defaults if using torchvision weights</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">class_names</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_coco_names</span><span class="p">()</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_coco_names</span><span class="p">():</span>
+        <span class="k">return</span> <span class="p">[</span>
+            <span class="s1">&#39;background&#39;</span><span class="p">,</span> <span class="s1">&#39;person&#39;</span><span class="p">,</span> <span class="s1">&#39;bicycle&#39;</span><span class="p">,</span> <span class="s1">&#39;car&#39;</span><span class="p">,</span> <span class="s1">&#39;motorcycle&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;airplane&#39;</span><span class="p">,</span> <span class="s1">&#39;bus&#39;</span><span class="p">,</span> <span class="s1">&#39;train&#39;</span><span class="p">,</span> <span class="s1">&#39;truck&#39;</span><span class="p">,</span> <span class="s1">&#39;boat&#39;</span><span class="p">,</span> <span class="s1">&#39;traffic light&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;fire hydrant&#39;</span><span class="p">,</span> <span class="s1">&#39;street sign&#39;</span><span class="p">,</span> <span class="s1">&#39;stop sign&#39;</span><span class="p">,</span> <span class="s1">&#39;parking meter&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;bench&#39;</span><span class="p">,</span> <span class="s1">&#39;bird&#39;</span><span class="p">,</span> <span class="s1">&#39;cat&#39;</span><span class="p">,</span> <span class="s1">&#39;dog&#39;</span><span class="p">,</span> <span class="s1">&#39;horse&#39;</span><span class="p">,</span> <span class="s1">&#39;sheep&#39;</span><span class="p">,</span> <span class="s1">&#39;cow&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;elephant&#39;</span><span class="p">,</span> <span class="s1">&#39;bear&#39;</span><span class="p">,</span> <span class="s1">&#39;zebra&#39;</span><span class="p">,</span> <span class="s1">&#39;giraffe&#39;</span><span class="p">,</span>
+        <span class="p">]</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_output_to_dets</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">out</span><span class="p">,</span> <span class="n">conf</span><span class="o">=</span><span class="mf">0.25</span><span class="p">,</span> <span class="n">max_det</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Convert a single torchvision detection output to tuple list.&quot;&quot;&quot;</span>
+        <span class="n">boxes</span> <span class="o">=</span> <span class="n">out</span><span class="p">[</span><span class="s1">&#39;boxes&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
+        <span class="n">scores</span> <span class="o">=</span> <span class="n">out</span><span class="p">[</span><span class="s1">&#39;scores&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
+        <span class="n">labels</span> <span class="o">=</span> <span class="n">out</span><span class="p">[</span><span class="s1">&#39;labels&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+
+        <span class="n">keep</span> <span class="o">=</span> <span class="n">scores</span> <span class="o">&gt;=</span> <span class="n">conf</span>
+        <span class="n">boxes</span> <span class="o">=</span> <span class="n">boxes</span><span class="p">[</span><span class="n">keep</span><span class="p">]</span>
+        <span class="n">scores</span> <span class="o">=</span> <span class="n">scores</span><span class="p">[</span><span class="n">keep</span><span class="p">]</span>
+        <span class="n">labels</span> <span class="o">=</span> <span class="n">labels</span><span class="p">[</span><span class="n">keep</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="n">max_det</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">scores</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">max_det</span><span class="p">:</span>
+            <span class="n">order</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argsort</span><span class="p">(</span><span class="o">-</span><span class="n">scores</span><span class="p">)[:</span><span class="n">max_det</span><span class="p">]</span>
+            <span class="n">boxes</span> <span class="o">=</span> <span class="n">boxes</span><span class="p">[</span><span class="n">order</span><span class="p">]</span>
+            <span class="n">scores</span> <span class="o">=</span> <span class="n">scores</span><span class="p">[</span><span class="n">order</span><span class="p">]</span>
+            <span class="n">labels</span> <span class="o">=</span> <span class="n">labels</span><span class="p">[</span><span class="n">order</span><span class="p">]</span>
+
+        <span class="k">return</span> <span class="p">[</span>
+            <span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">b</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="nb">float</span><span class="p">(</span><span class="n">b</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span> <span class="nb">float</span><span class="p">(</span><span class="n">b</span><span class="p">[</span><span class="mi">2</span><span class="p">]),</span> <span class="nb">float</span><span class="p">(</span><span class="n">b</span><span class="p">[</span><span class="mi">3</span><span class="p">]),</span>
+             <span class="nb">float</span><span class="p">(</span><span class="n">s</span><span class="p">),</span> <span class="nb">int</span><span class="p">(</span><span class="n">c</span><span class="p">))</span>
+            <span class="k">for</span> <span class="n">b</span><span class="p">,</span> <span class="n">s</span><span class="p">,</span> <span class="n">c</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">boxes</span><span class="p">,</span> <span class="n">scores</span><span class="p">,</span> <span class="n">labels</span><span class="p">)</span>
+        <span class="p">]</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_detect_tile</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rgb_array</span><span class="p">,</span> <span class="n">conf</span><span class="o">=</span><span class="mf">0.25</span><span class="p">,</span> <span class="n">max_det</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_detect_batch</span><span class="p">(</span>
+            <span class="p">[</span><span class="n">rgb_array</span><span class="p">],</span> <span class="n">conf</span><span class="o">=</span><span class="n">conf</span><span class="p">,</span> <span class="n">max_det</span><span class="o">=</span><span class="n">max_det</span><span class="p">,</span>
+        <span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_detect_batch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rgb_list</span><span class="p">,</span> <span class="n">conf</span><span class="o">=</span><span class="mf">0.25</span><span class="p">,</span> <span class="n">max_det</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">rgb_list</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">[]</span>
+        <span class="n">torch</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_torch</span>
+        <span class="c1"># (H, W, 3) uint8 → (3, H, W) float [0, 1], moved to device</span>
+        <span class="n">tensors</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">from_numpy</span><span class="p">(</span><span class="n">rgb</span><span class="p">)</span><span class="o">.</span><span class="n">float</span><span class="p">()</span><span class="o">.</span><span class="n">permute</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="mf">255.0</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="k">for</span> <span class="n">rgb</span> <span class="ow">in</span> <span class="n">rgb_list</span>
+        <span class="p">]</span>
+        <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">():</span>
+            <span class="n">outputs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_model</span><span class="p">(</span><span class="n">tensors</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">[</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_output_to_dets</span><span class="p">(</span><span class="n">o</span><span class="p">,</span> <span class="n">conf</span><span class="o">=</span><span class="n">conf</span><span class="p">,</span> <span class="n">max_det</span><span class="o">=</span><span class="n">max_det</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">o</span> <span class="ow">in</span> <span class="n">outputs</span>
+        <span class="p">]</span></div>
+
+
+<span class="c1"># ---------------------------------------------------------------------------</span>
+<span class="c1"># SAM refinement</span>
+<span class="c1"># ---------------------------------------------------------------------------</span>
+
+<div class="viewcode-block" id="SAMRefiner"><a class="viewcode-back" href="../../../api/geowombat.detect.SAMRefiner.html#geowombat.detect.SAMRefiner">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">SAMRefiner</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Refine bounding-box detections into polygons using SAM.</span>
+
+<span class="sd">    Each input box is used as a prompt to the Segment Anything model</span>
+<span class="sd">    (or SAM2 if installed) to produce a precise polygon mask, then</span>
+<span class="sd">    polygonized back into vector geometry in the source CRS.</span>
+
+<span class="sd">    Requires: ``pip install geowombat[sam]``</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    checkpoint : str or Path</span>
+<span class="sd">        Path to a SAM checkpoint (``sam_vit_b.pth``, etc).</span>
+<span class="sd">    model_type : {&#39;vit_b&#39;, &#39;vit_l&#39;, &#39;vit_h&#39;}</span>
+<span class="sd">        SAM backbone size. Default &#39;vit_b&#39;.</span>
+<span class="sd">    device : str</span>
+<span class="sd">        &#39;cpu&#39;, &#39;cuda&#39;, or &#39;auto&#39;. Default &#39;auto&#39;.</span>
+
+<span class="sd">    Example</span>
+<span class="sd">    -------</span>
+<span class="sd">    &gt;&gt;&gt; ref = SAMRefiner(checkpoint=&#39;sam_vit_b.pth&#39;)</span>
+<span class="sd">    &gt;&gt;&gt; polys = ref.refine(src, boxes_gdf, band_indices=[2, 1, 0],</span>
+<span class="sd">    ...                    scale=(0, 3000))</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">checkpoint</span><span class="p">,</span> <span class="n">model_type</span><span class="o">=</span><span class="s1">&#39;vit_b&#39;</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="s1">&#39;auto&#39;</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="kn">from</span><span class="w"> </span><span class="nn">segment_anything</span><span class="w"> </span><span class="kn">import</span> <span class="n">sam_model_registry</span><span class="p">,</span> <span class="n">SamPredictor</span>
+        <span class="k">except</span> <span class="ne">ImportError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ImportError</span><span class="p">(</span>
+                <span class="s2">&quot;SAMRefiner requires segment-anything. &quot;</span>
+                <span class="s2">&quot;Install with: pip install geowombat[sam]&quot;</span>
+            <span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">device</span> <span class="o">=</span> <span class="n">_resolve_device</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+        <span class="n">sam</span> <span class="o">=</span> <span class="n">sam_model_registry</span><span class="p">[</span><span class="n">model_type</span><span class="p">](</span><span class="n">checkpoint</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">checkpoint</span><span class="p">))</span>
+        <span class="n">sam</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_predictor</span> <span class="o">=</span> <span class="n">SamPredictor</span><span class="p">(</span><span class="n">sam</span><span class="p">)</span>
+
+<div class="viewcode-block" id="SAMRefiner.refine"><a class="viewcode-back" href="../../../api/geowombat.detect.SAMRefiner.html#geowombat.detect.SAMRefiner.refine">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">refine</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">src</span><span class="p">,</span> <span class="n">boxes_gdf</span><span class="p">,</span> <span class="n">band_indices</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+               <span class="n">pad_pixels</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span> <span class="n">simplify_tolerance</span><span class="o">=</span><span class="mf">0.5</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Refine boxes to polygon masks.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        src : xarray.DataArray</span>
+<span class="sd">            Source raster (must match ``boxes_gdf.crs``).</span>
+<span class="sd">        boxes_gdf : geopandas.GeoDataFrame</span>
+<span class="sd">            Detector output. Each row&#39;s geometry should be the bbox.</span>
+<span class="sd">        band_indices : list of int, optional</span>
+<span class="sd">            RGB bands for SAM input.</span>
+<span class="sd">        scale : tuple of (lo, hi), optional</span>
+<span class="sd">            Stretch range.</span>
+<span class="sd">        pad_pixels : int</span>
+<span class="sd">            Pad around each box when reading the chip. Default 8.</span>
+<span class="sd">        simplify_tolerance : float</span>
+<span class="sd">            Polygon simplification tolerance in CRS units. Default 0.5.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        geopandas.GeoDataFrame</span>
+<span class="sd">            Same columns as input; geometry replaced by polygons.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">shapely.geometry</span><span class="w"> </span><span class="kn">import</span> <span class="n">Polygon</span> <span class="k">as</span> <span class="n">ShPoly</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="kn">from</span><span class="w"> </span><span class="nn">rasterio.features</span><span class="w"> </span><span class="kn">import</span> <span class="n">shapes</span> <span class="k">as</span> <span class="n">rio_shapes</span>
+        <span class="k">except</span> <span class="ne">ImportError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ImportError</span><span class="p">(</span>
+                <span class="s2">&quot;SAMRefiner.refine requires rasterio.&quot;</span>
+            <span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span>
+
+        <span class="k">if</span> <span class="n">boxes_gdf</span><span class="o">.</span><span class="n">empty</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">boxes_gdf</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="n">boxes_gdf</span><span class="o">.</span><span class="n">crs</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">src</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">crs_to_pyproj</span><span class="o">.</span><span class="n">to_epsg</span><span class="p">()</span> <span class="o">!=</span> \
+                <span class="n">boxes_gdf</span><span class="o">.</span><span class="n">crs</span><span class="o">.</span><span class="n">to_epsg</span><span class="p">():</span>
+            <span class="n">boxes_gdf</span> <span class="o">=</span> <span class="n">boxes_gdf</span><span class="o">.</span><span class="n">to_crs</span><span class="p">(</span><span class="n">src</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">crs_to_pyproj</span><span class="p">)</span>
+
+        <span class="n">band_indices</span> <span class="o">=</span> <span class="n">resolve_band_indices</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="n">band_indices</span><span class="p">)</span>
+        <span class="n">affine</span> <span class="o">=</span> <span class="n">src</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">affine</span>
+        <span class="n">inv</span> <span class="o">=</span> <span class="o">~</span><span class="n">affine</span>
+
+        <span class="n">out_geoms</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">boxes_gdf</span><span class="o">.</span><span class="n">iterrows</span><span class="p">():</span>
+            <span class="n">minx</span><span class="p">,</span> <span class="n">miny</span><span class="p">,</span> <span class="n">maxx</span><span class="p">,</span> <span class="n">maxy</span> <span class="o">=</span> <span class="n">row</span><span class="o">.</span><span class="n">geometry</span><span class="o">.</span><span class="n">bounds</span>
+            <span class="n">col_ul</span><span class="p">,</span> <span class="n">row_ul</span> <span class="o">=</span> <span class="n">inv</span> <span class="o">*</span> <span class="p">(</span><span class="n">minx</span><span class="p">,</span> <span class="n">maxy</span><span class="p">)</span>
+            <span class="n">col_lr</span><span class="p">,</span> <span class="n">row_lr</span> <span class="o">=</span> <span class="n">inv</span> <span class="o">*</span> <span class="p">(</span><span class="n">maxx</span><span class="p">,</span> <span class="n">miny</span><span class="p">)</span>
+            <span class="n">x0</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="nb">min</span><span class="p">(</span><span class="n">col_ul</span><span class="p">,</span> <span class="n">col_lr</span><span class="p">)))</span> <span class="o">-</span> <span class="n">pad_pixels</span>
+            <span class="n">y0</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="nb">min</span><span class="p">(</span><span class="n">row_ul</span><span class="p">,</span> <span class="n">row_lr</span><span class="p">)))</span> <span class="o">-</span> <span class="n">pad_pixels</span>
+            <span class="n">x1</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="n">col_ul</span><span class="p">,</span> <span class="n">col_lr</span><span class="p">)))</span> <span class="o">+</span> <span class="n">pad_pixels</span>
+            <span class="n">y1</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="n">row_ul</span><span class="p">,</span> <span class="n">row_lr</span><span class="p">)))</span> <span class="o">+</span> <span class="n">pad_pixels</span>
+
+            <span class="n">x0</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">x0</span><span class="p">)</span>
+            <span class="n">y0</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">y0</span><span class="p">)</span>
+            <span class="n">x1</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">src</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">ncols</span><span class="p">,</span> <span class="n">x1</span><span class="p">)</span>
+            <span class="n">y1</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">src</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">nrows</span><span class="p">,</span> <span class="n">y1</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">x1</span> <span class="o">&lt;=</span> <span class="n">x0</span> <span class="ow">or</span> <span class="n">y1</span> <span class="o">&lt;=</span> <span class="n">y0</span><span class="p">:</span>
+                <span class="n">out_geoms</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">row</span><span class="o">.</span><span class="n">geometry</span><span class="p">)</span>
+                <span class="k">continue</span>
+
+            <span class="n">chip</span> <span class="o">=</span> <span class="n">src</span><span class="o">.</span><span class="n">isel</span><span class="p">(</span>
+                <span class="n">y</span><span class="o">=</span><span class="nb">slice</span><span class="p">(</span><span class="n">y0</span><span class="p">,</span> <span class="n">y1</span><span class="p">),</span> <span class="n">x</span><span class="o">=</span><span class="nb">slice</span><span class="p">(</span><span class="n">x0</span><span class="p">,</span> <span class="n">x1</span><span class="p">),</span>
+            <span class="p">)</span><span class="o">.</span><span class="n">values</span>
+            <span class="k">if</span> <span class="n">chip</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">4</span><span class="p">:</span>
+                <span class="n">chip</span> <span class="o">=</span> <span class="n">chip</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+            <span class="n">rgb</span> <span class="o">=</span> <span class="n">_prepare_rgb_tile</span><span class="p">(</span><span class="n">chip</span><span class="p">,</span> <span class="n">band_indices</span><span class="p">,</span> <span class="n">scale</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_predictor</span><span class="o">.</span><span class="n">set_image</span><span class="p">(</span><span class="n">rgb</span><span class="p">)</span>
+
+            <span class="n">box_px</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span>
+                <span class="nb">min</span><span class="p">(</span><span class="n">col_ul</span><span class="p">,</span> <span class="n">col_lr</span><span class="p">)</span> <span class="o">-</span> <span class="n">x0</span><span class="p">,</span>
+                <span class="nb">min</span><span class="p">(</span><span class="n">row_ul</span><span class="p">,</span> <span class="n">row_lr</span><span class="p">)</span> <span class="o">-</span> <span class="n">y0</span><span class="p">,</span>
+                <span class="nb">max</span><span class="p">(</span><span class="n">col_ul</span><span class="p">,</span> <span class="n">col_lr</span><span class="p">)</span> <span class="o">-</span> <span class="n">x0</span><span class="p">,</span>
+                <span class="nb">max</span><span class="p">(</span><span class="n">row_ul</span><span class="p">,</span> <span class="n">row_lr</span><span class="p">)</span> <span class="o">-</span> <span class="n">y0</span><span class="p">,</span>
+            <span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+
+            <span class="n">masks</span><span class="p">,</span> <span class="n">scores</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_predictor</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span>
+                <span class="n">box</span><span class="o">=</span><span class="n">box_px</span><span class="p">,</span> <span class="n">multimask_output</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="n">mask</span> <span class="o">=</span> <span class="n">masks</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">)</span>
+
+            <span class="kn">from</span><span class="w"> </span><span class="nn">affine</span><span class="w"> </span><span class="kn">import</span> <span class="n">Affine</span>
+            <span class="n">chip_affine</span> <span class="o">=</span> <span class="n">Affine</span><span class="p">(</span>
+                <span class="n">affine</span><span class="o">.</span><span class="n">a</span><span class="p">,</span> <span class="n">affine</span><span class="o">.</span><span class="n">b</span><span class="p">,</span>
+                <span class="n">affine</span><span class="o">.</span><span class="n">c</span> <span class="o">+</span> <span class="n">x0</span> <span class="o">*</span> <span class="n">affine</span><span class="o">.</span><span class="n">a</span> <span class="o">+</span> <span class="n">y0</span> <span class="o">*</span> <span class="n">affine</span><span class="o">.</span><span class="n">b</span><span class="p">,</span>
+                <span class="n">affine</span><span class="o">.</span><span class="n">d</span><span class="p">,</span> <span class="n">affine</span><span class="o">.</span><span class="n">e</span><span class="p">,</span>
+                <span class="n">affine</span><span class="o">.</span><span class="n">f</span> <span class="o">+</span> <span class="n">x0</span> <span class="o">*</span> <span class="n">affine</span><span class="o">.</span><span class="n">d</span> <span class="o">+</span> <span class="n">y0</span> <span class="o">*</span> <span class="n">affine</span><span class="o">.</span><span class="n">e</span><span class="p">,</span>
+            <span class="p">)</span>
+
+            <span class="n">polys</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">geom_dict</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">rio_shapes</span><span class="p">(</span><span class="n">mask</span><span class="p">,</span> <span class="n">transform</span><span class="o">=</span><span class="n">chip_affine</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">val</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
+                    <span class="k">continue</span>
+                <span class="n">coords</span> <span class="o">=</span> <span class="n">geom_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;coordinates&#39;</span><span class="p">,</span> <span class="p">[])</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">coords</span><span class="p">:</span>
+                    <span class="k">continue</span>
+                <span class="n">outer</span> <span class="o">=</span> <span class="n">coords</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="n">holes</span> <span class="o">=</span> <span class="n">coords</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="k">else</span> <span class="kc">None</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">p</span> <span class="o">=</span> <span class="n">ShPoly</span><span class="p">(</span><span class="n">outer</span><span class="p">,</span> <span class="n">holes</span><span class="o">=</span><span class="n">holes</span><span class="p">)</span>
+                <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+                    <span class="k">continue</span>
+                <span class="k">if</span> <span class="n">simplify_tolerance</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="n">p</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">simplify</span><span class="p">(</span><span class="n">simplify_tolerance</span><span class="p">)</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">p</span><span class="o">.</span><span class="n">is_empty</span> <span class="ow">and</span> <span class="n">p</span><span class="o">.</span><span class="n">is_valid</span><span class="p">:</span>
+                    <span class="n">polys</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">polys</span><span class="p">:</span>
+                <span class="c1"># Keep largest polygon — masks can occasionally produce</span>
+                <span class="c1"># disconnected components near the prompt box edge.</span>
+                <span class="n">polys</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">g</span><span class="p">:</span> <span class="n">g</span><span class="o">.</span><span class="n">area</span><span class="p">,</span> <span class="n">reverse</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                <span class="n">out_geoms</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">polys</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">out_geoms</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">row</span><span class="o">.</span><span class="n">geometry</span><span class="p">)</span>
+
+        <span class="n">result</span> <span class="o">=</span> <span class="n">boxes_gdf</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="n">result</span><span class="p">[</span><span class="s1">&#39;geometry&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">out_geoms</span>
+        <span class="k">return</span> <span class="n">result</span></div></div>
+</pre></div>
+
+                </article>
+              
+
+              
+              
+                <footer class="bd-footer-article">
+                  <!-- Previous / next buttons -->
+<div class="prev-next-area">
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            <div class="bd-footer-content__inner">
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+  <p class="copyright">
+    
+      © Copyright 2020-2026, GeoWombat.
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+</div></div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../../../_static/scripts/bootstrap.js?digest=12da95d707ffb74b382d"></script>
+<script src="../../../_static/scripts/pydata-sphinx-theme.js?digest=12da95d707ffb74b382d"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>

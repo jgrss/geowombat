@@ -1,0 +1,960 @@
+
+
+<!DOCTYPE html>
+
+
+<html lang="en" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+
+    <title>Time series processes on the GPU</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="_static/styles/theme.css?digest=12da95d707ffb74b382d" rel="stylesheet" />
+<link href="_static/styles/bootstrap.css?digest=12da95d707ffb74b382d" rel="stylesheet" />
+<link href="_static/styles/pydata-sphinx-theme.css?digest=12da95d707ffb74b382d" rel="stylesheet" />
+
+  
+  <link href="_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=12da95d707ffb74b382d" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.1.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" href="_static/styles/sphinx-book-theme.css?digest=14f4ca6b54d191a8c7657f6c759bf11a5fb86285" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="_static/graphviz.css" />
+    <link rel="stylesheet" type="text/css" href="_static/copybutton.css" />
+    <link rel="stylesheet" type="text/css" href="_static/custom.css" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=12da95d707ffb74b382d" />
+<link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=12da95d707ffb74b382d" />
+
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/sphinx_highlight.js"></script>
+    <script src="_static/clipboard.min.js"></script>
+    <script src="_static/copybutton.js"></script>
+    <script src="_static/scripts/sphinx-book-theme.js?digest=5a5c038af52cf7bc1a1ec88eea08e6366ee68824"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'gpu';</script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Changelog" href="changelog.html" />
+    <link rel="prev" title="External examples" href="external.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__primary"
+          id="__primary"/>
+  <label class="overlay overlay-primary" for="__primary"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__secondary"
+          id="__secondary"/>
+  <label class="overlay overlay-secondary" for="__secondary"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search..."
+         aria-label="Search..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+  
+    <nav class="bd-header navbar navbar-expand-lg bd-navbar">
+    </nav>
+  
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      <div class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+  
+
+<a class="navbar-brand logo" href="index.html">
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="_static/logo.png" class="logo__image only-light" alt="GeoWombat"/>
+    <script>document.write(`<img src="_static/logo.png" class="logo__image only-dark" alt="GeoWombat"/>`);</script>
+  
+  
+</a></div>
+        <div class="sidebar-primary-item"><nav class="bd-links" id="bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        <p aria-level="2" class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="install.html">Installing GeoWombat</a></li>
+<li class="toctree-l1"><a class="reference internal" href="quick-overview.html">Quick overview</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="tutorial.html">Tutorial</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-1"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="tutorial-why.html">Why GeoWombat?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial-open.html">Opening rasters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial-edit.html">Editing rasters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial-config.html">Configuration manager</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial-gw.html">GeoWombat DataArray accessor</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial-crs.html">Coordinate Reference Systems</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial-plot.html">Plotting raster data</a></li>
+</ul>
+</li>
+<li class="toctree-l1 current active has-children"><a class="reference internal" href="examples.html">Examples</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-2"><i class="fa-solid fa-chevron-down"></i></label><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="io.html">Raster I/O</a></li>
+<li class="toctree-l2"><a class="reference internal" href="io-distributed.html">Distributed processing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="extraction.html">Data extraction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="band-math.html">Band math</a></li>
+<li class="toctree-l2"><a class="reference internal" href="apply.html">User functions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ml.html">Machine learning</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dl.html">Deep learning classifiers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="object-detection.html">Object detection</a></li>
+<li class="toctree-l2"><a class="reference internal" href="moving.html">Moving windows</a></li>
+<li class="toctree-l2"><a class="reference internal" href="radiometry.html">Radiometry</a></li>
+<li class="toctree-l2"><a class="reference internal" href="coreg.html">Co-registration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tasks.html">Pipeline tasks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="web.html">Accessing STAC Catalogs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="external.html">External examples</a></li>
+<li class="toctree-l2 current active"><a class="current reference internal" href="#">Time series processes on the GPU</a></li>
+</ul>
+</li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Changes</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="changelog.html">Changelog</a></li>
+<li class="toctree-l1"><a class="reference internal" href="issues.html">Issues</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Reference</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="api.html">API reference</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-3"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.core.geoxarray.GeoWombatAccessor.html">GeoWombat DataArray (DataArray.gw)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.load.html">load</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.extract.html">extract</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.sample.html">sample</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.calc_area.html">calc_area</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.subset.html">subset</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.clip.html">clip</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.clip_by_polygon.html">clip_by_polygon</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.mask.html">mask</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.replace.html">replace</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.recode.html">recode</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.coregister.html">coregister</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.polygons_to_points.html">polygons_to_points</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.apply.html">apply</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.transform_crs.html">transform_crs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.save.html">save</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.to_raster.html">to_raster</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.to_netcdf.html">to_netcdf</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.to_vrt.html">to_vrt</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.array_to_polygon.html">array_to_polygon</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.polygon_to_array.html">polygon_to_array</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.moving.html">moving</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.norm_diff.html">norm_diff</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.avi.html">avi</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.evi.html">evi</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.evi2.html">evi2</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.kndvi.html">kndvi</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.nbr.html">nbr</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.ndvi.html">ndvi</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.wi.html">wi</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.tasseled_cap.html">tasseled_cap</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.coords_to_indices.html">coords_to_indices</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.indices_to_coords.html">indices_to_coords</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.bounds_to_coords.html">bounds_to_coords</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.lonlat_to_xy.html">lonlat_to_xy</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.xy_to_lonlat.html">xy_to_lonlat</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.open.html">open</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.series.html">series</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.TimeModulePipeline.html">TimeModulePipeline</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.TimeModule.html">TimeModule</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.core.stac.composite_stac.html">composite_stac</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.core.stac.merge_stac.html">merge_stac</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.core.stac.open_stac.html">open_stac</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.core.stac.STACCollectionURLNames.html">STACCollectionURLNames</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.core.stac.STACCollections.html">STACCollections</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.core.stac.STACNames.html">STACNames</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.core.stac.StrEnum.html">StrEnum</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.ml.fit.html">fit</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.ml.fit_predict.html">fit_predict</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.ml.predict.html">predict</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.ml.TabNetClassifier.html">TabNetClassifier</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.ml.LTAEClassifier.html">LTAEClassifier</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.ml.TorchGeoClassifier.html">TorchGeoClassifier</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.detect.boxes_from_polygons.html">boxes_from_polygons</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.detect.build_dataset.html">build_dataset</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.detect.build_yolo_dataset.html">build_yolo_dataset</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.detect.detection_accuracy.html">detection_accuracy</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.detect.export_for_review.html">export_for_review</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.detect.fit.html">fit</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.detect.fit_predict.html">fit_predict</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.detect.plot_detections.html">plot_detections</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.detect.predict.html">predict</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.detect.recompute_from_review.html">recompute_from_review</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.detect.SAMRefiner.html">SAMRefiner</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.detect.TorchGeoDetector.html">TorchGeoDetector</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.detect.YOLODetector.html">YOLODetector</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.radiometry.landsat_pixel_angles.html">landsat_pixel_angles</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.radiometry.sentinel_pixel_angles.html">sentinel_pixel_angles</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.radiometry.BRDF.html">BRDF</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.radiometry.Topo.html">Topo</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.radiometry.LinearAdjustments.html">LinearAdjustments</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.radiometry.RadTransforms.html">RadTransforms</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.radiometry.DOS.html">DOS</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.radiometry.SixS.html">SixS</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.radiometry.QAMasker.html">QAMasker</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.radiometry.QABits.html">QABits</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.radiometry.SCLValues.html">SCLValues</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/geowombat.radiometry.HLSFmaskBits.html">HLSFmaskBits</a></li>
+</ul>
+</li>
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><label class="sidebar-toggle primary-toggle btn btn-sm" for="__primary" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</label></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+<a href="https://github.com/jgrss/geowombat" target="_blank"
+   class="btn btn-sm btn-source-repository-button"
+   title="Source repository"
+   data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fab fa-github"></i>
+  </span>
+
+</a>
+
+
+
+
+
+
+<div class="dropdown dropdown-download-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Download this page">
+    <i class="fas fa-download"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="_sources/gpu.rst" target="_blank"
+   class="btn btn-sm btn-download-source-button dropdown-item"
+   title="Download source file"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file"></i>
+  </span>
+<span class="btn__text-container">.rst</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li>
+<button onclick="window.print()"
+  class="btn btn-sm btn-download-pdf-button dropdown-item"
+  title="Print to PDF"
+  data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file-pdf"></i>
+  </span>
+<span class="btn__text-container">.pdf</span>
+</button>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button"
+  title="Fullscreen mode"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+
+<script>
+document.write(`
+  <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
+    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
+    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
+  </button>
+`);
+</script>
+
+<script>
+document.write(`
+  <button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+  </button>
+`);
+</script>
+<label class="sidebar-toggle secondary-toggle btn btn-sm" for="__secondary"title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</label>
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1>Time series processes on the GPU</h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+            <div>
+                <h2> Contents </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#local-gpu-installation">Local GPU installation</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#install-python-libraries">Install Python libraries</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#basic-example">Basic example</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#stacking-multiple-statistics">Stacking multiple statistics</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#custom-modules">Custom modules</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#combining-custom-modules">Combining custom modules</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#using-the-band-dictionary">Using the band dictionary</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#generic-vegetation-indices-with-user-arguments">Generic vegetation indices with user arguments</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#load-and-apply-pytorch-models">Load and apply PyTorch models</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#load-and-apply-tensorflow-keras-models">Load and apply Tensorflow/Keras models</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#generating-time-series-file-lists">Generating time series file lists</a></li>
+</ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article" role="main">
+                  
+  <section id="time-series-processes-on-the-gpu">
+<span id="gpu"></span><h1>Time series processes on the GPU<a class="headerlink" href="#time-series-processes-on-the-gpu" title="Permalink to this heading">#</a></h1>
+<section id="local-gpu-installation">
+<h2>Local GPU installation<a class="headerlink" href="#local-gpu-installation" title="Permalink to this heading">#</a></h2>
+<p>Follow <a class="reference external" href="https://www.tensorflow.org/install/gpu">TensorFlow instructions</a> or the lines below.</p>
+<p>Install the NVIDIA driver:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="n">apt</span><span class="o">-</span><span class="n">get</span> <span class="n">purge</span> <span class="n">nvidia</span><span class="o">*</span>
+<span class="n">sudo</span> <span class="n">add</span><span class="o">-</span><span class="n">apt</span><span class="o">-</span><span class="n">repository</span> <span class="n">ppa</span><span class="p">:</span><span class="n">graphics</span><span class="o">-</span><span class="n">drivers</span><span class="o">/</span><span class="n">ppa</span>
+<span class="n">sudo</span> <span class="n">apt</span><span class="o">-</span><span class="n">get</span> <span class="n">update</span>
+<span class="n">ubuntu</span><span class="o">-</span><span class="n">drivers</span> <span class="n">devices</span>
+<span class="n">sudo</span> <span class="n">apt</span> <span class="n">install</span> <span class="n">nvidia</span><span class="o">-</span><span class="n">driver</span><span class="o">-</span><span class="mi">460</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>You may have to reboot and disable Secure boot (usually involves holding a key such as F2 on startup)</p>
+</div>
+<p>Download CUDA Toolkit .run file (CUDA 11.1):</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">wget</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">developer</span><span class="o">.</span><span class="n">download</span><span class="o">.</span><span class="n">nvidia</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">compute</span><span class="o">/</span><span class="n">cuda</span><span class="o">/</span><span class="mf">11.1.0</span><span class="o">/</span><span class="n">local_installers</span><span class="o">/</span><span class="n">cuda_11</span><span class="mf">.1.0_455.23.05</span><span class="n">_linux</span><span class="o">.</span><span class="n">run</span>
+</pre></div>
+</div>
+<p>Install CUDA Toolkit (CUDA 11.1):</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="n">sh</span> <span class="n">cuda_11</span><span class="mf">.1.0_455.23.05</span><span class="n">_linux</span><span class="o">.</span><span class="n">run</span> <span class="o">--</span><span class="n">toolkit</span> <span class="o">--</span><span class="n">silent</span> <span class="o">--</span><span class="n">override</span>
+</pre></div>
+</div>
+<p>Update .profile:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>CUDA_VERSION=&quot;11.1&quot;
+export PATH=/usr/local/cuda-${CUDA_VERSION}:$PATH
+export LD_LIBRARY_PATH=/usr/local/cuda-${CUDA_VERSION}/lib64${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}
+export CUDA_HOME=/usr/local/cuda
+</pre></div>
+</div>
+</section>
+<section id="install-python-libraries">
+<h2>Install Python libraries<a class="headerlink" href="#install-python-libraries" title="Permalink to this heading">#</a></h2>
+<p>Install JAX (with CUDA 11.1 below):</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="o">--</span><span class="n">upgrade</span> <span class="s2">&quot;jax[cuda111]&quot;</span> <span class="o">-</span><span class="n">f</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">storage</span><span class="o">.</span><span class="n">googleapis</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">jax</span><span class="o">-</span><span class="n">releases</span><span class="o">/</span><span class="n">jax_releases</span><span class="o">.</span><span class="n">html</span>
+</pre></div>
+</div>
+<p>Install PyTorch (with CUDA 11.1 below):</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="n">torch</span><span class="o">==</span><span class="mf">1.9.0</span><span class="o">+</span><span class="n">cu111</span> <span class="n">torchvision</span><span class="o">==</span><span class="mf">0.10.0</span><span class="o">+</span><span class="n">cu111</span> <span class="n">torchaudio</span><span class="o">==</span><span class="mf">0.9.0</span> <span class="o">-</span><span class="n">f</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">download</span><span class="o">.</span><span class="n">pytorch</span><span class="o">.</span><span class="n">org</span><span class="o">/</span><span class="n">whl</span><span class="o">/</span><span class="n">torch_stable</span><span class="o">.</span><span class="n">html</span>
+</pre></div>
+</div>
+<p>Install Tensorflow (latest versions have GPU support):</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="n">tensorflow</span>
+</pre></div>
+</div>
+</section>
+<section id="basic-example">
+<h2>Basic example<a class="headerlink" href="#basic-example" title="Permalink to this heading">#</a></h2>
+<p>In the example below, the mean over time is calculated on band 1.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">geowombat</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">gw</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">jax.numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">jnp</span>
+
+<span class="n">filenames</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;image1.tif&#39;</span><span class="p">,</span> <span class="s1">&#39;image2.tif&#39;</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span>
+
+<span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">series</span><span class="p">(</span><span class="n">filenames</span><span class="p">)</span> <span class="k">as</span> <span class="n">src</span><span class="p">:</span>
+
+    <span class="n">src</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span>
+        <span class="s1">&#39;mean&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;temporal_mean.tif&#39;</span><span class="p">,</span>
+        <span class="n">bands</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+        <span class="n">num_workers</span><span class="o">=</span><span class="mi">4</span>
+    <span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="stacking-multiple-statistics">
+<h2>Stacking multiple statistics<a class="headerlink" href="#stacking-multiple-statistics" title="Permalink to this heading">#</a></h2>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">series</span><span class="p">(</span><span class="n">filenames</span><span class="p">)</span> <span class="k">as</span> <span class="n">src</span><span class="p">:</span>
+
+    <span class="n">src</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span>
+        <span class="p">[</span><span class="s1">&#39;mean&#39;</span><span class="p">,</span> <span class="s1">&#39;max&#39;</span><span class="p">,</span> <span class="s1">&#39;cv&#39;</span><span class="p">],</span>
+        <span class="s1">&#39;temporal_stats.tif&#39;</span><span class="p">,</span>
+        <span class="n">bands</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+        <span class="n">num_workers</span><span class="o">=</span><span class="mi">4</span>
+    <span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="custom-modules">
+<h2>Custom modules<a class="headerlink" href="#custom-modules" title="Permalink to this heading">#</a></h2>
+<p>Custom time series modules can be generated with classes following the format below.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">TemporalMean</span><span class="p">(</span><span class="n">gw</span><span class="o">.</span><span class="n">TimeModule</span><span class="p">):</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">TemporalMean</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">calculate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">array</span><span class="p">):</span>
+
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Args:</span>
+<span class="sd">            array (``numpy.ndarray`` |</span>
+<span class="sd">                   ``jax.Array`` |</span>
+<span class="sd">                   ``torch.Tensor`` |</span>
+<span class="sd">                   ``tensorflow.Tensor``): The input array, shaped [time x bands x rows x columns].</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            ``numpy.ndarray`` |</span>
+<span class="sd">            ``jax.Array`` |</span>
+<span class="sd">            ``torch.Tensor`` |</span>
+<span class="sd">            ``tensorflow.Tensor``</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># Reduce the time axis, which is the first index position.</span>
+        <span class="c1"># The output is then shaped [1 x bands x rows x columns] ...</span>
+        <span class="c1"># so we squeeze the dimensions ...</span>
+        <span class="c1"># resulting in a returned array of [bands x rows x columns].</span>
+        <span class="k">return</span> <span class="n">jnp</span><span class="o">.</span><span class="n">nanmean</span><span class="p">(</span><span class="n">array</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">squeeze</span><span class="p">()</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><code class="docutils literal notranslate"><span class="pre">super(TemporalMean,</span> <span class="pre">self).__init__()</span></code> instantiates the base time series module. The only required method
+is <code class="xref py py-func docutils literal notranslate"><span class="pre">calculate()</span></code>, which takes one argument. The returned value must be an array shaped
+<code class="docutils literal notranslate"><span class="pre">[bands</span> <span class="pre">x</span> <span class="pre">rows</span> <span class="pre">x</span> <span class="pre">columns]</span></code> or <code class="docutils literal notranslate"><span class="pre">[rows</span> <span class="pre">x</span> <span class="pre">columns]</span></code>.</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>If <code class="docutils literal notranslate"><span class="pre">gw.series(...,</span> <span class="pre">transfer_lib='jax')</span></code> then <code class="docutils literal notranslate"><span class="pre">jax.numpy</span></code> <code class="docutils literal notranslate"><span class="pre">nan</span></code> reductions (e.g., <code class="docutils literal notranslate"><span class="pre">jnp.nanmean</span></code>) should
+be used because the array data are masked.</p>
+</div>
+<p>To use this class, call it in <code class="docutils literal notranslate"><span class="pre">apply</span></code>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">series</span><span class="p">(</span><span class="n">filenames</span><span class="p">)</span> <span class="k">as</span> <span class="n">src</span><span class="p">:</span>
+
+    <span class="c1"># Read band 1 and apply the temporal mean reduction</span>
+    <span class="n">src</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span>
+        <span class="n">TemporalMean</span><span class="p">(),</span>
+        <span class="s1">&#39;temporal_mean.tif&#39;</span><span class="p">,</span>
+        <span class="n">bands</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+        <span class="n">num_workers</span><span class="o">=</span><span class="mi">4</span>
+    <span class="p">)</span>
+</pre></div>
+</div>
+<p>Minor changes are needed for multiple band outputs.</p>
+<p>First, we add a <code class="docutils literal notranslate"><span class="pre">count</span></code> attribute that overrides the default of 1.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">TemporalMean</span><span class="p">(</span><span class="n">gw</span><span class="o">.</span><span class="n">TimeModule</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">TemporalMean</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">count</span> <span class="o">=</span> <span class="mi">2</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">calculate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">array</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">jnp</span><span class="o">.</span><span class="n">nanmean</span><span class="p">(</span><span class="n">array</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">squeeze</span><span class="p">())</span>
+</pre></div>
+</div>
+<p>Then, all is needed is to read the desired bands.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">series</span><span class="p">(</span><span class="n">filenames</span><span class="p">)</span> <span class="k">as</span> <span class="n">src</span><span class="p">:</span>
+
+    <span class="c1"># Read bands 1 and 2 and apply the temporal mean reduction</span>
+    <span class="n">src</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span>
+        <span class="n">TemporalMean</span><span class="p">(),</span>
+        <span class="s1">&#39;temporal_mean.tif&#39;</span><span class="p">,</span>
+        <span class="n">bands</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span>
+        <span class="n">num_workers</span><span class="o">=</span><span class="mi">4</span>
+    <span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="combining-custom-modules">
+<h2>Combining custom modules<a class="headerlink" href="#combining-custom-modules" title="Permalink to this heading">#</a></h2>
+<p>Combing custom modules is simple. Below, we’ve created two modules, one to compute the temporal mean and
+the other to compute the temporal max. We could use these separately as illustrated above, where both
+outputs would generate images with two bands. However, we can also combine the two modules to generate
+one 4-band image.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">geowombat</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">gw</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">jax.numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">jnp</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">TemporalMean</span><span class="p">(</span><span class="n">gw</span><span class="o">.</span><span class="n">TimeModule</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">TemporalMean</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">count</span> <span class="o">=</span> <span class="mi">2</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">calculate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">array</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">jnp</span><span class="o">.</span><span class="n">nanmean</span><span class="p">(</span><span class="n">array</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">squeeze</span><span class="p">())</span>
+</pre></div>
+</div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">TemporalMax</span><span class="p">(</span><span class="n">gw</span><span class="o">.</span><span class="n">TimeModule</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">TemporalMax</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">count</span> <span class="o">=</span> <span class="mi">2</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">calculate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">array</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">jnp</span><span class="o">.</span><span class="n">nanmax</span><span class="p">(</span><span class="n">array</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">squeeze</span><span class="p">())</span>
+</pre></div>
+</div>
+<p>Combine the two modules</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">stacked_module</span> <span class="o">=</span> <span class="n">gw</span><span class="o">.</span><span class="n">TimeModulePipeline</span><span class="p">(</span>
+    <span class="p">[</span>
+        <span class="n">TemporalMean</span><span class="p">(),</span>
+        <span class="n">TemporalMax</span><span class="p">()</span>
+    <span class="p">]</span>
+<span class="p">)</span>
+
+<span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">series</span><span class="p">(</span><span class="n">filenames</span><span class="p">)</span> <span class="k">as</span> <span class="n">src</span><span class="p">:</span>
+    <span class="n">src</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span>
+        <span class="n">stacked_module</span><span class="p">,</span>
+        <span class="s1">&#39;temporal_stack.tif&#39;</span><span class="p">,</span>
+        <span class="n">bands</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span>
+        <span class="n">num_workers</span><span class="o">=</span><span class="mi">8</span>
+    <span class="p">)</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Modules can also be combined with the <code class="docutils literal notranslate"><span class="pre">+</span></code> sign.</p>
+</div>
+<p>For example,</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">stacked_module</span> <span class="o">=</span> <span class="n">TemporalMean</span><span class="p">()</span> <span class="o">+</span> <span class="n">TemporalMax</span><span class="p">()</span>
+<span class="k">for</span> <span class="n">module</span> <span class="ow">in</span> <span class="n">stacked_module</span><span class="o">.</span><span class="n">modules</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">module</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>is equivalent to</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">stacked_module</span> <span class="o">=</span> <span class="n">gw</span><span class="o">.</span><span class="n">TimeModulePipeline</span><span class="p">(</span>
+    <span class="p">[</span>
+        <span class="n">TemporalMean</span><span class="p">(),</span>
+        <span class="n">TemporalMax</span><span class="p">()</span>
+    <span class="p">]</span>
+<span class="p">)</span>
+
+<span class="k">for</span> <span class="n">module</span> <span class="ow">in</span> <span class="n">stacked_module</span><span class="o">.</span><span class="n">modules</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">module</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="using-the-band-dictionary">
+<h2>Using the band dictionary<a class="headerlink" href="#using-the-band-dictionary" title="Permalink to this heading">#</a></h2>
+<p>The band dictionary attribute is available within a module if <code class="docutils literal notranslate"><span class="pre">band_list</span></code> is provided in the <a class="reference internal" href="api/geowombat.apply.html#geowombat.apply" title="geowombat.apply"><code class="xref py py-func docutils literal notranslate"><span class="pre">geowombat.apply()</span></code></a> function.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">TemporalNDVI</span><span class="p">(</span><span class="n">gw</span><span class="o">.</span><span class="n">TimeModule</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">TemporalNDVI</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">count</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dtype</span> <span class="o">=</span> <span class="s1">&#39;uint16&#39;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">calculate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">array</span><span class="p">):</span>
+        <span class="c1"># Set slice tuples for [time, bands, rows, columns]</span>
+        <span class="n">sl1</span> <span class="o">=</span> <span class="p">(</span><span class="nb">slice</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span> <span class="nb">slice</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">band_dict</span><span class="p">[</span><span class="s1">&#39;nir&#39;</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">band_dict</span><span class="p">[</span><span class="s1">&#39;nir&#39;</span><span class="p">]</span><span class="o">+</span><span class="mi">1</span><span class="p">),</span> <span class="nb">slice</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span> <span class="nb">slice</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="kc">None</span><span class="p">))</span>
+        <span class="n">sl2</span> <span class="o">=</span> <span class="p">(</span><span class="nb">slice</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span> <span class="nb">slice</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">band_dict</span><span class="p">[</span><span class="s1">&#39;red&#39;</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">band_dict</span><span class="p">[</span><span class="s1">&#39;red&#39;</span><span class="p">]</span><span class="o">+</span><span class="mi">1</span><span class="p">),</span> <span class="nb">slice</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span> <span class="nb">slice</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="kc">None</span><span class="p">))</span>
+
+        <span class="c1"># Calculate the NDVI</span>
+        <span class="n">vi</span> <span class="o">=</span> <span class="p">(</span><span class="n">array</span><span class="p">[</span><span class="n">sl1</span><span class="p">]</span> <span class="o">-</span> <span class="n">array</span><span class="p">[</span><span class="n">sl2</span><span class="p">])</span> <span class="o">/</span> <span class="p">((</span><span class="n">array</span><span class="p">[</span><span class="n">sl1</span><span class="p">]</span> <span class="o">+</span> <span class="n">array</span><span class="p">[</span><span class="n">sl2</span><span class="p">])</span> <span class="o">+</span> <span class="mf">1e-9</span><span class="p">)</span>
+
+        <span class="c1"># Scale x10000 (truncating values &lt; 0)</span>
+        <span class="n">vi</span> <span class="o">=</span> <span class="p">(</span><span class="n">jnp</span><span class="o">.</span><span class="n">nanmean</span><span class="p">(</span><span class="n">array</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> <span class="o">*</span> <span class="mi">10000</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;uint16&#39;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">vi</span><span class="o">.</span><span class="n">squeeze</span><span class="p">())</span>
+</pre></div>
+</div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">series</span><span class="p">(</span><span class="n">filenames</span><span class="p">)</span> <span class="k">as</span> <span class="n">src</span><span class="p">:</span>
+
+    <span class="c1"># Read band 1 and apply the temporal mean reduction</span>
+    <span class="n">src</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span>
+        <span class="n">TemporalNDVI</span><span class="p">(),</span>
+        <span class="s1">&#39;temporal_ndvi.tif&#39;</span><span class="p">,</span>
+        <span class="n">band_list</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;red&#39;</span><span class="p">,</span> <span class="s1">&#39;nir&#39;</span><span class="p">],</span>
+        <span class="n">bands</span><span class="o">=</span><span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span>
+        <span class="n">num_workers</span><span class="o">=</span><span class="mi">4</span>
+    <span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="generic-vegetation-indices-with-user-arguments">
+<h2>Generic vegetation indices with user arguments<a class="headerlink" href="#generic-vegetation-indices-with-user-arguments" title="Permalink to this heading">#</a></h2>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">GenericVI</span><span class="p">(</span><span class="n">gw</span><span class="o">.</span><span class="n">TimeModule</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">b1</span><span class="p">,</span> <span class="n">b2</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">GenericVI</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">b1</span> <span class="o">=</span> <span class="n">b1</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">b2</span> <span class="o">=</span> <span class="n">b2</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">count</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dtype</span> <span class="o">=</span> <span class="s1">&#39;float64&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bigtiff</span> <span class="o">=</span> <span class="s1">&#39;YES&#39;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">calculate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">array</span><span class="p">):</span>
+        <span class="c1"># Set slice tuples for [time, bands, rows, columns]</span>
+        <span class="n">sl1</span> <span class="o">=</span> <span class="p">(</span><span class="nb">slice</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span> <span class="nb">slice</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">band_dict</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">b2</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">band_dict</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">b2</span><span class="p">]</span><span class="o">+</span><span class="mi">1</span><span class="p">),</span> <span class="nb">slice</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span> <span class="nb">slice</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="kc">None</span><span class="p">))</span>
+        <span class="n">sl2</span> <span class="o">=</span> <span class="p">(</span><span class="nb">slice</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span> <span class="nb">slice</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">band_dict</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">b1</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">band_dict</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">b1</span><span class="p">]</span><span class="o">+</span><span class="mi">1</span><span class="p">),</span> <span class="nb">slice</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span> <span class="nb">slice</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="kc">None</span><span class="p">))</span>
+
+        <span class="c1"># Calculate the normalized index</span>
+        <span class="n">vi</span> <span class="o">=</span> <span class="p">(</span><span class="n">array</span><span class="p">[</span><span class="n">sl1</span><span class="p">]</span> <span class="o">-</span> <span class="n">array</span><span class="p">[</span><span class="n">sl2</span><span class="p">])</span> <span class="o">/</span> <span class="p">((</span><span class="n">array</span><span class="p">[</span><span class="n">sl1</span><span class="p">]</span> <span class="o">+</span> <span class="n">array</span><span class="p">[</span><span class="n">sl2</span><span class="p">])</span> <span class="o">+</span> <span class="mf">1e-9</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">jnp</span><span class="o">.</span><span class="n">nanmean</span><span class="p">(</span><span class="n">array</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">squeeze</span><span class="p">())</span>
+</pre></div>
+</div>
+<p>Now we can create a pipeline with different band ratios.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">stacked_module</span> <span class="o">=</span> <span class="n">gw</span><span class="o">.</span><span class="n">TimeModulePipeline</span><span class="p">(</span>
+    <span class="p">[</span>
+        <span class="n">GenericVI</span><span class="p">(</span><span class="s1">&#39;red&#39;</span><span class="p">,</span> <span class="s1">&#39;nir&#39;</span><span class="p">),</span>
+        <span class="n">GenericVI</span><span class="p">(</span><span class="s1">&#39;green&#39;</span><span class="p">,</span> <span class="s1">&#39;red&#39;</span><span class="p">),</span>
+        <span class="n">GenericVI</span><span class="p">(</span><span class="s1">&#39;swir2&#39;</span><span class="p">,</span> <span class="s1">&#39;nir&#39;</span><span class="p">)</span>
+    <span class="p">]</span>
+<span class="p">)</span>
+
+<span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">series</span><span class="p">(</span><span class="n">filenames</span><span class="p">)</span> <span class="k">as</span> <span class="n">src</span><span class="p">:</span>
+
+    <span class="c1"># Read all bands</span>
+    <span class="n">src</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span>
+        <span class="n">stacked_module</span><span class="p">,</span>
+        <span class="s1">&#39;temporal_stack.tif&#39;</span><span class="p">,</span>
+        <span class="n">band_list</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;blue&#39;</span><span class="p">,</span> <span class="s1">&#39;green&#39;</span><span class="p">,</span> <span class="s1">&#39;red&#39;</span><span class="p">,</span> <span class="s1">&#39;nir&#39;</span><span class="p">,</span> <span class="s1">&#39;swir1&#39;</span><span class="p">,</span> <span class="s1">&#39;swir2&#39;</span><span class="p">],</span>
+        <span class="n">bands</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span>
+        <span class="n">num_workers</span><span class="o">=</span><span class="mi">4</span>
+    <span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="load-and-apply-pytorch-models">
+<h2>Load and apply PyTorch models<a class="headerlink" href="#load-and-apply-pytorch-models" title="Permalink to this heading">#</a></h2>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">torch.nn.functional</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">F</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">TorchModel</span><span class="p">(</span><span class="n">gw</span><span class="o">.</span><span class="n">TimeModule</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model_file</span><span class="p">,</span> <span class="n">model</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">TorchModel</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">model</span>
+
+        <span class="n">checkpoint</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">model_file</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">load_state_dict</span><span class="p">(</span><span class="n">checkpoint</span><span class="p">[</span><span class="s1">&#39;model_state_dict&#39;</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s1">&#39;cuda:0&#39;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">count</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dtype</span> <span class="o">=</span> <span class="s1">&#39;uint8&#39;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">calculate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">array</span><span class="p">):</span>
+        <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">empty_cache</span><span class="p">()</span>
+
+        <span class="n">logits</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">(</span><span class="n">array</span><span class="p">)</span>
+        <span class="n">probas</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">softmax</span><span class="p">(</span><span class="n">logits</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">labels</span> <span class="o">=</span> <span class="n">probas</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">labels</span><span class="o">.</span><span class="n">squeeze</span><span class="p">()</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
+</pre></div>
+</div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">series</span><span class="p">(</span><span class="n">filenames</span><span class="p">)</span> <span class="k">as</span> <span class="n">src</span><span class="p">:</span>
+
+    <span class="c1"># Read all bands</span>
+    <span class="n">src</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span>
+        <span class="n">TorchModel</span><span class="p">(</span><span class="s1">&#39;model.cnn&#39;</span><span class="p">,</span> <span class="n">CNN</span><span class="p">()),</span>
+        <span class="s1">&#39;temporal_stack.tif&#39;</span><span class="p">,</span>
+        <span class="n">transfer_lib</span><span class="o">=</span><span class="s1">&#39;pytorch&#39;</span><span class="p">,</span>
+        <span class="n">band_list</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;blue&#39;</span><span class="p">,</span> <span class="s1">&#39;green&#39;</span><span class="p">,</span> <span class="s1">&#39;red&#39;</span><span class="p">,</span> <span class="s1">&#39;nir&#39;</span><span class="p">],</span>
+        <span class="n">bands</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span>
+        <span class="n">num_workers</span><span class="o">=</span><span class="mi">4</span>
+    <span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="load-and-apply-tensorflow-keras-models">
+<h2>Load and apply Tensorflow/Keras models<a class="headerlink" href="#load-and-apply-tensorflow-keras-models" title="Permalink to this heading">#</a></h2>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">tensorflow</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">tf</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">TensorflowModel</span><span class="p">(</span><span class="n">gw</span><span class="o">.</span><span class="n">TimeModule</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model_file</span><span class="p">,</span> <span class="n">model</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">TensorflowModel</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">model</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">models</span><span class="o">.</span><span class="n">load_model</span><span class="p">(</span><span class="n">model_file</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">count</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dtype</span> <span class="o">=</span> <span class="s1">&#39;uint8&#39;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">calculate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">array</span><span class="p">):</span>
+        <span class="n">labels</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">array</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">labels</span><span class="o">.</span><span class="n">eval</span><span class="p">(</span><span class="n">session</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">compat</span><span class="o">.</span><span class="n">v1</span><span class="o">.</span><span class="n">Session</span><span class="p">())</span>
+</pre></div>
+</div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">with</span> <span class="n">gw</span><span class="o">.</span><span class="n">series</span><span class="p">(</span>
+    <span class="n">filenames</span><span class="p">,</span>
+    <span class="n">window_size</span><span class="o">=</span><span class="p">(</span><span class="mi">512</span><span class="p">,</span> <span class="mi">512</span><span class="p">),</span>
+    <span class="n">padding</span><span class="o">=</span><span class="p">(</span><span class="mi">16</span><span class="p">,</span> <span class="mi">16</span><span class="p">,</span> <span class="mi">16</span><span class="p">,</span> <span class="mi">16</span><span class="p">)</span>
+<span class="p">)</span> <span class="k">as</span> <span class="n">src</span><span class="p">:</span>
+
+    <span class="c1"># Read all bands</span>
+    <span class="n">src</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span>
+        <span class="n">TensorflowModel</span><span class="p">(</span><span class="s1">&#39;model.cnn&#39;</span><span class="p">,</span> <span class="n">CNN</span><span class="p">()),</span>
+        <span class="s1">&#39;temporal_stack.tif&#39;</span><span class="p">,</span>
+        <span class="n">transfer_lib</span><span class="o">=</span><span class="s1">&#39;tensorflow&#39;</span><span class="p">,</span>
+        <span class="n">band_list</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;blue&#39;</span><span class="p">,</span> <span class="s1">&#39;green&#39;</span><span class="p">,</span> <span class="s1">&#39;red&#39;</span><span class="p">,</span> <span class="s1">&#39;nir&#39;</span><span class="p">],</span>
+        <span class="n">bands</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span>
+        <span class="n">num_workers</span><span class="o">=</span><span class="mi">4</span>
+    <span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="generating-time-series-file-lists">
+<h2>Generating time series file lists<a class="headerlink" href="#generating-time-series-file-lists" title="Permalink to this heading">#</a></h2>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">geowombat.core</span><span class="w"> </span><span class="kn">import</span> <span class="n">sort_images_by_date</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+
+<span class="n">file_path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">)</span>
+
+<span class="n">image_dict</span> <span class="o">=</span> <span class="n">sort_images_by_date</span><span class="p">(</span>
+    <span class="n">file_path</span><span class="p">,</span>
+    <span class="s1">&#39;*.tif&#39;</span><span class="p">,</span>
+    <span class="n">date_pos</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+    <span class="n">date_start</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+    <span class="n">date_end</span><span class="o">=</span><span class="mi">7</span><span class="p">,</span>
+    <span class="n">split_by</span><span class="o">=</span><span class="s1">&#39;_&#39;</span><span class="p">,</span>
+    <span class="n">date_format</span><span class="o">=</span><span class="s1">&#39;%Y%j&#39;</span>
+<span class="p">)</span>
+
+<span class="n">image_names</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">image_dict</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+<span class="n">image_dates</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">image_dict</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
+
+<span class="c1"># Create a DataFrame for time slicing</span>
+<span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">image_names</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">],</span> <span class="n">index</span><span class="o">=</span><span class="n">image_dates</span><span class="p">)</span>
+
+<span class="n">file_list</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="s1">&#39;2019-07-01&#39;</span><span class="p">:</span><span class="s1">&#39;2020-07-01&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+</pre></div>
+</div>
+</section>
+</section>
+
+
+                </article>
+              
+
+              
+              
+                <footer class="bd-footer-article">
+                  <!-- Previous / next buttons -->
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="external.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">External examples</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="changelog.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Changelog</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+  <div class="sidebar-secondary-item">
+  <div class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> Contents
+  </div>
+  <nav class="bd-toc-nav page-toc">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#local-gpu-installation">Local GPU installation</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#install-python-libraries">Install Python libraries</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#basic-example">Basic example</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#stacking-multiple-statistics">Stacking multiple statistics</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#custom-modules">Custom modules</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#combining-custom-modules">Combining custom modules</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#using-the-band-dictionary">Using the band dictionary</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#generic-vegetation-indices-with-user-arguments">Generic vegetation indices with user arguments</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#load-and-apply-pytorch-models">Load and apply PyTorch models</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#load-and-apply-tensorflow-keras-models">Load and apply Tensorflow/Keras models</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#generating-time-series-file-lists">Generating time series file lists</a></li>
+</ul>
+  </nav></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            <div class="bd-footer-content__inner">
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+  <p class="copyright">
+    
+      © Copyright 2020-2026, GeoWombat.
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+</div></div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="_static/scripts/bootstrap.js?digest=12da95d707ffb74b382d"></script>
+<script src="_static/scripts/pydata-sphinx-theme.js?digest=12da95d707ffb74b382d"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>

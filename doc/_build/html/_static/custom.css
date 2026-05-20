@@ -1,0 +1,4 @@
+/* Hide In [N]: and Out [N]: prompts from IPython directive output */
+.highlight .gp {
+    display: none;
+}

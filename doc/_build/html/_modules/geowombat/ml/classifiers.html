@@ -1,0 +1,1032 @@
+
+
+<!DOCTYPE html>
+
+
+<html lang="en" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>geowombat.ml.classifiers</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../../_static/styles/theme.css?digest=12da95d707ffb74b382d" rel="stylesheet" />
+<link href="../../../_static/styles/bootstrap.css?digest=12da95d707ffb74b382d" rel="stylesheet" />
+<link href="../../../_static/styles/pydata-sphinx-theme.css?digest=12da95d707ffb74b382d" rel="stylesheet" />
+
+  
+  <link href="../../../_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=12da95d707ffb74b382d" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css" />
+    <link rel="stylesheet" href="../../../_static/styles/sphinx-book-theme.css?digest=14f4ca6b54d191a8c7657f6c759bf11a5fb86285" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/custom.css" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=12da95d707ffb74b382d" />
+<link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=12da95d707ffb74b382d" />
+
+    <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+    <script src="../../../_static/doctools.js"></script>
+    <script src="../../../_static/sphinx_highlight.js"></script>
+    <script src="../../../_static/clipboard.min.js"></script>
+    <script src="../../../_static/copybutton.js"></script>
+    <script src="../../../_static/scripts/sphinx-book-theme.js?digest=5a5c038af52cf7bc1a1ec88eea08e6366ee68824"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/geowombat/ml/classifiers';</script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__primary"
+          id="__primary"/>
+  <label class="overlay overlay-primary" for="__primary"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__secondary"
+          id="__secondary"/>
+  <label class="overlay overlay-secondary" for="__secondary"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="../../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search..."
+         aria-label="Search..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+  
+    <nav class="bd-header navbar navbar-expand-lg bd-navbar">
+    </nav>
+  
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      <div class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+  
+
+<a class="navbar-brand logo" href="../../../index.html">
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../../../_static/logo.png" class="logo__image only-light" alt="GeoWombat"/>
+    <script>document.write(`<img src="../../../_static/logo.png" class="logo__image only-dark" alt="GeoWombat"/>`);</script>
+  
+  
+</a></div>
+        <div class="sidebar-primary-item"><nav class="bd-links" id="bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        <p aria-level="2" class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../../install.html">Installing GeoWombat</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../quick-overview.html">Quick overview</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../../tutorial.html">Tutorial</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-1"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../tutorial-why.html">Why GeoWombat?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../tutorial-open.html">Opening rasters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../tutorial-edit.html">Editing rasters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../tutorial-config.html">Configuration manager</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../tutorial-gw.html">GeoWombat DataArray accessor</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../tutorial-crs.html">Coordinate Reference Systems</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../tutorial-plot.html">Plotting raster data</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../../examples.html">Examples</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-2"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../io.html">Raster I/O</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../io-distributed.html">Distributed processing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../extraction.html">Data extraction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../band-math.html">Band math</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../apply.html">User functions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../ml.html">Machine learning</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../dl.html">Deep learning classifiers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../object-detection.html">Object detection</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../moving.html">Moving windows</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../radiometry.html">Radiometry</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../coreg.html">Co-registration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../tasks.html">Pipeline tasks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../web.html">Accessing STAC Catalogs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../external.html">External examples</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../gpu.html">Time series processes on the GPU</a></li>
+</ul>
+</li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Changes</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../../changelog.html">Changelog</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../issues.html">Issues</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Reference</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../../api.html">API reference</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-3"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.core.geoxarray.GeoWombatAccessor.html">GeoWombat DataArray (DataArray.gw)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.load.html">load</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.extract.html">extract</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.sample.html">sample</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.calc_area.html">calc_area</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.subset.html">subset</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.clip.html">clip</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.clip_by_polygon.html">clip_by_polygon</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.mask.html">mask</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.replace.html">replace</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.recode.html">recode</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.coregister.html">coregister</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.polygons_to_points.html">polygons_to_points</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.apply.html">apply</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.transform_crs.html">transform_crs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.save.html">save</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.to_raster.html">to_raster</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.to_netcdf.html">to_netcdf</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.to_vrt.html">to_vrt</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.array_to_polygon.html">array_to_polygon</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.polygon_to_array.html">polygon_to_array</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.moving.html">moving</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.norm_diff.html">norm_diff</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.avi.html">avi</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.evi.html">evi</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.evi2.html">evi2</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.kndvi.html">kndvi</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.nbr.html">nbr</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.ndvi.html">ndvi</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.wi.html">wi</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.tasseled_cap.html">tasseled_cap</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.coords_to_indices.html">coords_to_indices</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.indices_to_coords.html">indices_to_coords</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.bounds_to_coords.html">bounds_to_coords</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.lonlat_to_xy.html">lonlat_to_xy</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.xy_to_lonlat.html">xy_to_lonlat</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.open.html">open</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.series.html">series</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.TimeModulePipeline.html">TimeModulePipeline</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.TimeModule.html">TimeModule</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.core.stac.composite_stac.html">composite_stac</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.core.stac.merge_stac.html">merge_stac</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.core.stac.open_stac.html">open_stac</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.core.stac.STACCollectionURLNames.html">STACCollectionURLNames</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.core.stac.STACCollections.html">STACCollections</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.core.stac.STACNames.html">STACNames</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.core.stac.StrEnum.html">StrEnum</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.ml.fit.html">fit</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.ml.fit_predict.html">fit_predict</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.ml.predict.html">predict</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.ml.TabNetClassifier.html">TabNetClassifier</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.ml.LTAEClassifier.html">LTAEClassifier</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.ml.TorchGeoClassifier.html">TorchGeoClassifier</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.detect.boxes_from_polygons.html">boxes_from_polygons</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.detect.build_dataset.html">build_dataset</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.detect.build_yolo_dataset.html">build_yolo_dataset</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.detect.detection_accuracy.html">detection_accuracy</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.detect.export_for_review.html">export_for_review</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.detect.fit.html">fit</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.detect.fit_predict.html">fit_predict</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.detect.plot_detections.html">plot_detections</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.detect.predict.html">predict</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.detect.recompute_from_review.html">recompute_from_review</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.detect.SAMRefiner.html">SAMRefiner</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.detect.TorchGeoDetector.html">TorchGeoDetector</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.detect.YOLODetector.html">YOLODetector</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.radiometry.landsat_pixel_angles.html">landsat_pixel_angles</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.radiometry.sentinel_pixel_angles.html">sentinel_pixel_angles</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.radiometry.BRDF.html">BRDF</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.radiometry.Topo.html">Topo</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.radiometry.LinearAdjustments.html">LinearAdjustments</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.radiometry.RadTransforms.html">RadTransforms</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.radiometry.DOS.html">DOS</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.radiometry.SixS.html">SixS</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.radiometry.QAMasker.html">QAMasker</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.radiometry.QABits.html">QABits</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.radiometry.SCLValues.html">SCLValues</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.radiometry.HLSFmaskBits.html">HLSFmaskBits</a></li>
+</ul>
+</li>
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><label class="sidebar-toggle primary-toggle btn btn-sm" for="__primary" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</label></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+<a href="https://github.com/jgrss/geowombat" target="_blank"
+   class="btn btn-sm btn-source-repository-button"
+   title="Source repository"
+   data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fab fa-github"></i>
+  </span>
+
+</a>
+
+
+
+
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button"
+  title="Fullscreen mode"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+
+<script>
+document.write(`
+  <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
+    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
+    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
+  </button>
+`);
+</script>
+
+<script>
+document.write(`
+  <button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+  </button>
+`);
+</script>
+
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1></h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article" role="main">
+                  
+  <h1>Source code for geowombat.ml.classifiers</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">geopandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">gpd</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">xarray</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">xr</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">geopandas.geodataframe</span><span class="w"> </span><span class="kn">import</span> <span class="n">GeoDataFrame</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.pipeline</span><span class="w"> </span><span class="kn">import</span> <span class="n">Pipeline</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.preprocessing</span><span class="w"> </span><span class="kn">import</span> <span class="n">LabelEncoder</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.utils.validation</span><span class="w"> </span><span class="kn">import</span> <span class="n">check_is_fitted</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn_xarray</span><span class="w"> </span><span class="kn">import</span> <span class="n">Target</span><span class="p">,</span> <span class="n">wrap</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">..</span><span class="w"> </span><span class="kn">import</span> <span class="n">polygon_to_array</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_is_unsupervised</span><span class="p">(</span><span class="n">estimator</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Check if an estimator is unsupervised (clusterer or density model).</span>
+
+<span class="sd">    For Pipeline objects, checks the final estimator.</span>
+<span class="sd">    Supports both old (_estimator_type) and new (__sklearn_tags__) sklearn APIs.</span>
+<span class="sd">    Detects KMeans, MiniBatchKMeans, GaussianMixture, etc.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">_UNSUPERVISED_TYPES</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;clusterer&#39;</span><span class="p">,</span> <span class="s1">&#39;DensityEstimator&#39;</span><span class="p">,</span> <span class="s1">&#39;density_estimator&#39;</span><span class="p">}</span>
+
+    <span class="c1"># Handle sklearn_xarray wrapped estimators</span>
+    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">estimator</span><span class="p">,</span> <span class="s1">&#39;estimator&#39;</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">_is_unsupervised</span><span class="p">(</span><span class="n">estimator</span><span class="o">.</span><span class="n">estimator</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">estimator</span><span class="p">,</span> <span class="n">Pipeline</span><span class="p">):</span>
+        <span class="c1"># Get the final estimator in the pipeline</span>
+        <span class="n">final_estimator</span> <span class="o">=</span> <span class="n">estimator</span><span class="o">.</span><span class="n">steps</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">_is_unsupervised</span><span class="p">(</span><span class="n">final_estimator</span><span class="p">)</span>
+
+    <span class="c1"># Try new sklearn 1.6+ tags API first</span>
+    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">estimator</span><span class="p">,</span> <span class="s1">&#39;__sklearn_tags__&#39;</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">tags</span> <span class="o">=</span> <span class="n">estimator</span><span class="o">.</span><span class="n">__sklearn_tags__</span><span class="p">()</span>
+            <span class="c1"># In sklearn 1.6+, tags has estimator_type attribute</span>
+            <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">tags</span><span class="p">,</span> <span class="s1">&#39;estimator_type&#39;</span><span class="p">):</span>
+                <span class="k">return</span> <span class="n">tags</span><span class="o">.</span><span class="n">estimator_type</span> <span class="ow">in</span> <span class="n">_UNSUPERVISED_TYPES</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="k">pass</span>
+
+    <span class="c1"># Fall back to old _estimator_type attribute (sklearn &lt; 1.6)</span>
+    <span class="n">estimator_type</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">estimator</span><span class="p">,</span> <span class="s1">&#39;_estimator_type&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">estimator_type</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">estimator_type</span> <span class="ow">in</span> <span class="n">_UNSUPERVISED_TYPES</span>
+
+    <span class="c1"># Last resort: check if it inherits from ClusterMixin</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.cluster</span><span class="w"> </span><span class="kn">import</span> <span class="n">ClusterMixin</span>
+        <span class="k">return</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">estimator</span><span class="p">,</span> <span class="n">ClusterMixin</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+        <span class="k">pass</span>
+
+    <span class="k">return</span> <span class="kc">False</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_wrap_classifier</span><span class="p">(</span><span class="n">clf</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Wrap a classifier with sklearn_xarray if not already wrapped.&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">clf</span><span class="o">.</span><span class="vm">__module__</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">&quot;sklearn_xarray&quot;</span><span class="p">:</span>
+        <span class="n">clf</span> <span class="o">=</span> <span class="n">wrap</span><span class="p">(</span><span class="n">clf</span><span class="p">,</span> <span class="n">reshapes</span><span class="o">=</span><span class="s2">&quot;band&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">clf</span>
+
+
+<div class="viewcode-block" id="ClassifiersMixin"><a class="viewcode-back" href="../../../api/geowombat.ml.html#geowombat.ml.classifiers.ClassifiersMixin">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">ClassifiersMixin</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">le</span> <span class="o">=</span> <span class="n">LabelEncoder</span><span class="p">()</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_add_time_dim</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
+        <span class="k">if</span> <span class="s2">&quot;time&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">data</span><span class="o">.</span><span class="n">dims</span><span class="p">:</span>
+
+            <span class="k">return</span> <span class="p">(</span>
+                <span class="n">data</span><span class="o">.</span><span class="n">assign_coords</span><span class="p">(</span><span class="n">coords</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;time&quot;</span><span class="p">:</span> <span class="s2">&quot;t1&quot;</span><span class="p">})</span>
+                <span class="o">.</span><span class="n">expand_dims</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="s2">&quot;time&quot;</span><span class="p">)</span>
+                <span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="s2">&quot;time&quot;</span><span class="p">,</span> <span class="s2">&quot;band&quot;</span><span class="p">,</span> <span class="s2">&quot;y&quot;</span><span class="p">,</span> <span class="s2">&quot;x&quot;</span><span class="p">)</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">data</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">classes_</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">le</span><span class="o">.</span><span class="n">classes_</span> <span class="o">+</span> <span class="mi">1</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_fit_labels</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">labels</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">le</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">labels</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_transform_labels</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">labels</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">le</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">labels</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_prepare_labels</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">labels</span><span class="p">,</span> <span class="n">col</span><span class="p">,</span> <span class="n">targ_name</span><span class="p">):</span>
+        <span class="c1"># Convert path to GeoDataFrame first</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">labels</span><span class="p">,</span> <span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">)):</span>
+            <span class="n">labels</span> <span class="o">=</span> <span class="n">gpd</span><span class="o">.</span><span class="n">read_file</span><span class="p">(</span><span class="n">labels</span><span class="p">)</span>
+
+        <span class="c1"># Now safe to access labels[col] and rasterize</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">labels</span><span class="p">,</span> <span class="n">GeoDataFrame</span><span class="p">):</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">labels</span><span class="p">[</span><span class="n">col</span><span class="p">]</span><span class="o">.</span><span class="n">dtype</span> <span class="o">!=</span> <span class="nb">int</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="n">labels</span><span class="p">[</span><span class="n">col</span><span class="p">]</span><span class="o">.</span><span class="n">min</span><span class="p">()</span> <span class="o">==</span> <span class="mi">0</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_fit_labels</span><span class="p">(</span><span class="n">labels</span><span class="p">[</span><span class="n">col</span><span class="p">])</span>
+                <span class="n">labels</span><span class="p">[</span><span class="n">col</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_transform_labels</span><span class="p">(</span><span class="n">labels</span><span class="p">[</span><span class="n">col</span><span class="p">])</span>
+                <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+                    <span class="s2">&quot;target labels were not integers or min class is 0 (conflicts with missing), &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;applying LabelEncoder and adding 1. Input classes = </span><span class="si">{</span><span class="s1">&#39;,&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">le</span><span class="o">.</span><span class="n">classes_</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">str</span><span class="p">)</span><span class="o">.</span><span class="n">tolist</span><span class="p">())</span><span class="si">}</span><span class="s2">; &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;Transformed classes = </span><span class="si">{</span><span class="s1">&#39;,&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_transform_labels</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">le</span><span class="o">.</span><span class="n">classes_</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">str</span><span class="p">)</span><span class="o">.</span><span class="n">tolist</span><span class="p">())</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+                    <span class="ne">UserWarning</span><span class="p">,</span>
+                <span class="p">)</span>
+            <span class="n">labels</span> <span class="o">=</span> <span class="n">polygon_to_array</span><span class="p">(</span><span class="n">labels</span><span class="p">,</span> <span class="n">col</span><span class="o">=</span><span class="n">col</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">)</span>
+
+        <span class="n">labels</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">labels</span><span class="p">]</span> <span class="o">*</span> <span class="n">data</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">ntime</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="s2">&quot;band&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">assign_coords</span><span class="p">(</span>
+            <span class="n">coords</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;band&quot;</span><span class="p">:</span> <span class="n">data</span><span class="o">.</span><span class="n">time</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">tolist</span><span class="p">()}</span>
+        <span class="p">)</span>
+
+        <span class="n">data</span><span class="o">.</span><span class="n">coords</span><span class="p">[</span><span class="n">targ_name</span><span class="p">]</span> <span class="o">=</span> <span class="p">([</span><span class="s2">&quot;time&quot;</span><span class="p">,</span> <span class="s2">&quot;y&quot;</span><span class="p">,</span> <span class="s2">&quot;x&quot;</span><span class="p">],</span> <span class="n">labels</span><span class="o">.</span><span class="n">values</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">data</span><span class="p">,</span> <span class="n">labels</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_stack_it</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">data</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span><span class="n">sample</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;x&quot;</span><span class="p">,</span> <span class="s2">&quot;y&quot;</span><span class="p">,</span> <span class="s2">&quot;time&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">T</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_clean_coords</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">targ_name</span><span class="o">=</span><span class="s2">&quot;targ&quot;</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Drop non-essential coordinates that break sklearn_xarray.</span>
+
+<span class="sd">        STAC data (via stackstac) carries extra metadata coordinates</span>
+<span class="sd">        (title, id, collection, etc.) as DataArray objects. These cause</span>
+<span class="sd">        TypeError in sklearn_xarray when constructing xarray Variables.</span>
+<span class="sd">        Keep only the dimension coordinates plus the target coordinate.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">essential</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">dims</span><span class="p">)</span> <span class="o">|</span> <span class="p">{</span><span class="n">targ_name</span><span class="p">}</span>
+        <span class="n">drop</span> <span class="o">=</span> <span class="p">[</span><span class="n">c</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">data</span><span class="o">.</span><span class="n">coords</span> <span class="k">if</span> <span class="n">c</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">essential</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">drop</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">data</span><span class="o">.</span><span class="n">drop_vars</span><span class="p">(</span><span class="n">drop</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">data</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_prepare_predictors</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">targ_name</span><span class="p">):</span>
+
+        <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_clean_coords</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">targ_name</span><span class="p">)</span>
+        <span class="n">X</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stack_it</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+
+        <span class="c1"># drop nans</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="c1"># prep target axis </span>
+            <span class="n">Xna</span> <span class="o">=</span> <span class="n">X</span><span class="p">[</span><span class="o">~</span><span class="n">X</span><span class="p">[</span><span class="n">targ_name</span><span class="p">]</span><span class="o">.</span><span class="n">isnull</span><span class="p">()]</span>
+            <span class="n">Xna</span> <span class="o">=</span> <span class="n">Xna</span><span class="p">[</span><span class="n">Xna</span><span class="p">[</span><span class="n">targ_name</span><span class="p">]</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">]</span>  <span class="c1"># filter zero targets (fill from polygon_to_array)</span>
+            <span class="c1"># TODO: if X.gw.nodataval is not None:</span>
+            <span class="c1">#     Xna = X[X!= X.gw.nodata ]  # changes here would have to be reflected in y as well</span>
+        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+            <span class="n">Xna</span> <span class="o">=</span> <span class="n">X</span>
+
+        <span class="c1"># TODO: groupby as a user option?</span>
+        <span class="c1"># Xgp = Xna.groupby(targ_name).mean(&#39;sample&#39;)</span>
+
+        <span class="k">return</span> <span class="n">X</span><span class="p">,</span> <span class="n">Xna</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_prepare_classifiers</span><span class="p">(</span><span class="n">clf</span><span class="p">):</span>
+
+        <span class="c1"># ideally need to add wrap(clf, reshapes=&#39;band&#39;)</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">clf</span><span class="p">,</span> <span class="n">Pipeline</span><span class="p">):</span>
+
+            <span class="n">clf</span> <span class="o">=</span> <span class="n">Pipeline</span><span class="p">(</span>
+                <span class="p">[</span>
+                    <span class="p">(</span><span class="n">cln_name</span><span class="p">,</span> <span class="n">wrap</span><span class="p">(</span><span class="n">cln_</span><span class="p">,</span> <span class="n">reshapes</span><span class="o">=</span><span class="s2">&quot;band&quot;</span><span class="p">))</span>
+                    <span class="k">for</span> <span class="n">cln_name</span><span class="p">,</span> <span class="n">cln_</span> <span class="ow">in</span> <span class="n">clf</span><span class="o">.</span><span class="n">steps</span>
+                <span class="p">]</span>
+            <span class="p">)</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">clf</span> <span class="o">=</span> <span class="n">_wrap_classifier</span><span class="p">(</span><span class="n">clf</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">clf</span>
+
+<div class="viewcode-block" id="ClassifiersMixin.add_categorical"><a class="viewcode-back" href="../../../api/geowombat.ml.html#geowombat.ml.classifiers.ClassifiersMixin.add_categorical">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">add_categorical</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">labels</span><span class="p">,</span> <span class="n">col</span><span class="p">,</span> <span class="n">variable_name</span><span class="o">=</span><span class="s2">&quot;cat1&quot;</span><span class="p">):</span>
+
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Adds numeric categorical data to array based on polygon col values.</span>
+<span class="sd">        For multiple time periods, multiple copies are made, one for each time</span>
+<span class="sd">        period.</span>
+
+<span class="sd">        Args:</span>
+
+<span class="sd">            data (xarray.DataArray)</span>
+<span class="sd">            labels (Path or GeoDataFrame): The labels with categorical data.</span>
+<span class="sd">            col (Optional[str]): The column in ``labels`` you want to assign values from.</span>
+<span class="sd">                If ``None``, creates a binary raster.</span>
+<span class="sd">            variable_name (Optional[str]): The name assigned to the categorical data.</span>
+
+<span class="sd">        Example:</span>
+<span class="sd">            &gt;&gt;&gt; from geowombat.ml.classifiers import Classifiers</span>
+<span class="sd">            &gt;&gt;&gt;</span>
+<span class="sd">            &gt;&gt;&gt; gwclf = Classifiers()</span>
+<span class="sd">            &gt;&gt;&gt;</span>
+<span class="sd">            &gt;&gt;&gt; climatecluster = &#39; ./ClusterEco15_Y5.shp&#39;</span>
+<span class="sd">            &gt;&gt;&gt;</span>
+<span class="sd">            &gt;&gt;&gt; time_names = [str(x) for x in range(len(vrts))]</span>
+<span class="sd">            &gt;&gt;&gt;</span>
+<span class="sd">            &gt;&gt;&gt; with gw.open(vrts, time_names=time_names) as src:</span>
+<span class="sd">            &gt;&gt;&gt;     src.attrs[&#39;filename&#39;] = vrts</span>
+<span class="sd">            &gt;&gt;&gt;     cats = gwclf.add_categorical(src, climatecluster, col=&#39;ClusterN_2&#39;, variable_name=&#39;clim_clust&#39;)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">labels</span><span class="p">,</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">):</span>
+            <span class="n">labels</span> <span class="o">=</span> <span class="n">polygon_to_array</span><span class="p">(</span><span class="n">labels</span><span class="p">,</span> <span class="n">col</span><span class="o">=</span><span class="n">col</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">)</span>
+            <span class="n">labels</span><span class="p">[</span><span class="s2">&quot;band&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">variable_name</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">data</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">has_time_coord</span><span class="p">:</span>
+
+            <span class="n">data</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">data</span><span class="o">.</span><span class="n">assign_coords</span><span class="p">(</span><span class="n">coords</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;time&quot;</span><span class="p">:</span> <span class="s2">&quot;t1&quot;</span><span class="p">})</span>
+                <span class="o">.</span><span class="n">expand_dims</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="s2">&quot;time&quot;</span><span class="p">)</span>
+                <span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="s2">&quot;time&quot;</span><span class="p">,</span> <span class="s2">&quot;band&quot;</span><span class="p">,</span> <span class="s2">&quot;y&quot;</span><span class="p">,</span> <span class="s2">&quot;x&quot;</span><span class="p">)</span>
+            <span class="p">)</span>
+
+        <span class="n">labels</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">labels</span><span class="p">]</span> <span class="o">*</span> <span class="n">data</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">ntime</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="s2">&quot;time&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">assign_coords</span><span class="p">(</span>
+            <span class="p">{</span><span class="s2">&quot;time&quot;</span><span class="p">:</span> <span class="n">data</span><span class="o">.</span><span class="n">time</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">tolist</span><span class="p">()}</span>
+        <span class="p">)</span>
+
+        <span class="n">data</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">data</span><span class="p">,</span> <span class="n">labels</span><span class="p">],</span> <span class="n">dim</span><span class="o">=</span><span class="s2">&quot;band&quot;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">data</span></div>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_flatten_time</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Reshape (time, band, y, x) -&gt; (time*band, y, x).</span>
+
+<span class="sd">        Flattens all temporal bands into a single band dimension so</span>
+<span class="sd">        each pixel is one sample with all spectral-temporal features.</span>
+<span class="sd">        Dask-friendly (preserves lazy evaluation).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">time_vals</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">time</span><span class="o">.</span><span class="n">values</span>
+        <span class="n">band_vals</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">band</span><span class="o">.</span><span class="n">values</span>
+        <span class="n">new_bands</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">t</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">b</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">time_vals</span> <span class="k">for</span> <span class="n">b</span> <span class="ow">in</span> <span class="n">band_vals</span>
+        <span class="p">]</span>
+
+        <span class="n">slices</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">data</span><span class="o">.</span><span class="n">isel</span><span class="p">(</span><span class="n">time</span><span class="o">=</span><span class="n">i</span><span class="p">)</span><span class="o">.</span><span class="n">drop_vars</span><span class="p">(</span><span class="s2">&quot;time&quot;</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">time_vals</span><span class="p">))</span>
+        <span class="p">]</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span><span class="n">slices</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="s2">&quot;band&quot;</span><span class="p">)</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">assign_coords</span><span class="p">(</span><span class="n">band</span><span class="o">=</span><span class="n">new_bands</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">result</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_mask_nodata</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">src_nodata</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">dst_nodata</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Remove missing data value and replace with another.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            y (DataArray): The prediction</span>
+<span class="sd">            x (DataArray): The data to used to predict.</span>
+<span class="sd">            src_nodata (int,float): Value to replace , default is x.attrs[&quot;nodatavals&quot;][0]</span>
+<span class="sd">            dst_nodata (int,float): Replacement value, default is np.nan - but converts y to float</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Prefer the pre-computed nodata mask (survives GDAL warping)</span>
+        <span class="k">if</span> <span class="s1">&#39;_nodata_mask&#39;</span> <span class="ow">in</span> <span class="n">x</span><span class="o">.</span><span class="n">coords</span><span class="p">:</span>
+            <span class="n">mask</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">coords</span><span class="p">[</span><span class="s1">&#39;_nodata_mask&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">y</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">xr</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">mask</span><span class="p">,</span> <span class="n">dst_nodata</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">xr</span><span class="o">.</span><span class="n">where</span><span class="p">(</span>
+                    <span class="n">mask</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">,</span> <span class="p">:,</span> <span class="p">:],</span> <span class="n">dst_nodata</span><span class="p">,</span> <span class="n">y</span>
+                <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">src_nodata</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">nodatavals</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">attrs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;nodatavals&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">nodatavals</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">nodatavals</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">y</span>
+            <span class="n">src_nodata</span> <span class="o">=</span> <span class="n">nodatavals</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="c1"># Use np.isnan for NaN nodata (IEEE 754: NaN != NaN)</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">src_nodata</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span> <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">src_nodata</span><span class="p">):</span>
+            <span class="n">_eq</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">arr</span><span class="p">:</span> <span class="n">arr</span><span class="o">.</span><span class="n">isnull</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">_eq</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">arr</span><span class="p">:</span> <span class="n">arr</span> <span class="o">==</span> <span class="n">src_nodata</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
+            <span class="c1"># Reduce lazily over band dim, then compute the 2D mask</span>
+            <span class="c1"># (avoids materializing the full 3D boolean array)</span>
+            <span class="n">mask</span> <span class="o">=</span> <span class="n">_eq</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="n">x</span><span class="o">.</span><span class="n">dims</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">.</span><span class="n">values</span>
+            <span class="k">return</span> <span class="n">xr</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">mask</span><span class="p">,</span> <span class="n">dst_nodata</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">mask</span> <span class="o">=</span> <span class="n">_eq</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="n">x</span><span class="o">.</span><span class="n">dims</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">values</span>
+            <span class="k">return</span> <span class="n">xr</span><span class="o">.</span><span class="n">where</span><span class="p">(</span>
+                <span class="n">mask</span><span class="p">[:,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">],</span> <span class="n">dst_nodata</span><span class="p">,</span> <span class="n">y</span>
+            <span class="p">)</span></div>
+
+        <span class="c1"># suggested by jordan</span>
+        <span class="c1"># Set the &#39;no data&#39; attribute</span>
+        <span class="c1"># .gw.assign_nodata_attrs(0)</span>
+        <span class="c1"># Convert &#39;no data&#39; values to nans</span>
+        <span class="c1"># .gw.mask_nodata()</span>
+
+
+<div class="viewcode-block" id="Classifiers"><a class="viewcode-back" href="../../../api/geowombat.ml.html#geowombat.ml.classifiers.Classifiers">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">Classifiers</span><span class="p">(</span><span class="n">ClassifiersMixin</span><span class="p">):</span>
+<div class="viewcode-block" id="Classifiers.fit"><a class="viewcode-back" href="../../../api/geowombat.ml.html#geowombat.ml.classifiers.Classifiers.fit">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">fit</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">data</span><span class="p">,</span>
+        <span class="n">clf</span><span class="p">,</span>
+        <span class="n">labels</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">col</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">targ_name</span><span class="o">=</span><span class="s2">&quot;targ&quot;</span><span class="p">,</span>
+        <span class="n">targ_dim_name</span><span class="o">=</span><span class="s2">&quot;sample&quot;</span><span class="p">,</span>
+        <span class="n">temporal_mode</span><span class="o">=</span><span class="s2">&quot;panel&quot;</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Fits a classifier given class labels.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            data (DataArray): The data to predict on.</span>
+<span class="sd">            clf (object): The classifier or classification pipeline.</span>
+<span class="sd">            labels (Optional[str | Path | GeoDataFrame]): Class labels as polygon geometry.</span>
+<span class="sd">            col (Optional[str]): The column in ``labels`` you want to assign values from.</span>
+<span class="sd">                If ``None``, creates a binary raster.</span>
+<span class="sd">            targ_name (Optional[str]): The target name.</span>
+<span class="sd">            targ_dim_name (Optional[str]): The target coordinate name.</span>
+<span class="sd">            temporal_mode (Optional[str]): How to handle time-dimensioned data.</span>
+<span class="sd">                ``&#39;panel&#39;`` — each pixel-time is an independent sample (B features);</span>
+<span class="sd">                output has time dimension with per-time predictions.</span>
+<span class="sd">                ``&#39;flatten&#39;`` — flatten time into band (T*B features per pixel);</span>
+<span class="sd">                output has no time dimension, one prediction per pixel.</span>
+<span class="sd">                Ignored when data has no time dimension.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Tuple of ``(X, Xna, clf)``, where ``X`` is the original ``xarray.DataArray``</span>
+<span class="sd">            augmented to accept a prediction dimension; ``Xna`` is a tuple</span>
+<span class="sd">            ``(xarray.DataArray, sklearn_xarray.Target)`` of the reshaped feature data</span>
+<span class="sd">            (with NAs removed for supervised classifiers, retained for unsupervised) and</span>
+<span class="sd">            the target array (None for unsupervised); and ``clf`` is the fitted sklearn</span>
+<span class="sd">            pipeline.</span>
+
+<span class="sd">        Example:</span>
+<span class="sd">            &gt;&gt;&gt; import geowombat as gw</span>
+<span class="sd">            &gt;&gt;&gt; from geowombat.data import l8_224078_20200518, l8_224078_20200518_polygons</span>
+<span class="sd">            &gt;&gt;&gt; from geowombat.ml import fit</span>
+<span class="sd">            &gt;&gt;&gt;</span>
+<span class="sd">            &gt;&gt;&gt; import geopandas as gpd</span>
+<span class="sd">            &gt;&gt;&gt; from sklearn.pipeline import Pipeline</span>
+<span class="sd">            &gt;&gt;&gt; from sklearn.preprocessing import StandardScaler, LabelEncoder</span>
+<span class="sd">            &gt;&gt;&gt; from sklearn.decomposition import PCA</span>
+<span class="sd">            &gt;&gt;&gt; from sklearn.naive_bayes import GaussianNB</span>
+<span class="sd">            &gt;&gt;&gt;</span>
+<span class="sd">            &gt;&gt;&gt; le = LabelEncoder()</span>
+<span class="sd">            &gt;&gt;&gt;</span>
+<span class="sd">            &gt;&gt;&gt; labels = gpd.read_file(l8_224078_20200518_polygons)</span>
+<span class="sd">            &gt;&gt;&gt; labels[&#39;lc&#39;] = le.fit(labels.name).transform(labels.name)</span>
+<span class="sd">            &gt;&gt;&gt;</span>
+<span class="sd">            &gt;&gt;&gt; # Use supervised classification pipeline</span>
+<span class="sd">            &gt;&gt;&gt; pl = Pipeline([(&#39;scaler&#39;, StandardScaler()),</span>
+<span class="sd">            &gt;&gt;&gt;                (&#39;pca&#39;, PCA()),</span>
+<span class="sd">            &gt;&gt;&gt;                (&#39;clf&#39;, GaussianNB())])</span>
+<span class="sd">            &gt;&gt;&gt;</span>
+<span class="sd">            &gt;&gt;&gt; with gw.open(l8_224078_20200518) as src:</span>
+<span class="sd">            &gt;&gt;&gt;   X, Xy, clf = fit(src, pl, labels, col=&#39;lc&#39;)</span>
+
+<span class="sd">            &gt;&gt;&gt; # Fit an unsupervised classifier</span>
+<span class="sd">            &gt;&gt;&gt; cl = Pipeline([(&#39;pca&#39;, PCA()),</span>
+<span class="sd">            &gt;&gt;&gt;                (&#39;cst&#39;, KMeans())])</span>
+<span class="sd">            &gt;&gt;&gt; with gw.open(l8_224078_20200518) as src:</span>
+<span class="sd">            &gt;&gt;&gt;    X, Xy, clf = fit(src, cl)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Delegate to DL classifier&#39;s own data handling</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">clf</span><span class="p">,</span> <span class="s1">&#39;_is_gw_dl_classifier&#39;</span><span class="p">):</span>
+            <span class="n">clf</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span>
+                <span class="n">data</span><span class="p">,</span> <span class="n">labels</span><span class="o">=</span><span class="n">labels</span><span class="p">,</span> <span class="n">col</span><span class="o">=</span><span class="n">col</span><span class="p">,</span>
+                <span class="n">targ_name</span><span class="o">=</span><span class="n">targ_name</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="k">return</span> <span class="n">data</span><span class="p">,</span> <span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span> <span class="n">clf</span>
+
+        <span class="c1"># Flatten time into band if requested</span>
+        <span class="k">if</span> <span class="n">data</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">has_time_coord</span> <span class="ow">and</span> <span class="n">temporal_mode</span> <span class="o">==</span> <span class="s1">&#39;flatten&#39;</span><span class="p">:</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_flatten_time</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">_is_unsupervised</span><span class="p">(</span><span class="n">clf</span><span class="p">):</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_add_time_dim</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+            <span class="n">X</span><span class="p">,</span> <span class="n">Xna</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_prepare_predictors</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">targ_name</span><span class="p">)</span>
+
+            <span class="n">clf</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_prepare_classifiers</span><span class="p">(</span><span class="n">clf</span><span class="p">)</span>
+
+            <span class="c1"># TODO: Validation checks</span>
+            <span class="c1"># check_array(X)</span>
+            <span class="n">clf</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+            <span class="nb">setattr</span><span class="p">(</span><span class="n">clf</span><span class="p">,</span> <span class="s2">&quot;fitted_&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+
+            <span class="k">return</span> <span class="n">X</span><span class="p">,</span> <span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span> <span class="n">clf</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_add_time_dim</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+
+            <span class="n">data</span><span class="p">,</span> <span class="n">labels</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_prepare_labels</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">labels</span><span class="p">,</span> <span class="n">col</span><span class="p">,</span> <span class="n">targ_name</span><span class="p">)</span>
+            <span class="n">X</span><span class="p">,</span> <span class="n">Xna</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_prepare_predictors</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">targ_name</span><span class="p">)</span>
+            <span class="n">clf</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_prepare_classifiers</span><span class="p">(</span><span class="n">clf</span><span class="p">)</span>
+
+            <span class="c1"># TODO: should we be using lazy=True?</span>
+            <span class="n">y</span> <span class="o">=</span> <span class="n">Target</span><span class="p">(</span>
+                <span class="n">coord</span><span class="o">=</span><span class="n">targ_name</span><span class="p">,</span>
+            <span class="p">)(</span><span class="n">Xna</span><span class="p">)</span>
+
+            <span class="c1"># TO DO: Validation checks</span>
+            <span class="c1"># Xna, y = check_X_y(Xna, y)</span>
+
+            <span class="n">clf</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">Xna</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+            <span class="nb">setattr</span><span class="p">(</span><span class="n">clf</span><span class="p">,</span> <span class="s2">&quot;fitted_&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+
+            <span class="k">return</span> <span class="n">X</span><span class="p">,</span> <span class="p">(</span><span class="n">Xna</span><span class="p">,</span> <span class="n">y</span><span class="p">),</span> <span class="n">clf</span></div>
+
+<div class="viewcode-block" id="Classifiers.predict"><a class="viewcode-back" href="../../../api/geowombat.ml.html#geowombat.ml.classifiers.Classifiers.predict">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">predict</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">data</span><span class="p">,</span>
+        <span class="n">X</span><span class="p">,</span>
+        <span class="n">clf</span><span class="p">,</span>
+        <span class="n">targ_name</span><span class="o">=</span><span class="s2">&quot;targ&quot;</span><span class="p">,</span>
+        <span class="n">targ_dim_name</span><span class="o">=</span><span class="s2">&quot;sample&quot;</span><span class="p">,</span>
+        <span class="n">mask_nodataval</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">temporal_mode</span><span class="o">=</span><span class="s2">&quot;panel&quot;</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Predicts on a DataArray using a fitted classifier.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            data (DataArray): The data to predict on.</span>
+<span class="sd">            X (DataArray): Data array generated by geowombat.ml.fit.</span>
+<span class="sd">            clf (object): The classifier or classification pipeline.</span>
+<span class="sd">            targ_name (Optional[str]): The target name.</span>
+<span class="sd">            targ_dim_name (Optional[str]): The target coordinate name.</span>
+<span class="sd">            mask_nodataval (Optional[Bool]): If true, data.attrs[&quot;nodatavals&quot;][0]</span>
+<span class="sd">                are replaced with np.nan and the array is returned as type float</span>
+<span class="sd">            temporal_mode (Optional[str]): How to handle time-dimensioned data.</span>
+<span class="sd">                &#39;panel&#39; — each pixel-time is an independent sample.</span>
+<span class="sd">                &#39;flatten&#39; — flatten time into band.</span>
+<span class="sd">                Must match the temporal_mode used in fit().</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            ``xarray.DataArray``:</span>
+
+<span class="sd">                Predictions shaped (&#39;time&#39; x &#39;band&#39; x &#39;y&#39; x &#39;x&#39;)</span>
+
+<span class="sd">        Example:</span>
+
+<span class="sd">            &gt;&gt;&gt; import geowombat as gw</span>
+<span class="sd">            &gt;&gt;&gt; from geowombat.data import l8_224078_20200518, l8_224078_20200518_polygons</span>
+<span class="sd">            &gt;&gt;&gt; from geowombat.ml import fit, predict</span>
+<span class="sd">            &gt;&gt;&gt; import geopandas as gpd</span>
+<span class="sd">            &gt;&gt;&gt; from sklearn.pipeline import Pipeline</span>
+<span class="sd">            &gt;&gt;&gt; from sklearn.preprocessing import LabelEncoder, StandardScaler</span>
+<span class="sd">            &gt;&gt;&gt; from sklearn.decomposition import PCA</span>
+<span class="sd">            &gt;&gt;&gt; from sklearn.naive_bayes import GaussianNB</span>
+
+<span class="sd">            &gt;&gt;&gt; le = LabelEncoder()</span>
+<span class="sd">            &gt;&gt;&gt; labels = gpd.read_file(l8_224078_20200518_polygons)</span>
+<span class="sd">            &gt;&gt;&gt; labels[&quot;lc&quot;] = le.fit(labels.name).transform(labels.name)</span>
+
+<span class="sd">            &gt;&gt;&gt; # Use a data pipeline</span>
+<span class="sd">            &gt;&gt;&gt; pl = Pipeline([(&#39;scaler&#39;, StandardScaler()),</span>
+<span class="sd">            &gt;&gt;&gt;                (&#39;pca&#39;, PCA()),</span>
+<span class="sd">            &gt;&gt;&gt;                (&#39;clf&#39;, GaussianNB())])</span>
+
+<span class="sd">            &gt;&gt;&gt; # Fit and predict the classifier</span>
+<span class="sd">            &gt;&gt;&gt; with gw.config.update(ref_res=100):</span>
+<span class="sd">            &gt;&gt;&gt;     with gw.open(l8_224078_20200518, nodata=0) as src:</span>
+<span class="sd">            &gt;&gt;&gt;         X, Xy, clf = fit(src, pl, labels, col=&quot;lc&quot;)</span>
+<span class="sd">            &gt;&gt;&gt;         y = predict(src, X, clf)</span>
+<span class="sd">            &gt;&gt;&gt;         print(y)</span>
+
+<span class="sd">            &gt;&gt;&gt; # Fit and predict an unsupervised classifier</span>
+<span class="sd">            &gt;&gt;&gt; cl = Pipeline([(&#39;pca&#39;, PCA()),</span>
+<span class="sd">            &gt;&gt;&gt;                (&#39;cst&#39;, KMeans())])</span>
+<span class="sd">            &gt;&gt;&gt; with gw.open(l8_224078_20200518) as src:</span>
+<span class="sd">            &gt;&gt;&gt;    X, Xy, clf = fit(src, cl)</span>
+<span class="sd">            &gt;&gt;&gt;    y1 = predict(src, X, clf)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Delegate to DL classifier&#39;s own prediction</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">clf</span><span class="p">,</span> <span class="s1">&#39;_is_gw_dl_classifier&#39;</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">clf</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+
+        <span class="c1"># Flatten time into band if requested (for mask_nodata)</span>
+        <span class="k">if</span> <span class="n">data</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">has_time_coord</span> <span class="ow">and</span> <span class="n">temporal_mode</span> <span class="o">==</span> <span class="s1">&#39;flatten&#39;</span><span class="p">:</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_flatten_time</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+
+        <span class="n">check_is_fitted</span><span class="p">(</span><span class="n">clf</span><span class="p">)</span>
+
+        <span class="n">y</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">clf</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+            <span class="o">.</span><span class="n">unstack</span><span class="p">(</span><span class="n">targ_dim_name</span><span class="p">)</span>
+            <span class="o">.</span><span class="n">assign_coords</span><span class="p">(</span><span class="n">coords</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;band&quot;</span><span class="p">:</span> <span class="n">targ_name</span><span class="p">})</span>
+            <span class="o">.</span><span class="n">expand_dims</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="s2">&quot;band&quot;</span><span class="p">)</span>
+            <span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="s2">&quot;time&quot;</span><span class="p">,</span> <span class="s2">&quot;band&quot;</span><span class="p">,</span> <span class="s2">&quot;y&quot;</span><span class="p">,</span> <span class="s2">&quot;x&quot;</span><span class="p">)</span>
+        <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">mask_nodataval</span><span class="p">:</span>
+            <span class="n">y</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mask_nodata</span><span class="p">(</span><span class="n">y</span><span class="o">=</span><span class="n">y</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="n">data</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">y</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">ntime</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">y</span> <span class="o">=</span> <span class="n">y</span><span class="o">.</span><span class="n">isel</span><span class="p">(</span><span class="n">time</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">drop_vars</span><span class="p">(</span><span class="s2">&quot;time&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Re-chunk if data is dask-backed; otherwise just assign attrs</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="s1">&#39;chunksize&#39;</span><span class="p">):</span>
+            <span class="n">chunks</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="s2">&quot;band&quot;</span><span class="p">:</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span>
+                <span class="s2">&quot;y&quot;</span><span class="p">:</span> <span class="n">data</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">row_chunks</span><span class="p">,</span>
+                <span class="s2">&quot;x&quot;</span><span class="p">:</span> <span class="n">data</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">col_chunks</span><span class="p">,</span>
+            <span class="p">}</span>
+            <span class="k">if</span> <span class="s2">&quot;time&quot;</span> <span class="ow">in</span> <span class="n">y</span><span class="o">.</span><span class="n">dims</span><span class="p">:</span>
+                <span class="n">chunks</span><span class="p">[</span><span class="s2">&quot;time&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+            <span class="n">y</span> <span class="o">=</span> <span class="n">y</span><span class="o">.</span><span class="n">chunk</span><span class="p">(</span><span class="n">chunks</span><span class="p">)</span>
+
+        <span class="n">y</span> <span class="o">=</span> <span class="n">y</span><span class="o">.</span><span class="n">assign_attrs</span><span class="p">(</span><span class="o">**</span><span class="n">data</span><span class="o">.</span><span class="n">attrs</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">y</span></div>
+
+<div class="viewcode-block" id="Classifiers.fit_predict"><a class="viewcode-back" href="../../../api/geowombat.ml.html#geowombat.ml.classifiers.Classifiers.fit_predict">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">fit_predict</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">data</span><span class="p">,</span>
+        <span class="n">clf</span><span class="p">,</span>
+        <span class="n">labels</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">col</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">targ_name</span><span class="o">=</span><span class="s2">&quot;targ&quot;</span><span class="p">,</span>
+        <span class="n">targ_dim_name</span><span class="o">=</span><span class="s2">&quot;sample&quot;</span><span class="p">,</span>
+        <span class="n">mask_nodataval</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">temporal_mode</span><span class="o">=</span><span class="s2">&quot;panel&quot;</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Fits a classifier given class labels and predicts on a DataArray.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            data (DataArray): The data to predict on.</span>
+<span class="sd">            clf (object): The classifier or classification pipeline.</span>
+<span class="sd">            labels (optional[str | Path | GeoDataFrame]): Class labels as polygon geometry.</span>
+<span class="sd">            col (Optional[str]): The column in ``labels`` you want to assign values from.</span>
+<span class="sd">                If ``None``, creates a binary raster.</span>
+<span class="sd">            targ_name (Optional[str]): The target name.</span>
+<span class="sd">            targ_dim_name (Optional[str]): The target coordinate name.</span>
+<span class="sd">            mask_nodataval (Optional[Bool]): If true, data.attrs[&quot;nodatavals&quot;][0]</span>
+<span class="sd">                are replaced with np.nan and the array is returned as type float</span>
+<span class="sd">            temporal_mode (Optional[str]): How to handle time-dimensioned data.</span>
+<span class="sd">                &#39;panel&#39; — each pixel-time is an independent sample.</span>
+<span class="sd">                &#39;flatten&#39; — flatten time into band.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            ``xarray.DataArray``:</span>
+
+<span class="sd">                Predictions shaped (&#39;time&#39; x &#39;band&#39; x &#39;y&#39; x &#39;x&#39;)</span>
+
+<span class="sd">        Example:</span>
+<span class="sd">            &gt;&gt;&gt; import geowombat as gw</span>
+<span class="sd">            &gt;&gt;&gt; from geowombat.data import l8_224078_20200518, l8_224078_20200518_polygons</span>
+<span class="sd">            &gt;&gt;&gt; from geowombat.ml import fit_predict</span>
+<span class="sd">            &gt;&gt;&gt;</span>
+<span class="sd">            &gt;&gt;&gt; import geopandas as gpd</span>
+<span class="sd">            &gt;&gt;&gt; from sklearn.pipeline import Pipeline</span>
+<span class="sd">            &gt;&gt;&gt; from sklearn.preprocessing import StandardScaler, LabelEncoder</span>
+<span class="sd">            &gt;&gt;&gt; from sklearn.decomposition import PCA</span>
+<span class="sd">            &gt;&gt;&gt; from sklearn.naive_bayes import GaussianNB</span>
+<span class="sd">            &gt;&gt;&gt; from sklearn.cluster import KMeans</span>
+<span class="sd">            &gt;&gt;&gt;</span>
+<span class="sd">            &gt;&gt;&gt; le = LabelEncoder()</span>
+<span class="sd">            &gt;&gt;&gt;</span>
+<span class="sd">            &gt;&gt;&gt; labels = gpd.read_file(l8_224078_20200518_polygons)</span>
+<span class="sd">            &gt;&gt;&gt; labels[&#39;lc&#39;] = le.fit(labels.name).transform(labels.name)</span>
+<span class="sd">            &gt;&gt;&gt;</span>
+<span class="sd">            &gt;&gt;&gt; # Use a supervised classification pipeline</span>
+<span class="sd">            &gt;&gt;&gt; pl = Pipeline([(&#39;scaler&#39;, StandardScaler()),</span>
+<span class="sd">            &gt;&gt;&gt;                (&#39;pca&#39;, PCA()),</span>
+<span class="sd">            &gt;&gt;&gt;                (&#39;clf&#39;, GaussianNB())])</span>
+<span class="sd">            &gt;&gt;&gt;</span>
+<span class="sd">            &gt;&gt;&gt; with gw.open(l8_224078_20200518, nodata=0) as src:</span>
+<span class="sd">            &gt;&gt;&gt;     y = fit_predict(src, pl, labels, col=&#39;lc&#39;)</span>
+<span class="sd">            &gt;&gt;&gt;     y.sel(band=&#39;targ&#39;).gw.imshow()</span>
+<span class="sd">            &gt;&gt;&gt;</span>
+<span class="sd">            &gt;&gt;&gt; # Use an unsupervised classification pipeline</span>
+<span class="sd">            &gt;&gt;&gt; cl = Pipeline([(&#39;pca&#39;, PCA()),</span>
+<span class="sd">            &gt;&gt;&gt;                (&#39;cst&#39;, KMeans())])</span>
+<span class="sd">            &gt;&gt;&gt; with gw.open(l8_224078_20200518, nodata=0) as src:</span>
+<span class="sd">            &gt;&gt;&gt;     y2 = fit_predict(src, cl)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Delegate to DL classifier</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">clf</span><span class="p">,</span> <span class="s1">&#39;_is_gw_dl_classifier&#39;</span><span class="p">):</span>
+            <span class="n">clf</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span>
+                <span class="n">data</span><span class="p">,</span> <span class="n">labels</span><span class="o">=</span><span class="n">labels</span><span class="p">,</span> <span class="n">col</span><span class="o">=</span><span class="n">col</span><span class="p">,</span>
+                <span class="n">targ_name</span><span class="o">=</span><span class="n">targ_name</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="k">return</span> <span class="n">clf</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+
+        <span class="c1"># Flatten time into band once if requested,</span>
+        <span class="c1"># so both fit() and predict() see the same data</span>
+        <span class="k">if</span> <span class="n">data</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">has_time_coord</span> <span class="ow">and</span> <span class="n">temporal_mode</span> <span class="o">==</span> <span class="s1">&#39;flatten&#39;</span><span class="p">:</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_flatten_time</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+
+        <span class="n">X</span><span class="p">,</span> <span class="n">Xy</span><span class="p">,</span> <span class="n">clf</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span>
+            <span class="n">data</span><span class="p">,</span>
+            <span class="n">clf</span><span class="p">,</span>
+            <span class="n">labels</span><span class="o">=</span><span class="n">labels</span><span class="p">,</span>
+            <span class="n">col</span><span class="o">=</span><span class="n">col</span><span class="p">,</span>
+            <span class="n">targ_name</span><span class="o">=</span><span class="n">targ_name</span><span class="p">,</span>
+            <span class="n">targ_dim_name</span><span class="o">=</span><span class="n">targ_dim_name</span><span class="p">,</span>
+            <span class="n">temporal_mode</span><span class="o">=</span><span class="n">temporal_mode</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="n">y</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span>
+            <span class="n">data</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">clf</span><span class="p">,</span> <span class="n">targ_name</span><span class="p">,</span> <span class="n">targ_dim_name</span><span class="p">,</span>
+            <span class="n">mask_nodataval</span><span class="p">,</span> <span class="n">temporal_mode</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">y</span></div></div>
+</pre></div>
+
+                </article>
+              
+
+              
+              
+                <footer class="bd-footer-article">
+                  <!-- Previous / next buttons -->
+<div class="prev-next-area">
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            <div class="bd-footer-content__inner">
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+  <p class="copyright">
+    
+      © Copyright 2020-2026, GeoWombat.
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+</div></div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../../../_static/scripts/bootstrap.js?digest=12da95d707ffb74b382d"></script>
+<script src="../../../_static/scripts/pydata-sphinx-theme.js?digest=12da95d707ffb74b382d"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>

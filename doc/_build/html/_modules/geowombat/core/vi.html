@@ -1,0 +1,1844 @@
+
+
+<!DOCTYPE html>
+
+
+<html lang="en" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>geowombat.core.vi</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../../_static/styles/theme.css?digest=12da95d707ffb74b382d" rel="stylesheet" />
+<link href="../../../_static/styles/bootstrap.css?digest=12da95d707ffb74b382d" rel="stylesheet" />
+<link href="../../../_static/styles/pydata-sphinx-theme.css?digest=12da95d707ffb74b382d" rel="stylesheet" />
+
+  
+  <link href="../../../_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=12da95d707ffb74b382d" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css" />
+    <link rel="stylesheet" href="../../../_static/styles/sphinx-book-theme.css?digest=14f4ca6b54d191a8c7657f6c759bf11a5fb86285" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/custom.css" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=12da95d707ffb74b382d" />
+<link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=12da95d707ffb74b382d" />
+
+    <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+    <script src="../../../_static/doctools.js"></script>
+    <script src="../../../_static/sphinx_highlight.js"></script>
+    <script src="../../../_static/clipboard.min.js"></script>
+    <script src="../../../_static/copybutton.js"></script>
+    <script src="../../../_static/scripts/sphinx-book-theme.js?digest=5a5c038af52cf7bc1a1ec88eea08e6366ee68824"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/geowombat/core/vi';</script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__primary"
+          id="__primary"/>
+  <label class="overlay overlay-primary" for="__primary"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__secondary"
+          id="__secondary"/>
+  <label class="overlay overlay-secondary" for="__secondary"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="../../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search..."
+         aria-label="Search..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+  
+    <nav class="bd-header navbar navbar-expand-lg bd-navbar">
+    </nav>
+  
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      <div class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+  
+
+<a class="navbar-brand logo" href="../../../index.html">
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../../../_static/logo.png" class="logo__image only-light" alt="GeoWombat"/>
+    <script>document.write(`<img src="../../../_static/logo.png" class="logo__image only-dark" alt="GeoWombat"/>`);</script>
+  
+  
+</a></div>
+        <div class="sidebar-primary-item"><nav class="bd-links" id="bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        <p aria-level="2" class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../../install.html">Installing GeoWombat</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../quick-overview.html">Quick overview</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../../tutorial.html">Tutorial</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-1"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../tutorial-why.html">Why GeoWombat?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../tutorial-open.html">Opening rasters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../tutorial-edit.html">Editing rasters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../tutorial-config.html">Configuration manager</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../tutorial-gw.html">GeoWombat DataArray accessor</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../tutorial-crs.html">Coordinate Reference Systems</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../tutorial-plot.html">Plotting raster data</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../../examples.html">Examples</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-2"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../io.html">Raster I/O</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../io-distributed.html">Distributed processing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../extraction.html">Data extraction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../band-math.html">Band math</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../apply.html">User functions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../ml.html">Machine learning</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../dl.html">Deep learning classifiers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../object-detection.html">Object detection</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../moving.html">Moving windows</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../radiometry.html">Radiometry</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../coreg.html">Co-registration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../tasks.html">Pipeline tasks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../web.html">Accessing STAC Catalogs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../external.html">External examples</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../gpu.html">Time series processes on the GPU</a></li>
+</ul>
+</li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Changes</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../../changelog.html">Changelog</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../issues.html">Issues</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Reference</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../../api.html">API reference</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-3"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.core.geoxarray.GeoWombatAccessor.html">GeoWombat DataArray (DataArray.gw)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.load.html">load</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.extract.html">extract</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.sample.html">sample</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.calc_area.html">calc_area</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.subset.html">subset</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.clip.html">clip</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.clip_by_polygon.html">clip_by_polygon</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.mask.html">mask</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.replace.html">replace</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.recode.html">recode</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.coregister.html">coregister</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.polygons_to_points.html">polygons_to_points</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.apply.html">apply</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.transform_crs.html">transform_crs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.save.html">save</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.to_raster.html">to_raster</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.to_netcdf.html">to_netcdf</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.to_vrt.html">to_vrt</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.array_to_polygon.html">array_to_polygon</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.polygon_to_array.html">polygon_to_array</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.moving.html">moving</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.norm_diff.html">norm_diff</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.avi.html">avi</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.evi.html">evi</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.evi2.html">evi2</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.kndvi.html">kndvi</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.nbr.html">nbr</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.ndvi.html">ndvi</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.wi.html">wi</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.tasseled_cap.html">tasseled_cap</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.coords_to_indices.html">coords_to_indices</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.indices_to_coords.html">indices_to_coords</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.bounds_to_coords.html">bounds_to_coords</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.lonlat_to_xy.html">lonlat_to_xy</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.xy_to_lonlat.html">xy_to_lonlat</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.open.html">open</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.series.html">series</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.TimeModulePipeline.html">TimeModulePipeline</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.TimeModule.html">TimeModule</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.core.stac.composite_stac.html">composite_stac</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.core.stac.merge_stac.html">merge_stac</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.core.stac.open_stac.html">open_stac</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.core.stac.STACCollectionURLNames.html">STACCollectionURLNames</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.core.stac.STACCollections.html">STACCollections</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.core.stac.STACNames.html">STACNames</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.core.stac.StrEnum.html">StrEnum</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.ml.fit.html">fit</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.ml.fit_predict.html">fit_predict</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.ml.predict.html">predict</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.ml.TabNetClassifier.html">TabNetClassifier</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.ml.LTAEClassifier.html">LTAEClassifier</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.ml.TorchGeoClassifier.html">TorchGeoClassifier</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.detect.boxes_from_polygons.html">boxes_from_polygons</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.detect.build_dataset.html">build_dataset</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.detect.build_yolo_dataset.html">build_yolo_dataset</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.detect.detection_accuracy.html">detection_accuracy</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.detect.export_for_review.html">export_for_review</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.detect.fit.html">fit</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.detect.fit_predict.html">fit_predict</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.detect.plot_detections.html">plot_detections</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.detect.predict.html">predict</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.detect.recompute_from_review.html">recompute_from_review</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.detect.SAMRefiner.html">SAMRefiner</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.detect.TorchGeoDetector.html">TorchGeoDetector</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.detect.YOLODetector.html">YOLODetector</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.radiometry.landsat_pixel_angles.html">landsat_pixel_angles</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.radiometry.sentinel_pixel_angles.html">sentinel_pixel_angles</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.radiometry.BRDF.html">BRDF</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.radiometry.Topo.html">Topo</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.radiometry.LinearAdjustments.html">LinearAdjustments</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.radiometry.RadTransforms.html">RadTransforms</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.radiometry.DOS.html">DOS</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.radiometry.SixS.html">SixS</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.radiometry.QAMasker.html">QAMasker</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.radiometry.QABits.html">QABits</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.radiometry.SCLValues.html">SCLValues</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.radiometry.HLSFmaskBits.html">HLSFmaskBits</a></li>
+</ul>
+</li>
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><label class="sidebar-toggle primary-toggle btn btn-sm" for="__primary" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</label></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+<a href="https://github.com/jgrss/geowombat" target="_blank"
+   class="btn btn-sm btn-source-repository-button"
+   title="Source repository"
+   data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fab fa-github"></i>
+  </span>
+
+</a>
+
+
+
+
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button"
+  title="Fullscreen mode"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+
+<script>
+document.write(`
+  <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
+    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
+    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
+  </button>
+`);
+</script>
+
+<script>
+document.write(`
+  <button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+  </button>
+`);
+</script>
+
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1></h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article" role="main">
+                  
+  <h1>Source code for geowombat.core.vi</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">T</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">dask.array</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">da</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">xarray</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">xr</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">..config</span><span class="w"> </span><span class="kn">import</span> <span class="n">config</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">..handler</span><span class="w"> </span><span class="kn">import</span> <span class="n">add_handler</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.base</span><span class="w"> </span><span class="kn">import</span> <span class="n">PropertyMixin</span> <span class="k">as</span> <span class="n">_PropertyMixin</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+<span class="n">logger</span> <span class="o">=</span> <span class="n">add_handler</span><span class="p">(</span><span class="n">logger</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_create_nodata_array</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">nodata</span><span class="p">,</span> <span class="n">band_name</span><span class="p">,</span> <span class="n">var_name</span><span class="p">):</span>
+
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Creates a &#39;no data&#39; Xarray.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        data (Xarray)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">return</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">(</span>
+        <span class="n">data</span><span class="o">=</span><span class="n">da</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span>
+            <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">data</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">nrows</span><span class="p">,</span> <span class="n">data</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">ncols</span><span class="p">),</span>
+            <span class="n">chunks</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">data</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">row_chunks</span><span class="p">,</span> <span class="n">data</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">col_chunks</span><span class="p">),</span>
+            <span class="n">dtype</span><span class="o">=</span><span class="n">data</span><span class="o">.</span><span class="n">dtype</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="o">+</span> <span class="n">nodata</span><span class="p">,</span>
+        <span class="n">coords</span><span class="o">=</span><span class="p">{</span><span class="n">band_name</span><span class="p">:</span> <span class="p">[</span><span class="n">var_name</span><span class="p">],</span> <span class="s1">&#39;y&#39;</span><span class="p">:</span> <span class="n">data</span><span class="o">.</span><span class="n">y</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="s1">&#39;x&#39;</span><span class="p">:</span> <span class="n">data</span><span class="o">.</span><span class="n">x</span><span class="o">.</span><span class="n">values</span><span class="p">},</span>
+        <span class="n">dims</span><span class="o">=</span><span class="p">(</span><span class="n">band_name</span><span class="p">,</span> <span class="s1">&#39;y&#39;</span><span class="p">,</span> <span class="s1">&#39;x&#39;</span><span class="p">),</span>
+        <span class="n">attrs</span><span class="o">=</span><span class="n">data</span><span class="o">.</span><span class="n">attrs</span><span class="p">,</span>
+    <span class="p">)</span>
+
+
+<div class="viewcode-block" id="BandMath"><a class="viewcode-back" href="../../../api/geowombat.core.html#geowombat.core.vi.BandMath">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">BandMath</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<div class="viewcode-block" id="BandMath.scale_and_assign"><a class="viewcode-back" href="../../../api/geowombat.core.html#geowombat.core.vi.BandMath.scale_and_assign">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">scale_and_assign</span><span class="p">(</span>
+        <span class="n">data</span><span class="p">:</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">,</span>
+        <span class="n">nodata</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span>
+        <span class="n">band_variable</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">scale_factor</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+        <span class="n">names</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Sequence</span><span class="p">[</span><span class="n">T</span><span class="o">.</span><span class="n">Any</span><span class="p">],</span>
+        <span class="n">new_names</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Sequence</span><span class="p">[</span><span class="n">T</span><span class="o">.</span><span class="n">Any</span><span class="p">],</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">:</span>
+        <span class="n">attrs</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">attrs</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="n">band_variable</span> <span class="o">==</span> <span class="s1">&#39;wavelength&#39;</span><span class="p">:</span>
+            <span class="n">band_data</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">data</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;float64&#39;</span><span class="p">)</span>
+                <span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">data</span><span class="p">))</span>
+                <span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="o">.</span><span class="n">band</span> <span class="o">!=</span> <span class="n">nodata</span><span class="p">)</span>
+                <span class="o">.</span><span class="n">sel</span><span class="p">(</span><span class="n">wavelength</span><span class="o">=</span><span class="n">names</span><span class="p">)</span>
+            <span class="p">)</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">band_data</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">data</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;float64&#39;</span><span class="p">)</span>
+                <span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">data</span><span class="p">))</span>
+                <span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="o">.</span><span class="n">band</span> <span class="o">!=</span> <span class="n">nodata</span><span class="p">)</span>
+                <span class="o">.</span><span class="n">sel</span><span class="p">(</span><span class="n">band</span><span class="o">=</span><span class="n">names</span><span class="p">)</span>
+            <span class="p">)</span>
+
+        <span class="k">return</span> <span class="p">(</span>
+            <span class="p">(</span><span class="n">band_data</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;float64&#39;</span><span class="p">)</span> <span class="o">*</span> <span class="n">scale_factor</span><span class="p">)</span>
+            <span class="o">.</span><span class="n">assign_coords</span><span class="p">(</span><span class="n">coords</span><span class="o">=</span><span class="p">{</span><span class="n">band_variable</span><span class="p">:</span> <span class="n">new_names</span><span class="p">})</span>
+            <span class="o">.</span><span class="n">assign_attrs</span><span class="p">(</span><span class="o">**</span><span class="n">attrs</span><span class="p">)</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="BandMath.mask_and_assign"><a class="viewcode-back" href="../../../api/geowombat.core.html#geowombat.core.vi.BandMath.mask_and_assign">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">mask_and_assign</span><span class="p">(</span>
+        <span class="n">data</span><span class="p">:</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">,</span>
+        <span class="n">result</span><span class="p">:</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">,</span>
+        <span class="n">band_variable</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">band_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">nodata</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span>
+        <span class="n">new_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">mask</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
+        <span class="n">clip_min</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span>
+        <span class="n">clip_max</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span>
+        <span class="n">scale_factor</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+        <span class="n">sensor</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">norm</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Masks an ``xarray.DataArray``.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            data (DataArray or Dataset)</span>
+<span class="sd">            result (DataArray)</span>
+<span class="sd">            band_variable (str)</span>
+<span class="sd">            band_name (str)</span>
+<span class="sd">            nodata (int or float)</span>
+<span class="sd">            new_name (str)</span>
+<span class="sd">            mask (bool)</span>
+<span class="sd">            clip_min (float | int)</span>
+<span class="sd">            clip_max (float | int)</span>
+<span class="sd">            scale_factor (float)</span>
+<span class="sd">            sensor (str)</span>
+<span class="sd">            norm (bool)</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            ``xarray.DataArray``</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">nodata</span><span class="p">,</span> <span class="p">(</span><span class="nb">float</span><span class="p">,</span> <span class="nb">int</span><span class="p">)):</span>
+            <span class="k">if</span> <span class="n">band_variable</span> <span class="o">==</span> <span class="s1">&#39;wavelength&#39;</span><span class="p">:</span>
+                <span class="n">result</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">where</span><span class="p">(</span>
+                    <span class="n">data</span><span class="o">.</span><span class="n">sel</span><span class="p">(</span><span class="n">wavelength</span><span class="o">=</span><span class="n">band_name</span><span class="p">)</span> <span class="o">==</span> <span class="n">nodata</span><span class="p">,</span> <span class="n">nodata</span><span class="p">,</span> <span class="n">result</span>
+                <span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;float64&#39;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">result</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">where</span><span class="p">(</span>
+                    <span class="n">data</span><span class="o">.</span><span class="n">sel</span><span class="p">(</span><span class="n">band</span><span class="o">=</span><span class="n">band_name</span><span class="p">)</span> <span class="o">==</span> <span class="n">nodata</span><span class="p">,</span> <span class="n">nodata</span><span class="p">,</span> <span class="n">result</span>
+                <span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;float64&#39;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">mask</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">):</span>
+                <span class="n">result</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;mask&#39;</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mi">3</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+
+                <span class="k">if</span> <span class="n">band_variable</span> <span class="o">==</span> <span class="s1">&#39;wavelength&#39;</span><span class="p">:</span>
+                    <span class="n">result</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">sel</span><span class="p">(</span><span class="n">wavelength</span><span class="o">=</span><span class="s1">&#39;mask&#39;</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">3</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">result</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">sel</span><span class="p">(</span><span class="n">band</span><span class="o">=</span><span class="s1">&#39;mask&#39;</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">3</span><span class="p">)</span>
+
+        <span class="n">new_attrs</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">attrs</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+        <span class="n">new_attrs</span><span class="p">[</span><span class="s1">&#39;pre-scaling&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">scale_factor</span>
+        <span class="n">new_attrs</span><span class="p">[</span><span class="s1">&#39;sensor&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">sensor</span>
+        <span class="n">new_attrs</span><span class="p">[</span><span class="s1">&#39;vi&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">new_name</span>
+        <span class="n">new_attrs</span><span class="p">[</span><span class="s1">&#39;drange&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">clip_min</span><span class="p">,</span> <span class="n">clip_max</span><span class="p">)</span>
+
+        <span class="n">result</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="nb">min</span><span class="o">=</span><span class="n">clip_min</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="n">clip_max</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">norm</span><span class="p">:</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="n">result</span> <span class="o">/</span> <span class="n">clip_max</span>
+
+        <span class="k">if</span> <span class="n">result</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">has_band_coord</span> <span class="ow">and</span> <span class="n">result</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">has_band_dim</span><span class="p">:</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">assign_coords</span><span class="p">(</span><span class="n">coords</span><span class="o">=</span><span class="p">{</span><span class="n">band_variable</span><span class="p">:</span> <span class="p">[</span><span class="n">new_name</span><span class="p">]})</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">assign_coords</span><span class="p">(</span><span class="n">coords</span><span class="o">=</span><span class="p">{</span><span class="n">band_variable</span><span class="p">:</span> <span class="n">new_name</span><span class="p">})</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">result</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">has_band_dim</span><span class="p">:</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">expand_dims</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="n">band_variable</span><span class="p">)</span>
+
+        <span class="c1"># Ensure expected order</span>
+        <span class="k">if</span> <span class="n">result</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">has_time</span><span class="p">:</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="s1">&#39;time&#39;</span><span class="p">,</span> <span class="s1">&#39;band&#39;</span><span class="p">,</span> <span class="s1">&#39;y&#39;</span><span class="p">,</span> <span class="s1">&#39;x&#39;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="s1">&#39;band&#39;</span><span class="p">,</span> <span class="s1">&#39;y&#39;</span><span class="p">,</span> <span class="s1">&#39;x&#39;</span><span class="p">)</span>
+
+        <span class="n">result</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">assign_attrs</span><span class="p">(</span><span class="o">**</span><span class="n">new_attrs</span><span class="p">)</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">set_nodata</span><span class="p">(</span>
+            <span class="n">nodata</span><span class="p">,</span> <span class="n">nodata</span><span class="p">,</span> <span class="n">scale_factor</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">offset</span><span class="o">=</span><span class="mi">0</span>
+        <span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">result</span></div>
+
+<div class="viewcode-block" id="BandMath.norm_diff_math"><a class="viewcode-back" href="../../../api/geowombat.core.html#geowombat.core.vi.BandMath.norm_diff_math">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">norm_diff_math</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">data</span><span class="p">:</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">,</span>
+        <span class="n">b1</span><span class="p">:</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">,</span>
+        <span class="n">b2</span><span class="p">:</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">,</span>
+        <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">sensor</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">nodata</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">mask</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">scale_factor</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Normalized difference index --&gt; (b2 - b1) / (b2 + b1)</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            data (DataArray)</span>
+<span class="sd">            b1 (DataArray): Band 1</span>
+<span class="sd">            b2 (DataArray): Band 2</span>
+<span class="sd">            name (str)</span>
+<span class="sd">            sensor (str)</span>
+<span class="sd">            nodata (Optional[int])</span>
+<span class="sd">            mask (Optional[bool])</span>
+<span class="sd">            scale_factor (Optional[float])</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            ``xarray.DataArray``</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">band_variable</span> <span class="o">=</span> <span class="s1">&#39;wavelength&#39;</span> <span class="k">if</span> <span class="s1">&#39;wavelength&#39;</span> <span class="ow">in</span> <span class="n">data</span><span class="o">.</span><span class="n">coords</span> <span class="k">else</span> <span class="s1">&#39;band&#39;</span>
+
+        <span class="n">band_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">scale_and_assign</span><span class="p">(</span>
+            <span class="n">data</span><span class="p">,</span> <span class="n">nodata</span><span class="p">,</span> <span class="n">band_variable</span><span class="p">,</span> <span class="n">scale_factor</span><span class="p">,</span> <span class="p">[</span><span class="n">b1</span><span class="p">,</span> <span class="n">b2</span><span class="p">],</span> <span class="p">[</span><span class="n">b1</span><span class="p">,</span> <span class="n">b2</span><span class="p">]</span>
+        <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">band_variable</span> <span class="o">==</span> <span class="s1">&#39;wavelength&#39;</span><span class="p">:</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="p">(</span>
+                    <span class="p">(</span>
+                        <span class="n">band_data</span><span class="o">.</span><span class="n">sel</span><span class="p">(</span><span class="n">wavelength</span><span class="o">=</span><span class="n">b2</span><span class="p">)</span>
+                        <span class="o">-</span> <span class="n">band_data</span><span class="o">.</span><span class="n">sel</span><span class="p">(</span><span class="n">wavelength</span><span class="o">=</span><span class="n">b1</span><span class="p">)</span>
+                    <span class="p">)</span>
+                    <span class="o">/</span> <span class="p">(</span>
+                        <span class="n">band_data</span><span class="o">.</span><span class="n">sel</span><span class="p">(</span><span class="n">wavelength</span><span class="o">=</span><span class="n">b2</span><span class="p">)</span>
+                        <span class="o">+</span> <span class="n">band_data</span><span class="o">.</span><span class="n">sel</span><span class="p">(</span><span class="n">wavelength</span><span class="o">=</span><span class="n">b1</span><span class="p">)</span>
+                    <span class="p">)</span>
+                <span class="p">)</span>
+                <span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="n">nodata</span><span class="p">)</span>
+                <span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;float64&#39;</span><span class="p">)</span>
+            <span class="p">)</span>
+
+        <span class="k">else</span><span class="p">:</span>
+
+            <span class="n">result</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="p">(</span>
+                    <span class="p">(</span><span class="n">band_data</span><span class="o">.</span><span class="n">sel</span><span class="p">(</span><span class="n">band</span><span class="o">=</span><span class="n">b2</span><span class="p">)</span> <span class="o">-</span> <span class="n">band_data</span><span class="o">.</span><span class="n">sel</span><span class="p">(</span><span class="n">band</span><span class="o">=</span><span class="n">b1</span><span class="p">))</span>
+                    <span class="o">/</span> <span class="p">(</span><span class="n">band_data</span><span class="o">.</span><span class="n">sel</span><span class="p">(</span><span class="n">band</span><span class="o">=</span><span class="n">b2</span><span class="p">)</span> <span class="o">+</span> <span class="n">band_data</span><span class="o">.</span><span class="n">sel</span><span class="p">(</span><span class="n">band</span><span class="o">=</span><span class="n">b1</span><span class="p">))</span>
+                <span class="p">)</span>
+                <span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="n">nodata</span><span class="p">)</span>
+                <span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;float64&#39;</span><span class="p">)</span>
+            <span class="p">)</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">mask_and_assign</span><span class="p">(</span>
+            <span class="n">band_data</span><span class="p">,</span>
+            <span class="n">result</span><span class="p">,</span>
+            <span class="n">band_variable</span><span class="p">,</span>
+            <span class="n">b2</span><span class="p">,</span>
+            <span class="n">nodata</span><span class="p">,</span>
+            <span class="n">name</span><span class="p">,</span>
+            <span class="n">mask</span><span class="p">,</span>
+            <span class="o">-</span><span class="mi">1</span><span class="p">,</span>
+            <span class="mi">1</span><span class="p">,</span>
+            <span class="n">scale_factor</span><span class="p">,</span>
+            <span class="n">sensor</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="BandMath.avi_math"><a class="viewcode-back" href="../../../api/geowombat.core.html#geowombat.core.vi.BandMath.avi_math">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">avi_math</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">data</span><span class="p">,</span>
+        <span class="n">sensor</span><span class="p">,</span>
+        <span class="n">wavelengths</span><span class="p">,</span>
+        <span class="n">nodata</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">mask</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">scale_factor</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="p">):</span>
+
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Advanced vegetation index.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            ``xarray.DataArray``</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">band_variable</span> <span class="o">=</span> <span class="s1">&#39;wavelength&#39;</span> <span class="k">if</span> <span class="s1">&#39;wavelength&#39;</span> <span class="ow">in</span> <span class="n">data</span><span class="o">.</span><span class="n">coords</span> <span class="k">else</span> <span class="s1">&#39;band&#39;</span>
+
+        <span class="k">if</span> <span class="s1">&#39;nir&#39;</span> <span class="ow">in</span> <span class="n">data</span><span class="o">.</span><span class="n">coords</span><span class="p">[</span><span class="n">band_variable</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">tolist</span><span class="p">():</span>
+            <span class="n">nir</span> <span class="o">=</span> <span class="s1">&#39;nir&#39;</span>
+            <span class="n">red</span> <span class="o">=</span> <span class="s1">&#39;red&#39;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">nir</span> <span class="o">=</span> <span class="n">wavelengths</span><span class="p">[</span><span class="n">sensor</span><span class="p">]</span><span class="o">.</span><span class="n">nir</span>
+            <span class="n">red</span> <span class="o">=</span> <span class="n">wavelengths</span><span class="p">[</span><span class="n">sensor</span><span class="p">]</span><span class="o">.</span><span class="n">red</span>
+
+        <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">scale_and_assign</span><span class="p">(</span>
+            <span class="n">data</span><span class="p">,</span>
+            <span class="n">nodata</span><span class="p">,</span>
+            <span class="n">band_variable</span><span class="p">,</span>
+            <span class="n">scale_factor</span><span class="p">,</span>
+            <span class="p">[</span><span class="n">red</span><span class="p">,</span> <span class="n">nir</span><span class="p">],</span>
+            <span class="p">[</span><span class="s1">&#39;red&#39;</span><span class="p">,</span> <span class="s1">&#39;nir&#39;</span><span class="p">],</span>
+        <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">band_variable</span> <span class="o">==</span> <span class="s1">&#39;wavelength&#39;</span><span class="p">:</span>
+
+            <span class="n">result</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="p">(</span>
+                    <span class="p">(</span>
+                        <span class="n">data</span><span class="o">.</span><span class="n">sel</span><span class="p">(</span><span class="n">wavelength</span><span class="o">=</span><span class="s1">&#39;nir&#39;</span><span class="p">)</span>
+                        <span class="o">*</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="n">data</span><span class="o">.</span><span class="n">sel</span><span class="p">(</span><span class="n">wavelength</span><span class="o">=</span><span class="s1">&#39;red&#39;</span><span class="p">))</span>
+                        <span class="o">*</span> <span class="p">(</span>
+                            <span class="n">data</span><span class="o">.</span><span class="n">sel</span><span class="p">(</span><span class="n">wavelength</span><span class="o">=</span><span class="s1">&#39;nir&#39;</span><span class="p">)</span>
+                            <span class="o">-</span> <span class="n">data</span><span class="o">.</span><span class="n">sel</span><span class="p">(</span><span class="n">wavelength</span><span class="o">=</span><span class="s1">&#39;red&#39;</span><span class="p">)</span>
+                        <span class="p">)</span>
+                    <span class="p">)</span>
+                    <span class="o">**</span> <span class="mf">0.3334</span>
+                <span class="p">)</span>
+                <span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="n">nodata</span><span class="p">)</span>
+                <span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;float64&#39;</span><span class="p">)</span>
+            <span class="p">)</span>
+
+        <span class="k">else</span><span class="p">:</span>
+
+            <span class="n">result</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="p">(</span>
+                    <span class="p">(</span>
+                        <span class="n">data</span><span class="o">.</span><span class="n">sel</span><span class="p">(</span><span class="n">band</span><span class="o">=</span><span class="s1">&#39;nir&#39;</span><span class="p">)</span>
+                        <span class="o">*</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="n">data</span><span class="o">.</span><span class="n">sel</span><span class="p">(</span><span class="n">band</span><span class="o">=</span><span class="s1">&#39;red&#39;</span><span class="p">))</span>
+                        <span class="o">*</span> <span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">sel</span><span class="p">(</span><span class="n">band</span><span class="o">=</span><span class="s1">&#39;nir&#39;</span><span class="p">)</span> <span class="o">-</span> <span class="n">data</span><span class="o">.</span><span class="n">sel</span><span class="p">(</span><span class="n">band</span><span class="o">=</span><span class="s1">&#39;red&#39;</span><span class="p">))</span>
+                    <span class="p">)</span>
+                    <span class="o">**</span> <span class="mf">0.3334</span>
+                <span class="p">)</span>
+                <span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="n">nodata</span><span class="p">)</span>
+                <span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;float64&#39;</span><span class="p">)</span>
+            <span class="p">)</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">mask_and_assign</span><span class="p">(</span>
+            <span class="n">data</span><span class="p">,</span>
+            <span class="n">result</span><span class="p">,</span>
+            <span class="n">band_variable</span><span class="p">,</span>
+            <span class="s1">&#39;nir&#39;</span><span class="p">,</span>
+            <span class="n">nodata</span><span class="p">,</span>
+            <span class="s1">&#39;avi&#39;</span><span class="p">,</span>
+            <span class="n">mask</span><span class="p">,</span>
+            <span class="mi">0</span><span class="p">,</span>
+            <span class="mi">1</span><span class="p">,</span>
+            <span class="n">scale_factor</span><span class="p">,</span>
+            <span class="n">sensor</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="BandMath.evi_math"><a class="viewcode-back" href="../../../api/geowombat.core.html#geowombat.core.vi.BandMath.evi_math">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">evi_math</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">data</span><span class="p">,</span>
+        <span class="n">sensor</span><span class="p">,</span>
+        <span class="n">wavelengths</span><span class="p">,</span>
+        <span class="n">nodata</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">mask</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">scale_factor</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="p">):</span>
+
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Enhanced vegetation index.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            ``xarray.DataArray``</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">l_factor</span> <span class="o">=</span> <span class="mf">1.0</span>
+        <span class="n">c1</span> <span class="o">=</span> <span class="mf">6.0</span>
+        <span class="n">c2</span> <span class="o">=</span> <span class="mf">7.5</span>
+        <span class="n">g_factor</span> <span class="o">=</span> <span class="mf">2.5</span>
+
+        <span class="n">band_variable</span> <span class="o">=</span> <span class="s1">&#39;wavelength&#39;</span> <span class="k">if</span> <span class="s1">&#39;wavelength&#39;</span> <span class="ow">in</span> <span class="n">data</span><span class="o">.</span><span class="n">coords</span> <span class="k">else</span> <span class="s1">&#39;band&#39;</span>
+
+        <span class="k">if</span> <span class="s1">&#39;nir&#39;</span> <span class="ow">in</span> <span class="n">data</span><span class="o">.</span><span class="n">coords</span><span class="p">[</span><span class="n">band_variable</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">tolist</span><span class="p">():</span>
+            <span class="n">nir</span> <span class="o">=</span> <span class="s1">&#39;nir&#39;</span>
+            <span class="n">red</span> <span class="o">=</span> <span class="s1">&#39;red&#39;</span>
+            <span class="n">blue</span> <span class="o">=</span> <span class="s1">&#39;blue&#39;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">nir</span> <span class="o">=</span> <span class="n">wavelengths</span><span class="p">[</span><span class="n">sensor</span><span class="p">]</span><span class="o">.</span><span class="n">nir</span>
+            <span class="n">red</span> <span class="o">=</span> <span class="n">wavelengths</span><span class="p">[</span><span class="n">sensor</span><span class="p">]</span><span class="o">.</span><span class="n">red</span>
+            <span class="n">blue</span> <span class="o">=</span> <span class="n">wavelengths</span><span class="p">[</span><span class="n">sensor</span><span class="p">]</span><span class="o">.</span><span class="n">blue</span>
+
+        <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">scale_and_assign</span><span class="p">(</span>
+            <span class="n">data</span><span class="p">,</span>
+            <span class="n">nodata</span><span class="p">,</span>
+            <span class="n">band_variable</span><span class="p">,</span>
+            <span class="n">scale_factor</span><span class="p">,</span>
+            <span class="p">[</span><span class="n">nir</span><span class="p">,</span> <span class="n">red</span><span class="p">,</span> <span class="n">blue</span><span class="p">],</span>
+            <span class="p">[</span><span class="s1">&#39;nir&#39;</span><span class="p">,</span> <span class="s1">&#39;red&#39;</span><span class="p">,</span> <span class="s1">&#39;blue&#39;</span><span class="p">],</span>
+        <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">band_variable</span> <span class="o">==</span> <span class="s1">&#39;wavelength&#39;</span><span class="p">:</span>
+
+            <span class="n">result</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="p">(</span>
+                    <span class="n">g_factor</span>
+                    <span class="o">*</span> <span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">sel</span><span class="p">(</span><span class="n">wavelength</span><span class="o">=</span><span class="s1">&#39;nir&#39;</span><span class="p">)</span> <span class="o">-</span> <span class="n">data</span><span class="o">.</span><span class="n">sel</span><span class="p">(</span><span class="n">wavelength</span><span class="o">=</span><span class="s1">&#39;red&#39;</span><span class="p">))</span>
+                    <span class="o">/</span> <span class="p">(</span>
+                        <span class="p">(</span>
+                            <span class="n">data</span><span class="o">.</span><span class="n">sel</span><span class="p">(</span><span class="n">wavelength</span><span class="o">=</span><span class="s1">&#39;nir&#39;</span><span class="p">)</span>
+                            <span class="o">+</span> <span class="n">c1</span> <span class="o">*</span> <span class="n">data</span><span class="o">.</span><span class="n">sel</span><span class="p">(</span><span class="n">wavelength</span><span class="o">=</span><span class="s1">&#39;red&#39;</span><span class="p">)</span>
+                            <span class="o">-</span> <span class="n">c2</span> <span class="o">*</span> <span class="n">data</span><span class="o">.</span><span class="n">sel</span><span class="p">(</span><span class="n">wavelength</span><span class="o">=</span><span class="s1">&#39;blue&#39;</span><span class="p">)</span>
+                        <span class="p">)</span>
+                        <span class="o">+</span> <span class="n">l_factor</span>
+                    <span class="p">)</span>
+                <span class="p">)</span>
+                <span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="n">nodata</span><span class="p">)</span>
+                <span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;float64&#39;</span><span class="p">)</span>
+            <span class="p">)</span>
+
+        <span class="k">else</span><span class="p">:</span>
+
+            <span class="n">result</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="p">(</span>
+                    <span class="n">g_factor</span>
+                    <span class="o">*</span> <span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">sel</span><span class="p">(</span><span class="n">band</span><span class="o">=</span><span class="s1">&#39;nir&#39;</span><span class="p">)</span> <span class="o">-</span> <span class="n">data</span><span class="o">.</span><span class="n">sel</span><span class="p">(</span><span class="n">band</span><span class="o">=</span><span class="s1">&#39;red&#39;</span><span class="p">))</span>
+                    <span class="o">/</span> <span class="p">(</span>
+                        <span class="p">(</span>
+                            <span class="n">data</span><span class="o">.</span><span class="n">sel</span><span class="p">(</span><span class="n">band</span><span class="o">=</span><span class="s1">&#39;nir&#39;</span><span class="p">)</span>
+                            <span class="o">+</span> <span class="n">c1</span> <span class="o">*</span> <span class="n">data</span><span class="o">.</span><span class="n">sel</span><span class="p">(</span><span class="n">band</span><span class="o">=</span><span class="s1">&#39;red&#39;</span><span class="p">)</span>
+                            <span class="o">-</span> <span class="n">c2</span> <span class="o">*</span> <span class="n">data</span><span class="o">.</span><span class="n">sel</span><span class="p">(</span><span class="n">band</span><span class="o">=</span><span class="s1">&#39;blue&#39;</span><span class="p">)</span>
+                        <span class="p">)</span>
+                        <span class="o">+</span> <span class="n">l_factor</span>
+                    <span class="p">)</span>
+                <span class="p">)</span>
+                <span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="n">nodata</span><span class="p">)</span>
+                <span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;float64&#39;</span><span class="p">)</span>
+            <span class="p">)</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">mask_and_assign</span><span class="p">(</span>
+            <span class="n">data</span><span class="p">,</span>
+            <span class="n">result</span><span class="p">,</span>
+            <span class="n">band_variable</span><span class="p">,</span>
+            <span class="s1">&#39;nir&#39;</span><span class="p">,</span>
+            <span class="n">nodata</span><span class="p">,</span>
+            <span class="s1">&#39;evi&#39;</span><span class="p">,</span>
+            <span class="n">mask</span><span class="p">,</span>
+            <span class="mi">0</span><span class="p">,</span>
+            <span class="mi">1</span><span class="p">,</span>
+            <span class="n">scale_factor</span><span class="p">,</span>
+            <span class="n">sensor</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="BandMath.evi2_math"><a class="viewcode-back" href="../../../api/geowombat.core.html#geowombat.core.vi.BandMath.evi2_math">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">evi2_math</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">data</span><span class="p">,</span>
+        <span class="n">sensor</span><span class="p">,</span>
+        <span class="n">wavelengths</span><span class="p">,</span>
+        <span class="n">nodata</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">mask</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">scale_factor</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Two-band enhanced vegetation index.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            ``xarray.DataArray``</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">band_variable</span> <span class="o">=</span> <span class="s1">&#39;wavelength&#39;</span> <span class="k">if</span> <span class="s1">&#39;wavelength&#39;</span> <span class="ow">in</span> <span class="n">data</span><span class="o">.</span><span class="n">coords</span> <span class="k">else</span> <span class="s1">&#39;band&#39;</span>
+
+        <span class="k">if</span> <span class="s1">&#39;nir&#39;</span> <span class="ow">in</span> <span class="n">data</span><span class="o">.</span><span class="n">coords</span><span class="p">[</span><span class="n">band_variable</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">tolist</span><span class="p">():</span>
+            <span class="n">nir</span> <span class="o">=</span> <span class="s1">&#39;nir&#39;</span>
+            <span class="n">red</span> <span class="o">=</span> <span class="s1">&#39;red&#39;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">nir</span> <span class="o">=</span> <span class="n">wavelengths</span><span class="p">[</span><span class="n">sensor</span><span class="p">]</span><span class="o">.</span><span class="n">nir</span>
+            <span class="n">red</span> <span class="o">=</span> <span class="n">wavelengths</span><span class="p">[</span><span class="n">sensor</span><span class="p">]</span><span class="o">.</span><span class="n">red</span>
+
+        <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">scale_and_assign</span><span class="p">(</span>
+            <span class="n">data</span><span class="p">,</span>
+            <span class="n">nodata</span><span class="p">,</span>
+            <span class="n">band_variable</span><span class="p">,</span>
+            <span class="n">scale_factor</span><span class="p">,</span>
+            <span class="p">[</span><span class="n">nir</span><span class="p">,</span> <span class="n">red</span><span class="p">],</span>
+            <span class="p">[</span><span class="s1">&#39;nir&#39;</span><span class="p">,</span> <span class="s1">&#39;red&#39;</span><span class="p">],</span>
+        <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">band_variable</span> <span class="o">==</span> <span class="s1">&#39;wavelength&#39;</span><span class="p">:</span>
+
+            <span class="n">result</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="p">(</span>
+                    <span class="mf">2.5</span>
+                    <span class="o">*</span> <span class="p">(</span>
+                        <span class="p">(</span>
+                            <span class="n">data</span><span class="o">.</span><span class="n">sel</span><span class="p">(</span><span class="n">wavelength</span><span class="o">=</span><span class="s1">&#39;nir&#39;</span><span class="p">)</span>
+                            <span class="o">-</span> <span class="n">data</span><span class="o">.</span><span class="n">sel</span><span class="p">(</span><span class="n">wavelength</span><span class="o">=</span><span class="s1">&#39;red&#39;</span><span class="p">)</span>
+                        <span class="p">)</span>
+                        <span class="o">/</span> <span class="p">(</span>
+                            <span class="n">data</span><span class="o">.</span><span class="n">sel</span><span class="p">(</span><span class="n">wavelength</span><span class="o">=</span><span class="s1">&#39;nir&#39;</span><span class="p">)</span>
+                            <span class="o">+</span> <span class="mf">1.0</span>
+                            <span class="o">+</span> <span class="p">(</span><span class="mf">2.4</span> <span class="o">*</span> <span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">sel</span><span class="p">(</span><span class="n">wavelength</span><span class="o">=</span><span class="s1">&#39;red&#39;</span><span class="p">)))</span>
+                        <span class="p">)</span>
+                    <span class="p">)</span>
+                <span class="p">)</span>
+                <span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="n">nodata</span><span class="p">)</span>
+                <span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;float64&#39;</span><span class="p">)</span>
+            <span class="p">)</span>
+
+        <span class="k">else</span><span class="p">:</span>
+
+            <span class="n">result</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="p">(</span>
+                    <span class="mf">2.5</span>
+                    <span class="o">*</span> <span class="p">(</span>
+                        <span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">sel</span><span class="p">(</span><span class="n">band</span><span class="o">=</span><span class="s1">&#39;nir&#39;</span><span class="p">)</span> <span class="o">-</span> <span class="n">data</span><span class="o">.</span><span class="n">sel</span><span class="p">(</span><span class="n">band</span><span class="o">=</span><span class="s1">&#39;red&#39;</span><span class="p">))</span>
+                        <span class="o">/</span> <span class="p">(</span>
+                            <span class="n">data</span><span class="o">.</span><span class="n">sel</span><span class="p">(</span><span class="n">band</span><span class="o">=</span><span class="s1">&#39;nir&#39;</span><span class="p">)</span>
+                            <span class="o">+</span> <span class="mf">1.0</span>
+                            <span class="o">+</span> <span class="p">(</span><span class="mf">2.4</span> <span class="o">*</span> <span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">sel</span><span class="p">(</span><span class="n">band</span><span class="o">=</span><span class="s1">&#39;red&#39;</span><span class="p">)))</span>
+                        <span class="p">)</span>
+                    <span class="p">)</span>
+                <span class="p">)</span>
+                <span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="n">nodata</span><span class="p">)</span>
+                <span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;float64&#39;</span><span class="p">)</span>
+            <span class="p">)</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">mask_and_assign</span><span class="p">(</span>
+            <span class="n">data</span><span class="p">,</span>
+            <span class="n">result</span><span class="p">,</span>
+            <span class="n">band_variable</span><span class="p">,</span>
+            <span class="s1">&#39;nir&#39;</span><span class="p">,</span>
+            <span class="n">nodata</span><span class="p">,</span>
+            <span class="s1">&#39;evi2&#39;</span><span class="p">,</span>
+            <span class="n">mask</span><span class="p">,</span>
+            <span class="mi">0</span><span class="p">,</span>
+            <span class="mi">1</span><span class="p">,</span>
+            <span class="n">scale_factor</span><span class="p">,</span>
+            <span class="n">sensor</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="BandMath.gcvi_math"><a class="viewcode-back" href="../../../api/geowombat.core.html#geowombat.core.vi.BandMath.gcvi_math">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">gcvi_math</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">data</span><span class="p">,</span>
+        <span class="n">sensor</span><span class="p">,</span>
+        <span class="n">wavelengths</span><span class="p">,</span>
+        <span class="n">nodata</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">mask</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">scale_factor</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Green chlorophyll vegetation index.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            ``xarray.DataArray``</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">band_variable</span> <span class="o">=</span> <span class="s1">&#39;wavelength&#39;</span> <span class="k">if</span> <span class="s1">&#39;wavelength&#39;</span> <span class="ow">in</span> <span class="n">data</span><span class="o">.</span><span class="n">coords</span> <span class="k">else</span> <span class="s1">&#39;band&#39;</span>
+
+        <span class="k">if</span> <span class="s1">&#39;nir&#39;</span> <span class="ow">in</span> <span class="n">data</span><span class="o">.</span><span class="n">coords</span><span class="p">[</span><span class="n">band_variable</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">tolist</span><span class="p">():</span>
+            <span class="n">nir</span> <span class="o">=</span> <span class="s1">&#39;nir&#39;</span>
+            <span class="n">green</span> <span class="o">=</span> <span class="s1">&#39;green&#39;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">nir</span> <span class="o">=</span> <span class="n">wavelengths</span><span class="p">[</span><span class="n">sensor</span><span class="p">]</span><span class="o">.</span><span class="n">nir</span>
+            <span class="n">green</span> <span class="o">=</span> <span class="n">wavelengths</span><span class="p">[</span><span class="n">sensor</span><span class="p">]</span><span class="o">.</span><span class="n">green</span>
+
+        <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">scale_and_assign</span><span class="p">(</span>
+            <span class="n">data</span><span class="p">,</span>
+            <span class="n">nodata</span><span class="p">,</span>
+            <span class="n">band_variable</span><span class="p">,</span>
+            <span class="n">scale_factor</span><span class="p">,</span>
+            <span class="p">[</span><span class="n">nir</span><span class="p">,</span> <span class="n">green</span><span class="p">],</span>
+            <span class="p">[</span><span class="s1">&#39;nir&#39;</span><span class="p">,</span> <span class="s1">&#39;green&#39;</span><span class="p">],</span>
+        <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">band_variable</span> <span class="o">==</span> <span class="s1">&#39;wavelength&#39;</span><span class="p">:</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">data</span><span class="o">.</span><span class="n">sel</span><span class="p">(</span><span class="n">wavelength</span><span class="o">=</span><span class="s1">&#39;nir&#39;</span><span class="p">)</span> <span class="o">/</span> <span class="n">data</span><span class="o">.</span><span class="n">sel</span><span class="p">(</span><span class="n">wavelength</span><span class="o">=</span><span class="s1">&#39;green&#39;</span><span class="p">)</span>
+            <span class="p">)</span> <span class="o">-</span> <span class="mf">1.0</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">sel</span><span class="p">(</span><span class="n">band</span><span class="o">=</span><span class="s1">&#39;nir&#39;</span><span class="p">)</span> <span class="o">/</span> <span class="n">data</span><span class="o">.</span><span class="n">sel</span><span class="p">(</span><span class="n">band</span><span class="o">=</span><span class="s1">&#39;green&#39;</span><span class="p">))</span> <span class="o">-</span> <span class="mf">1.0</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">mask_and_assign</span><span class="p">(</span>
+            <span class="n">data</span><span class="p">,</span>
+            <span class="n">result</span><span class="p">,</span>
+            <span class="n">band_variable</span><span class="p">,</span>
+            <span class="s1">&#39;nir&#39;</span><span class="p">,</span>
+            <span class="n">nodata</span><span class="p">,</span>
+            <span class="s1">&#39;gcvi&#39;</span><span class="p">,</span>
+            <span class="n">mask</span><span class="p">,</span>
+            <span class="mi">0</span><span class="p">,</span>
+            <span class="mi">10</span><span class="p">,</span>
+            <span class="n">scale_factor</span><span class="p">,</span>
+            <span class="n">sensor</span><span class="p">,</span>
+            <span class="n">norm</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="BandMath.nbr_math"><a class="viewcode-back" href="../../../api/geowombat.core.html#geowombat.core.vi.BandMath.nbr_math">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">nbr_math</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">data</span><span class="p">,</span>
+        <span class="n">sensor</span><span class="p">,</span>
+        <span class="n">wavelengths</span><span class="p">,</span>
+        <span class="n">nodata</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">mask</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">scale_factor</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Normalized burn ratio.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            ``xarray.DataArray``</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">band_variable</span> <span class="o">=</span> <span class="s1">&#39;wavelength&#39;</span> <span class="k">if</span> <span class="s1">&#39;wavelength&#39;</span> <span class="ow">in</span> <span class="n">data</span><span class="o">.</span><span class="n">coords</span> <span class="k">else</span> <span class="s1">&#39;band&#39;</span>
+
+        <span class="k">if</span> <span class="s1">&#39;nir&#39;</span> <span class="ow">in</span> <span class="n">data</span><span class="o">.</span><span class="n">coords</span><span class="p">[</span><span class="n">band_variable</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">tolist</span><span class="p">():</span>
+            <span class="n">nir</span> <span class="o">=</span> <span class="s1">&#39;nir&#39;</span>
+            <span class="n">swir2</span> <span class="o">=</span> <span class="s1">&#39;swir2&#39;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">nir</span> <span class="o">=</span> <span class="n">wavelengths</span><span class="p">[</span><span class="n">sensor</span><span class="p">]</span><span class="o">.</span><span class="n">nir</span>
+            <span class="n">swir2</span> <span class="o">=</span> <span class="n">wavelengths</span><span class="p">[</span><span class="n">sensor</span><span class="p">]</span><span class="o">.</span><span class="n">swir2</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">norm_diff_math</span><span class="p">(</span>
+            <span class="n">data</span><span class="p">,</span>
+            <span class="n">swir2</span><span class="p">,</span>
+            <span class="n">nir</span><span class="p">,</span>
+            <span class="s1">&#39;nbr&#39;</span><span class="p">,</span>
+            <span class="n">sensor</span><span class="p">,</span>
+            <span class="n">nodata</span><span class="o">=</span><span class="n">nodata</span><span class="p">,</span>
+            <span class="n">mask</span><span class="o">=</span><span class="n">mask</span><span class="p">,</span>
+            <span class="n">scale_factor</span><span class="o">=</span><span class="n">scale_factor</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="BandMath.ndvi_math"><a class="viewcode-back" href="../../../api/geowombat.core.html#geowombat.core.vi.BandMath.ndvi_math">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">ndvi_math</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">data</span><span class="p">,</span>
+        <span class="n">sensor</span><span class="p">,</span>
+        <span class="n">wavelengths</span><span class="p">,</span>
+        <span class="n">nodata</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">mask</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">scale_factor</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Normalized difference vegetation index.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            ``xarray.DataArray``</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">band_variable</span> <span class="o">=</span> <span class="s1">&#39;wavelength&#39;</span> <span class="k">if</span> <span class="s1">&#39;wavelength&#39;</span> <span class="ow">in</span> <span class="n">data</span><span class="o">.</span><span class="n">coords</span> <span class="k">else</span> <span class="s1">&#39;band&#39;</span>
+
+        <span class="k">if</span> <span class="s1">&#39;nir&#39;</span> <span class="ow">in</span> <span class="n">data</span><span class="o">.</span><span class="n">coords</span><span class="p">[</span><span class="n">band_variable</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">tolist</span><span class="p">():</span>
+            <span class="n">nir</span> <span class="o">=</span> <span class="s1">&#39;nir&#39;</span>
+            <span class="n">red</span> <span class="o">=</span> <span class="s1">&#39;red&#39;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">nir</span> <span class="o">=</span> <span class="n">wavelengths</span><span class="p">[</span><span class="n">sensor</span><span class="p">]</span><span class="o">.</span><span class="n">nir</span>
+            <span class="n">red</span> <span class="o">=</span> <span class="n">wavelengths</span><span class="p">[</span><span class="n">sensor</span><span class="p">]</span><span class="o">.</span><span class="n">red</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">norm_diff_math</span><span class="p">(</span>
+            <span class="n">data</span><span class="p">,</span>
+            <span class="n">red</span><span class="p">,</span>
+            <span class="n">nir</span><span class="p">,</span>
+            <span class="s1">&#39;ndvi&#39;</span><span class="p">,</span>
+            <span class="n">sensor</span><span class="p">,</span>
+            <span class="n">nodata</span><span class="o">=</span><span class="n">nodata</span><span class="p">,</span>
+            <span class="n">mask</span><span class="o">=</span><span class="n">mask</span><span class="p">,</span>
+            <span class="n">scale_factor</span><span class="o">=</span><span class="n">scale_factor</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="BandMath.kndvi_math"><a class="viewcode-back" href="../../../api/geowombat.core.html#geowombat.core.vi.BandMath.kndvi_math">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">kndvi_math</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">data</span><span class="p">,</span>
+        <span class="n">sensor</span><span class="p">,</span>
+        <span class="n">wavelengths</span><span class="p">,</span>
+        <span class="n">nodata</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">mask</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">scale_factor</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Kernel normalized difference vegetation index.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            ``xarray.DataArray``</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">band_variable</span> <span class="o">=</span> <span class="s1">&#39;wavelength&#39;</span> <span class="k">if</span> <span class="s1">&#39;wavelength&#39;</span> <span class="ow">in</span> <span class="n">data</span><span class="o">.</span><span class="n">coords</span> <span class="k">else</span> <span class="s1">&#39;band&#39;</span>
+
+        <span class="k">if</span> <span class="s1">&#39;nir&#39;</span> <span class="ow">in</span> <span class="n">data</span><span class="o">.</span><span class="n">coords</span><span class="p">[</span><span class="n">band_variable</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">tolist</span><span class="p">():</span>
+            <span class="n">nir</span> <span class="o">=</span> <span class="s1">&#39;nir&#39;</span>
+            <span class="n">red</span> <span class="o">=</span> <span class="s1">&#39;red&#39;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">nir</span> <span class="o">=</span> <span class="n">wavelengths</span><span class="p">[</span><span class="n">sensor</span><span class="p">]</span><span class="o">.</span><span class="n">nir</span>
+            <span class="n">red</span> <span class="o">=</span> <span class="n">wavelengths</span><span class="p">[</span><span class="n">sensor</span><span class="p">]</span><span class="o">.</span><span class="n">red</span>
+
+        <span class="c1"># Calculate the NDVI</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">norm_diff_math</span><span class="p">(</span>
+            <span class="n">data</span><span class="p">,</span>
+            <span class="n">red</span><span class="p">,</span>
+            <span class="n">nir</span><span class="p">,</span>
+            <span class="s1">&#39;kndvi&#39;</span><span class="p">,</span>
+            <span class="n">sensor</span><span class="p">,</span>
+            <span class="n">nodata</span><span class="o">=</span><span class="n">nodata</span><span class="p">,</span>
+            <span class="n">mask</span><span class="o">=</span><span class="n">mask</span><span class="p">,</span>
+            <span class="n">scale_factor</span><span class="o">=</span><span class="n">scale_factor</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="c1"># Calculate the kNDVI</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">tanh</span><span class="p">(</span><span class="n">result</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+
+        <span class="c1"># This snippet is the same as above, but allows for different kernels</span>
+        <span class="c1"># if band_variable == &#39;wavelength&#39;:</span>
+        <span class="c1">#</span>
+        <span class="c1">#     sigma = (data.sel(wavelength=&#39;red&#39;) + data.sel(wavelength=&#39;nir&#39;)) * 0.5</span>
+        <span class="c1">#     knr = np.exp(-(data.sel(wavelength=&#39;nir&#39;) - data.sel(wavelength=&#39;red&#39;))**2 / (2.0*sigma**2))</span>
+        <span class="c1">#     result = (1.0 - knr) / (1.0 + knr)</span>
+        <span class="c1">#</span>
+        <span class="c1"># else:</span>
+        <span class="c1">#     sigma = (data.sel(band=&#39;red&#39;) + data.sel(band=&#39;nir&#39;)) * 0.5</span>
+        <span class="c1">#     knr = np.exp(-(data.sel(band=&#39;nir&#39;) - data.sel(band=&#39;red&#39;))**2 / (2.0*sigma**2))</span>
+        <span class="c1">#     result = (1.0 - knr) / (1.0 + knr)</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">mask_and_assign</span><span class="p">(</span>
+            <span class="n">data</span><span class="p">,</span>
+            <span class="n">result</span><span class="p">,</span>
+            <span class="n">band_variable</span><span class="p">,</span>
+            <span class="s1">&#39;nir&#39;</span><span class="p">,</span>
+            <span class="n">nodata</span><span class="p">,</span>
+            <span class="s1">&#39;kndvi&#39;</span><span class="p">,</span>
+            <span class="n">mask</span><span class="p">,</span>
+            <span class="o">-</span><span class="mi">1</span><span class="p">,</span>
+            <span class="mi">1</span><span class="p">,</span>
+            <span class="n">scale_factor</span><span class="p">,</span>
+            <span class="n">sensor</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="BandMath.wi_math"><a class="viewcode-back" href="../../../api/geowombat.core.html#geowombat.core.vi.BandMath.wi_math">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">wi_math</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">data</span><span class="p">,</span>
+        <span class="n">sensor</span><span class="p">,</span>
+        <span class="n">wavelengths</span><span class="p">,</span>
+        <span class="n">nodata</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">mask</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">scale_factor</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Woody index.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            ``xarray.DataArray``</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">band_variable</span> <span class="o">=</span> <span class="s1">&#39;wavelength&#39;</span> <span class="k">if</span> <span class="s1">&#39;wavelength&#39;</span> <span class="ow">in</span> <span class="n">data</span><span class="o">.</span><span class="n">coords</span> <span class="k">else</span> <span class="s1">&#39;band&#39;</span>
+
+        <span class="k">if</span> <span class="s1">&#39;swir1&#39;</span> <span class="ow">in</span> <span class="n">data</span><span class="o">.</span><span class="n">coords</span><span class="p">[</span><span class="n">band_variable</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">tolist</span><span class="p">():</span>
+            <span class="n">swir1</span> <span class="o">=</span> <span class="s1">&#39;swir1&#39;</span>
+            <span class="n">red</span> <span class="o">=</span> <span class="s1">&#39;red&#39;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">swir1</span> <span class="o">=</span> <span class="n">wavelengths</span><span class="p">[</span><span class="n">sensor</span><span class="p">]</span><span class="o">.</span><span class="n">swir1</span>
+            <span class="n">red</span> <span class="o">=</span> <span class="n">wavelengths</span><span class="p">[</span><span class="n">sensor</span><span class="p">]</span><span class="o">.</span><span class="n">red</span>
+
+        <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">scale_and_assign</span><span class="p">(</span>
+            <span class="n">data</span><span class="p">,</span>
+            <span class="n">nodata</span><span class="p">,</span>
+            <span class="n">band_variable</span><span class="p">,</span>
+            <span class="n">scale_factor</span><span class="p">,</span>
+            <span class="p">[</span><span class="n">swir1</span><span class="p">,</span> <span class="n">red</span><span class="p">],</span>
+            <span class="p">[</span><span class="s1">&#39;swir1&#39;</span><span class="p">,</span> <span class="s1">&#39;red&#39;</span><span class="p">],</span>
+        <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">band_variable</span> <span class="o">==</span> <span class="s1">&#39;wavelength&#39;</span><span class="p">:</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">sel</span><span class="p">(</span><span class="n">wavelength</span><span class="o">=</span><span class="s1">&#39;swir1&#39;</span><span class="p">)</span> <span class="o">+</span> <span class="n">data</span><span class="o">.</span><span class="n">sel</span><span class="p">(</span><span class="n">wavelength</span><span class="o">=</span><span class="s1">&#39;red&#39;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">sel</span><span class="p">(</span><span class="n">band</span><span class="o">=</span><span class="s1">&#39;swir1&#39;</span><span class="p">)</span> <span class="o">+</span> <span class="n">data</span><span class="o">.</span><span class="n">sel</span><span class="p">(</span><span class="n">band</span><span class="o">=</span><span class="s1">&#39;red&#39;</span><span class="p">)</span>
+
+        <span class="n">result</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">xr</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">result</span> <span class="o">&gt;</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mf">1.0</span> <span class="o">-</span> <span class="p">(</span><span class="n">result</span> <span class="o">/</span> <span class="mf">0.5</span><span class="p">))</span>
+            <span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="n">nodata</span><span class="p">)</span>
+            <span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;float64&#39;</span><span class="p">)</span>
+        <span class="p">)</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">mask_and_assign</span><span class="p">(</span>
+            <span class="n">data</span><span class="p">,</span>
+            <span class="n">result</span><span class="p">,</span>
+            <span class="n">band_variable</span><span class="p">,</span>
+            <span class="s1">&#39;red&#39;</span><span class="p">,</span>
+            <span class="n">nodata</span><span class="p">,</span>
+            <span class="s1">&#39;wi&#39;</span><span class="p">,</span>
+            <span class="n">mask</span><span class="p">,</span>
+            <span class="mi">0</span><span class="p">,</span>
+            <span class="mi">1</span><span class="p">,</span>
+            <span class="n">scale_factor</span><span class="p">,</span>
+            <span class="n">sensor</span><span class="p">,</span>
+        <span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="linear_transform"><a class="viewcode-back" href="../../../api/geowombat.core.html#geowombat.core.vi.linear_transform">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">linear_transform</span><span class="p">(</span>
+    <span class="n">data</span><span class="p">:</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">,</span>
+    <span class="n">bands</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Sequence</span><span class="p">[</span><span class="n">T</span><span class="o">.</span><span class="n">Any</span><span class="p">],</span>
+    <span class="n">scale</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Sequence</span><span class="p">[</span><span class="n">T</span><span class="o">.</span><span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">int</span><span class="p">]],</span>
+    <span class="n">offset</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Sequence</span><span class="p">[</span><span class="n">T</span><span class="o">.</span><span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">int</span><span class="p">]],</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">:</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Linearly scales bands using a scale and an offset</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        data (DataArray): The ``xarray.DataArray`` to transform.</span>
+<span class="sd">        bands (1d array-like): The list of bands to transform.</span>
+<span class="sd">        scale (1d array): The scale coefficients.</span>
+<span class="sd">        offset (1d array): The offset coefficients.</span>
+
+<span class="sd">    Equation:</span>
+
+<span class="sd">        .. math::</span>
+
+<span class="sd">            y = scale \times band + offset</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        ``xarray.DataArray``</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">scalexr</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">(</span><span class="n">scale</span><span class="p">,</span> <span class="n">coords</span><span class="o">=</span><span class="p">[</span><span class="n">bands</span><span class="p">],</span> <span class="n">dims</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;band&#39;</span><span class="p">])</span>
+    <span class="n">offsetxr</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">(</span><span class="n">offset</span><span class="p">,</span> <span class="n">coords</span><span class="o">=</span><span class="p">[</span><span class="n">bands</span><span class="p">],</span> <span class="n">dims</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;band&#39;</span><span class="p">])</span>
+
+    <span class="k">return</span> <span class="n">data</span> <span class="o">*</span> <span class="n">scalexr</span> <span class="o">+</span> <span class="n">offsetxr</span></div>
+
+
+<div class="viewcode-block" id="TasseledCapLookup"><a class="viewcode-back" href="../../../api/geowombat.core.html#geowombat.core.vi.TasseledCapLookup">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">TasseledCapLookup</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<div class="viewcode-block" id="TasseledCapLookup.get_coefficients"><a class="viewcode-back" href="../../../api/geowombat.core.html#geowombat.core.vi.TasseledCapLookup.get_coefficients">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_coefficients</span><span class="p">(</span><span class="n">wavelengths</span><span class="p">,</span> <span class="n">sensor</span><span class="p">):</span>
+        <span class="n">lookup_dict</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
+            <span class="n">aster</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+                <span class="p">[</span>
+                    <span class="p">[</span><span class="mf">0.3909</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.0318</span><span class="p">,</span> <span class="mf">0.4571</span><span class="p">],</span>
+                    <span class="p">[</span><span class="mf">0.5224</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.1031</span><span class="p">,</span> <span class="mf">0.4262</span><span class="p">],</span>
+                    <span class="p">[</span><span class="mf">0.1184</span><span class="p">,</span> <span class="mf">0.9422</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.1568</span><span class="p">],</span>
+                    <span class="p">[</span><span class="mf">0.3233</span><span class="p">,</span> <span class="mf">0.2512</span><span class="p">,</span> <span class="mf">0.2809</span><span class="p">],</span>
+                    <span class="p">[</span><span class="mf">0.305</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.0737</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.2417</span><span class="p">],</span>
+                    <span class="p">[</span><span class="mf">0.3571</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.069</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.3269</span><span class="p">],</span>
+                    <span class="p">[</span><span class="mf">0.3347</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.0957</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.4077</span><span class="p">],</span>
+                    <span class="p">[</span><span class="mf">0.3169</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.1195</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.3731</span><span class="p">],</span>
+                    <span class="p">[</span><span class="mf">0.151</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.0625</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.1877</span><span class="p">],</span>
+                <span class="p">],</span>
+                <span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;float64&#39;</span><span class="p">,</span>
+            <span class="p">),</span>
+            <span class="n">cbers2</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+                <span class="p">[</span>
+                    <span class="p">[</span><span class="mf">0.509</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.494</span><span class="p">,</span> <span class="mf">0.581</span><span class="p">],</span>
+                    <span class="p">[</span><span class="mf">0.431</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.318</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.07</span><span class="p">],</span>
+                    <span class="p">[</span><span class="mf">0.33</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.324</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.811</span><span class="p">],</span>
+                    <span class="p">[</span><span class="mf">0.668</span><span class="p">,</span> <span class="mf">0.741</span><span class="p">,</span> <span class="mf">0.003</span><span class="p">],</span>
+                <span class="p">],</span>
+                <span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;float64&#39;</span><span class="p">,</span>
+            <span class="p">),</span>
+            <span class="n">ik</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+                <span class="p">[</span>
+                    <span class="p">[</span><span class="mf">0.326</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.311</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.612</span><span class="p">],</span>
+                    <span class="p">[</span><span class="mf">0.509</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.256</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.312</span><span class="p">],</span>
+                    <span class="p">[</span><span class="mf">0.56</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.325</span><span class="p">,</span> <span class="mf">0.722</span><span class="p">],</span>
+                    <span class="p">[</span><span class="mf">0.567</span><span class="p">,</span> <span class="mf">0.819</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.081</span><span class="p">],</span>
+                <span class="p">],</span>
+                <span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;float64&#39;</span><span class="p">,</span>
+            <span class="p">),</span>
+            <span class="n">l4</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+                <span class="p">[</span>
+                    <span class="p">[</span><span class="mf">0.433</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.29</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.829</span><span class="p">],</span>
+                    <span class="p">[</span><span class="mf">0.632</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.562</span><span class="p">,</span> <span class="mf">0.522</span><span class="p">],</span>
+                    <span class="p">[</span><span class="mf">0.586</span><span class="p">,</span> <span class="mf">0.6</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.039</span><span class="p">],</span>
+                    <span class="p">[</span><span class="mf">0.264</span><span class="p">,</span> <span class="mf">0.491</span><span class="p">,</span> <span class="mf">0.194</span><span class="p">],</span>
+                <span class="p">],</span>
+                <span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;float64&#39;</span><span class="p">,</span>
+            <span class="p">),</span>
+            <span class="n">l5</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+                <span class="p">[</span>
+                    <span class="p">[</span><span class="mf">0.3037</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.2848</span><span class="p">,</span> <span class="mf">0.1509</span><span class="p">],</span>
+                    <span class="p">[</span><span class="mf">0.2793</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.2435</span><span class="p">,</span> <span class="mf">0.1793</span><span class="p">],</span>
+                    <span class="p">[</span><span class="mf">0.4343</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.5436</span><span class="p">,</span> <span class="mf">0.3299</span><span class="p">],</span>
+                    <span class="p">[</span><span class="mf">0.5585</span><span class="p">,</span> <span class="mf">0.7243</span><span class="p">,</span> <span class="mf">0.3406</span><span class="p">],</span>
+                    <span class="p">[</span><span class="mf">0.5082</span><span class="p">,</span> <span class="mf">0.084</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.7112</span><span class="p">],</span>
+                    <span class="p">[</span><span class="mf">0.1863</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.18</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.4572</span><span class="p">],</span>
+                <span class="p">],</span>
+                <span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;float64&#39;</span><span class="p">,</span>
+            <span class="p">),</span>
+            <span class="n">l7</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+                <span class="p">[</span>
+                    <span class="p">[</span><span class="mf">0.3561</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.3344</span><span class="p">,</span> <span class="mf">0.2626</span><span class="p">],</span>
+                    <span class="p">[</span><span class="mf">0.3972</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.3544</span><span class="p">,</span> <span class="mf">0.2141</span><span class="p">],</span>
+                    <span class="p">[</span><span class="mf">0.3904</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.4556</span><span class="p">,</span> <span class="mf">0.0926</span><span class="p">],</span>
+                    <span class="p">[</span><span class="mf">0.6966</span><span class="p">,</span> <span class="mf">0.6966</span><span class="p">,</span> <span class="mf">0.0656</span><span class="p">],</span>
+                    <span class="p">[</span><span class="mf">0.2286</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.0242</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.7629</span><span class="p">],</span>
+                    <span class="p">[</span><span class="mf">0.1596</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.263</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.5388</span><span class="p">],</span>
+                <span class="p">],</span>
+                <span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;float64&#39;</span><span class="p">,</span>
+            <span class="p">),</span>
+            <span class="n">l8</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+                <span class="p">[</span>
+                    <span class="p">[</span><span class="mf">0.3029</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.2941</span><span class="p">,</span> <span class="mf">0.1511</span><span class="p">],</span>
+                    <span class="p">[</span><span class="mf">0.2786</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.243</span><span class="p">,</span> <span class="mf">0.1973</span><span class="p">],</span>
+                    <span class="p">[</span><span class="mf">0.4733</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.5424</span><span class="p">,</span> <span class="mf">0.3283</span><span class="p">],</span>
+                    <span class="p">[</span><span class="mf">0.5599</span><span class="p">,</span> <span class="mf">0.7276</span><span class="p">,</span> <span class="mf">0.3407</span><span class="p">],</span>
+                    <span class="p">[</span><span class="mf">0.508</span><span class="p">,</span> <span class="mf">0.0713</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.7117</span><span class="p">],</span>
+                    <span class="p">[</span><span class="mf">0.1872</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.1608</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.4559</span><span class="p">],</span>
+                <span class="p">],</span>
+                <span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;float64&#39;</span><span class="p">,</span>
+            <span class="p">),</span>
+            <span class="n">modis</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+                <span class="p">[</span>
+                    <span class="p">[</span><span class="mf">0.4395</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.4064</span><span class="p">,</span> <span class="mf">0.1147</span><span class="p">],</span>
+                    <span class="p">[</span><span class="mf">0.5945</span><span class="p">,</span> <span class="mf">0.5129</span><span class="p">,</span> <span class="mf">0.2489</span><span class="p">],</span>
+                    <span class="p">[</span><span class="mf">0.2460</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.2744</span><span class="p">,</span> <span class="mf">0.2408</span><span class="p">],</span>
+                    <span class="p">[</span><span class="mf">0.3918</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.2893</span><span class="p">,</span> <span class="mf">0.3132</span><span class="p">],</span>
+                    <span class="p">[</span><span class="mf">0.3506</span><span class="p">,</span> <span class="mf">0.4882</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.3122</span><span class="p">],</span>
+                    <span class="p">[</span><span class="mf">0.2136</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.0036</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.6416</span><span class="p">],</span>
+                    <span class="p">[</span><span class="mf">0.2678</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.4169</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.5087</span><span class="p">],</span>
+                <span class="p">],</span>
+                <span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;float64&#39;</span><span class="p">,</span>
+            <span class="p">),</span>
+            <span class="n">qb</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+                <span class="p">[</span>
+                    <span class="p">[</span><span class="mf">0.319</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.121</span><span class="p">,</span> <span class="mf">0.652</span><span class="p">],</span>
+                    <span class="p">[</span><span class="mf">0.542</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.331</span><span class="p">,</span> <span class="mf">0.375</span><span class="p">],</span>
+                    <span class="p">[</span><span class="mf">0.49</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.517</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.639</span><span class="p">],</span>
+                    <span class="p">[</span><span class="mf">0.604</span><span class="p">,</span> <span class="mf">0.78</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.163</span><span class="p">],</span>
+                <span class="p">],</span>
+                <span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;float64&#39;</span><span class="p">,</span>
+            <span class="p">),</span>
+            <span class="n">rapideye</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+                <span class="p">[</span>
+                    <span class="p">[</span><span class="o">-</span><span class="mf">0.293</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.406</span><span class="p">,</span> <span class="mf">0.572</span><span class="p">],</span>
+                    <span class="p">[</span><span class="o">-</span><span class="mf">0.354</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.367</span><span class="p">,</span> <span class="mf">0.402</span><span class="p">],</span>
+                    <span class="p">[</span><span class="o">-</span><span class="mf">0.372</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.446</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.494</span><span class="p">],</span>
+                    <span class="p">[</span><span class="o">-</span><span class="mf">0.44</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.128</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.498</span><span class="p">],</span>
+                    <span class="p">[</span><span class="o">-</span><span class="mf">0.676</span><span class="p">,</span> <span class="mf">0.697</span><span class="p">,</span> <span class="mf">0.138</span><span class="p">],</span>
+                <span class="p">],</span>
+                <span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;float64&#39;</span><span class="p">,</span>
+            <span class="p">),</span>
+        <span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">(</span>
+            <span class="n">data</span><span class="o">=</span><span class="n">lookup_dict</span><span class="p">[</span><span class="n">sensor</span><span class="p">],</span>
+            <span class="n">coords</span><span class="o">=</span><span class="p">{</span>
+                <span class="s1">&#39;coeff&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;brightness&#39;</span><span class="p">,</span> <span class="s1">&#39;greenness&#39;</span><span class="p">,</span> <span class="s1">&#39;wetness&#39;</span><span class="p">],</span>
+                <span class="s1">&#39;band&#39;</span><span class="p">:</span> <span class="nb">list</span><span class="p">(</span><span class="n">wavelengths</span><span class="p">[</span><span class="n">sensor</span><span class="p">]</span><span class="o">.</span><span class="n">_fields</span><span class="p">),</span>
+            <span class="p">},</span>
+            <span class="n">dims</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;band&#39;</span><span class="p">,</span> <span class="s1">&#39;coeff&#39;</span><span class="p">),</span>
+        <span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="TasseledCap"><a class="viewcode-back" href="../../../api/geowombat.core.html#geowombat.core.vi.TasseledCap">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">TasseledCap</span><span class="p">(</span><span class="n">_PropertyMixin</span><span class="p">,</span> <span class="n">TasseledCapLookup</span><span class="p">):</span>
+<div class="viewcode-block" id="TasseledCap.tasseled_cap"><a class="viewcode-back" href="../../../api/geowombat.core.html#geowombat.core.vi.TasseledCap.tasseled_cap">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">tasseled_cap</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">data</span><span class="p">:</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">,</span>
+        <span class="n">nodata</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">sensor</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">scale_factor</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Applies a tasseled cap transformation</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            data (DataArray): The ``xarray.DataArray`` to process.</span>
+<span class="sd">            nodata (Optional[int or float]): A &#39;no data&#39; value to fill NAs with. If ``None``,</span>
+<span class="sd">                the &#39;no data&#39; value is taken from the ``xarray.DataArray`` attributes.</span>
+<span class="sd">            sensor (Optional[str]): The data&#39;s sensor. If ``None``, the band names should</span>
+<span class="sd">                reflect the index being calculated.</span>
+<span class="sd">            scale_factor (Optional[float]): A scale factor to apply to the data. If ``None``,</span>
+<span class="sd">                the scale value is taken from the ``xarray.DataArray`` attributes.</span>
+
+<span class="sd">        Examples:</span>
+<span class="sd">            &gt;&gt;&gt; import geowombat as gw</span>
+<span class="sd">            &gt;&gt;&gt;</span>
+<span class="sd">            &gt;&gt;&gt; with gw.config.update(sensor=&#39;qb&#39;, scale_factor=0.0001):</span>
+<span class="sd">            &gt;&gt;&gt;     with gw.open(&#39;image.tif&#39;, band_names=[&#39;blue&#39;, &#39;green&#39;, &#39;red&#39;, &#39;nir&#39;]) as ds:</span>
+<span class="sd">            &gt;&gt;&gt;         tcap = gw.tasseled_cap(ds)</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            ``xarray.DataArray``</span>
+
+<span class="sd">        References:</span>
+
+<span class="sd">            ASTER:</span>
+<span class="sd">                See :cite:`yajuan_danfeng_2005`</span>
+
+<span class="sd">            CBERS2:</span>
+<span class="sd">                See :cite:`sheng_etal_2011`</span>
+
+<span class="sd">            IKONOS:</span>
+<span class="sd">                See :cite:`pereira_2006`</span>
+
+<span class="sd">            Landsat ETM+:</span>
+<span class="sd">                See :cite:`huang_etal_2002`</span>
+
+<span class="sd">            Landsat OLI:</span>
+<span class="sd">                See :cite:`baig_etal_2014`</span>
+
+<span class="sd">            MODIS:</span>
+<span class="sd">                See :cite:`lobser_cohen_2007`</span>
+
+<span class="sd">            Quickbird:</span>
+<span class="sd">                See :cite:`yarbrough_etal_2005`</span>
+
+<span class="sd">            RapidEye:</span>
+<span class="sd">                See :cite:`arnett_etal_2014`</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">sensor</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">check_sensor</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">sensor</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">nodata</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">nodata</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">nodataval</span>
+
+        <span class="k">if</span> <span class="n">config</span><span class="p">[</span><span class="s1">&#39;scale_factor&#39;</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">scale_factor</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s1">&#39;scale_factor&#39;</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">scale_factor</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">scale_factor</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">scaleval</span>
+
+        <span class="n">tc_coefficients</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_coefficients</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">wavelengths</span><span class="p">,</span> <span class="n">sensor</span><span class="p">)</span>
+
+        <span class="n">tcap</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="p">((</span><span class="n">data</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">data</span> <span class="o">!=</span> <span class="n">nodata</span><span class="p">)</span> <span class="o">*</span> <span class="n">scale_factor</span><span class="p">)</span> <span class="o">*</span> <span class="n">tc_coefficients</span><span class="p">)</span>
+            <span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="s1">&#39;band&#39;</span><span class="p">)</span>
+            <span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="n">nodata</span><span class="p">)</span>
+            <span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="s1">&#39;coeff&#39;</span><span class="p">,</span> <span class="s1">&#39;y&#39;</span><span class="p">,</span> <span class="s1">&#39;x&#39;</span><span class="p">)</span>
+            <span class="o">.</span><span class="n">rename</span><span class="p">({</span><span class="s1">&#39;coeff&#39;</span><span class="p">:</span> <span class="s1">&#39;band&#39;</span><span class="p">})</span>
+        <span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">tcap</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;float64&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">assign_attrs</span><span class="p">(</span><span class="o">**</span><span class="n">data</span><span class="o">.</span><span class="n">attrs</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="VegetationIndices"><a class="viewcode-back" href="../../../api/geowombat.core.html#geowombat.core.vi.VegetationIndices">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">VegetationIndices</span><span class="p">(</span><span class="n">_PropertyMixin</span><span class="p">,</span> <span class="n">BandMath</span><span class="p">):</span>
+<div class="viewcode-block" id="VegetationIndices.norm_diff"><a class="viewcode-back" href="../../../api/geowombat.core.html#geowombat.core.vi.VegetationIndices.norm_diff">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">norm_diff</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">data</span><span class="p">,</span>
+        <span class="n">b1</span><span class="p">,</span>
+        <span class="n">b2</span><span class="p">,</span>
+        <span class="n">sensor</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">nodata</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">mask</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">scale_factor</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Calculates the normalized difference band ratio</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            data (DataArray): The ``xarray.DataArray`` to process.</span>
+<span class="sd">            b1 (str): The band name of the first band.</span>
+<span class="sd">            b2 (str): The band name of the second band.</span>
+<span class="sd">            sensor (Optional[str]): sensor (Optional[str]): The data&#39;s sensor. If ``None``,</span>
+<span class="sd">                the band names should reflect the index being calculated.</span>
+<span class="sd">            nodata (Optional[int or float]): A &#39;no data&#39; value to fill NAs with. If ``None``,</span>
+<span class="sd">                the &#39;no data&#39; value is taken from the ``xarray.DataArray`` attributes.</span>
+<span class="sd">            mask (Optional[bool]): Whether to mask the results.</span>
+<span class="sd">            scale_factor (Optional[float]): A scale factor to apply to the data. If ``None``,</span>
+<span class="sd">                the scale value is taken from the ``xarray.DataArray`` attributes.</span>
+
+<span class="sd">        Equation:</span>
+
+<span class="sd">            .. math::</span>
+
+<span class="sd">                {norm}_{diff} = \frac{b2 - b1}{b2 + b1}</span>
+
+<span class="sd">        Returns:</span>
+
+<span class="sd">            ``xarray.DataArray``:</span>
+
+<span class="sd">                Data range: -1 to 1</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">sensor</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">check_sensor</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">sensor</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">nodata</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">nodata</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">nodataval</span>
+
+        <span class="k">if</span> <span class="n">config</span><span class="p">[</span><span class="s1">&#39;scale_factor&#39;</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">scale_factor</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s1">&#39;scale_factor&#39;</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">scale_factor</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">scale_factor</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">scaleval</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">norm_diff_math</span><span class="p">(</span>
+            <span class="n">data</span><span class="p">,</span>
+            <span class="n">b1</span><span class="p">,</span>
+            <span class="n">b2</span><span class="p">,</span>
+            <span class="s1">&#39;norm-diff&#39;</span><span class="p">,</span>
+            <span class="n">sensor</span><span class="p">,</span>
+            <span class="n">nodata</span><span class="o">=</span><span class="n">nodata</span><span class="p">,</span>
+            <span class="n">mask</span><span class="o">=</span><span class="n">mask</span><span class="p">,</span>
+            <span class="n">scale_factor</span><span class="o">=</span><span class="n">scale_factor</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="VegetationIndices.avi"><a class="viewcode-back" href="../../../api/geowombat.core.html#geowombat.core.vi.VegetationIndices.avi">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">avi</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">nodata</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">mask</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">sensor</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">scale_factor</span><span class="o">=</span><span class="kc">None</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Calculates the advanced vegetation index</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            data (DataArray): The ``xarray.DataArray`` to process.</span>
+<span class="sd">            nodata (Optional[int or float]): A &#39;no data&#39; value to fill NAs with. If ``None``,</span>
+<span class="sd">                the &#39;no data&#39; value is taken from the ``xarray.DataArray`` attributes.</span>
+<span class="sd">            mask (Optional[bool]): Whether to mask the results.</span>
+<span class="sd">            sensor (Optional[str]): The data&#39;s sensor. If ``None``, the band names should</span>
+<span class="sd">                reflect the index being calculated.</span>
+<span class="sd">            scale_factor (Optional[float]): A scale factor to apply to the data. If ``None``,</span>
+<span class="sd">                the scale value is taken from the ``xarray.DataArray`` attributes.</span>
+
+<span class="sd">        Equation:</span>
+
+<span class="sd">            .. math::</span>
+
+<span class="sd">                AVI = {(NIR \times (1.0 - red) \times (NIR - red))}^{0.3334}</span>
+
+<span class="sd">        Returns:</span>
+
+<span class="sd">            ``xarray.DataArray``:</span>
+
+<span class="sd">                Data range: 0 to 1</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">sensor</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">check_sensor</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">sensor</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">nodata</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">nodata</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">nodataval</span>
+
+        <span class="k">if</span> <span class="n">config</span><span class="p">[</span><span class="s1">&#39;scale_factor&#39;</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">scale_factor</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s1">&#39;scale_factor&#39;</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">scale_factor</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">scale_factor</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">scaleval</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">avi_math</span><span class="p">(</span>
+            <span class="n">data</span><span class="p">,</span>
+            <span class="n">sensor</span><span class="p">,</span>
+            <span class="n">data</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">wavelengths</span><span class="p">,</span>
+            <span class="n">nodata</span><span class="o">=</span><span class="n">nodata</span><span class="p">,</span>
+            <span class="n">mask</span><span class="o">=</span><span class="n">mask</span><span class="p">,</span>
+            <span class="n">scale_factor</span><span class="o">=</span><span class="n">scale_factor</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="VegetationIndices.evi"><a class="viewcode-back" href="../../../api/geowombat.core.html#geowombat.core.vi.VegetationIndices.evi">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">evi</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">nodata</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">mask</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">sensor</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">scale_factor</span><span class="o">=</span><span class="kc">None</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Calculates the enhanced vegetation index</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            data (DataArray): The ``xarray.DataArray`` to process.</span>
+<span class="sd">            nodata (Optional[int or float]): A &#39;no data&#39; value to fill NAs with. If ``None``,</span>
+<span class="sd">                the &#39;no data&#39; value is taken from the ``xarray.DataArray`` attributes.</span>
+<span class="sd">            mask (Optional[bool]): Whether to mask the results.</span>
+<span class="sd">            sensor (Optional[str]): The data&#39;s sensor. If ``None``, the band names should</span>
+<span class="sd">                reflect the index being calculated.</span>
+<span class="sd">            scale_factor (Optional[float]): A scale factor to apply to the data. If ``None``,</span>
+<span class="sd">                the scale value is taken from the ``xarray.DataArray`` attributes.</span>
+
+<span class="sd">        Equation:</span>
+
+<span class="sd">            .. math::</span>
+
+<span class="sd">                EVI = 2.5 \times \frac{NIR - red}{NIR + 6 \times red - 7.5 \times blue + 1}</span>
+
+<span class="sd">        Returns:</span>
+
+<span class="sd">            ``xarray.DataArray``:</span>
+
+<span class="sd">                Data range: 0 to 1</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">sensor</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">check_sensor</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">sensor</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">nodata</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">nodata</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">nodataval</span>
+
+        <span class="k">if</span> <span class="n">config</span><span class="p">[</span><span class="s1">&#39;scale_factor&#39;</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">scale_factor</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s1">&#39;scale_factor&#39;</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">scale_factor</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">scale_factor</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">scaleval</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">evi_math</span><span class="p">(</span>
+            <span class="n">data</span><span class="p">,</span>
+            <span class="n">sensor</span><span class="p">,</span>
+            <span class="n">data</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">wavelengths</span><span class="p">,</span>
+            <span class="n">nodata</span><span class="o">=</span><span class="n">nodata</span><span class="p">,</span>
+            <span class="n">mask</span><span class="o">=</span><span class="n">mask</span><span class="p">,</span>
+            <span class="n">scale_factor</span><span class="o">=</span><span class="n">scale_factor</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="VegetationIndices.evi2"><a class="viewcode-back" href="../../../api/geowombat.core.html#geowombat.core.vi.VegetationIndices.evi2">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">evi2</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">nodata</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">mask</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">sensor</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">scale_factor</span><span class="o">=</span><span class="kc">None</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Calculates the two-band modified enhanced vegetation index</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            data (DataArray): The ``xarray.DataArray`` to process.</span>
+<span class="sd">            nodata (Optional[int or float]): A &#39;no data&#39; value to fill NAs with. If ``None``,</span>
+<span class="sd">                the &#39;no data&#39; value is taken from the ``xarray.DataArray`` attributes.</span>
+<span class="sd">            mask (Optional[bool]): Whether to mask the results.</span>
+<span class="sd">            sensor (Optional[str]): The data&#39;s sensor. If ``None``, the band names should</span>
+<span class="sd">                reflect the index being calculated.</span>
+<span class="sd">            scale_factor (Optional[float]): A scale factor to apply to the data. If ``None``,</span>
+<span class="sd">                the scale value is taken from the ``xarray.DataArray`` attributes.</span>
+
+<span class="sd">        Equation:</span>
+
+<span class="sd">            .. math::</span>
+
+<span class="sd">                EVI2 = 2.5 \times \frac{NIR - red}{NIR + 1 + 2.4 \times red}</span>
+
+<span class="sd">        Reference:</span>
+<span class="sd">            See :cite:`jiang_etal_2008`</span>
+
+<span class="sd">        Returns:</span>
+
+<span class="sd">            ``xarray.DataArray``:</span>
+
+<span class="sd">                Data range: 0 to 1</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">sensor</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">check_sensor</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">sensor</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">nodata</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">nodata</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">nodataval</span>
+
+        <span class="k">if</span> <span class="n">config</span><span class="p">[</span><span class="s1">&#39;scale_factor&#39;</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">scale_factor</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s1">&#39;scale_factor&#39;</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">scale_factor</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">scale_factor</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">scaleval</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">evi2_math</span><span class="p">(</span>
+            <span class="n">data</span><span class="p">,</span>
+            <span class="n">sensor</span><span class="p">,</span>
+            <span class="n">data</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">wavelengths</span><span class="p">,</span>
+            <span class="n">nodata</span><span class="o">=</span><span class="n">nodata</span><span class="p">,</span>
+            <span class="n">mask</span><span class="o">=</span><span class="n">mask</span><span class="p">,</span>
+            <span class="n">scale_factor</span><span class="o">=</span><span class="n">scale_factor</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="VegetationIndices.gcvi"><a class="viewcode-back" href="../../../api/geowombat.core.html#geowombat.core.vi.VegetationIndices.gcvi">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">gcvi</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">nodata</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">mask</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">sensor</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">scale_factor</span><span class="o">=</span><span class="kc">None</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Calculates the green chlorophyll vegetation index</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            data (DataArray): The ``xarray.DataArray`` to process.</span>
+<span class="sd">            nodata (Optional[int or float]): A &#39;no data&#39; value to fill NAs with. If ``None``,</span>
+<span class="sd">                the &#39;no data&#39; value is taken from the ``xarray.DataArray`` attributes.</span>
+<span class="sd">            mask (Optional[bool]): Whether to mask the results.</span>
+<span class="sd">            sensor (Optional[str]): The data&#39;s sensor. If ``None``, the band names should</span>
+<span class="sd">                reflect the index being calculated.</span>
+<span class="sd">            scale_factor (Optional[float]): A scale factor to apply to the data. If ``None``,</span>
+<span class="sd">                the scale value is taken from the ``xarray.DataArray`` attributes.</span>
+
+<span class="sd">        Equation:</span>
+
+<span class="sd">            .. math::</span>
+
+<span class="sd">                GCVI = \frac{NIR}{green} - 1</span>
+
+<span class="sd">        Returns:</span>
+
+<span class="sd">            ``xarray.DataArray``:</span>
+
+<span class="sd">                Data range: 0 to 1</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">sensor</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">check_sensor</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">sensor</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">nodata</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">nodata</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">nodataval</span>
+
+        <span class="k">if</span> <span class="n">config</span><span class="p">[</span><span class="s1">&#39;scale_factor&#39;</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">scale_factor</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s1">&#39;scale_factor&#39;</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">scale_factor</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">scale_factor</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">scaleval</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">gcvi_math</span><span class="p">(</span>
+            <span class="n">data</span><span class="p">,</span>
+            <span class="n">sensor</span><span class="p">,</span>
+            <span class="n">data</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">wavelengths</span><span class="p">,</span>
+            <span class="n">nodata</span><span class="o">=</span><span class="n">nodata</span><span class="p">,</span>
+            <span class="n">mask</span><span class="o">=</span><span class="n">mask</span><span class="p">,</span>
+            <span class="n">scale_factor</span><span class="o">=</span><span class="n">scale_factor</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="VegetationIndices.nbr"><a class="viewcode-back" href="../../../api/geowombat.core.html#geowombat.core.vi.VegetationIndices.nbr">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">nbr</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">nodata</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">mask</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">sensor</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">scale_factor</span><span class="o">=</span><span class="kc">None</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Calculates the normalized burn ratio</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            data (DataArray): The ``xarray.DataArray`` to process.</span>
+<span class="sd">            nodata (Optional[int or float]): A &#39;no data&#39; value to fill NAs with. If ``None``,</span>
+<span class="sd">                the &#39;no data&#39; value is taken from the ``xarray.DataArray`` attributes.</span>
+<span class="sd">            mask (Optional[bool]): Whether to mask the results.</span>
+<span class="sd">            sensor (Optional[str]): The data&#39;s sensor. If ``None``, the band names should</span>
+<span class="sd">                reflect the index being calculated.</span>
+<span class="sd">            scale_factor (Optional[float]): A scale factor to apply to the data. If ``None``,</span>
+<span class="sd">                the scale value is taken from the ``xarray.DataArray`` attributes.</span>
+
+<span class="sd">        Equation:</span>
+
+<span class="sd">            .. math::</span>
+
+<span class="sd">                NBR = \frac{NIR - SWIR2}{NIR + SWIR2}</span>
+
+<span class="sd">        Returns:</span>
+
+<span class="sd">            ``xarray.DataArray``:</span>
+
+<span class="sd">                Data range: -1 to 1</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">sensor</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">check_sensor</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">sensor</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">nodata</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">nodata</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">nodataval</span>
+
+        <span class="k">if</span> <span class="n">config</span><span class="p">[</span><span class="s1">&#39;scale_factor&#39;</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">scale_factor</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s1">&#39;scale_factor&#39;</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">scale_factor</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">scale_factor</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">scaleval</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">nbr_math</span><span class="p">(</span>
+            <span class="n">data</span><span class="p">,</span>
+            <span class="n">sensor</span><span class="p">,</span>
+            <span class="n">data</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">wavelengths</span><span class="p">,</span>
+            <span class="n">nodata</span><span class="o">=</span><span class="n">nodata</span><span class="p">,</span>
+            <span class="n">mask</span><span class="o">=</span><span class="n">mask</span><span class="p">,</span>
+            <span class="n">scale_factor</span><span class="o">=</span><span class="n">scale_factor</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="VegetationIndices.ndvi"><a class="viewcode-back" href="../../../api/geowombat.core.html#geowombat.core.vi.VegetationIndices.ndvi">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">ndvi</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">nodata</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">mask</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">sensor</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">scale_factor</span><span class="o">=</span><span class="kc">None</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Calculates the normalized difference vegetation index</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            data (DataArray): The ``xarray.DataArray`` to process.</span>
+<span class="sd">            nodata (Optional[int or float]): A &#39;no data&#39; value to fill NAs with. If ``None``,</span>
+<span class="sd">                the &#39;no data&#39; value is taken from the ``xarray.DataArray`` attributes.</span>
+<span class="sd">            mask (Optional[bool]): Whether to mask the results.</span>
+<span class="sd">            sensor (Optional[str]): The data&#39;s sensor. If ``None``, the band names should</span>
+<span class="sd">                reflect the index being calculated.</span>
+<span class="sd">            scale_factor (Optional[float]): A scale factor to apply to the data. If ``None``,</span>
+<span class="sd">                the scale value is taken from the ``xarray.DataArray`` attributes.</span>
+
+<span class="sd">        Equation:</span>
+
+<span class="sd">            .. math::</span>
+
+<span class="sd">                NDVI = \frac{NIR - red}{NIR + red}</span>
+
+<span class="sd">        Returns:</span>
+
+<span class="sd">            ``xarray.DataArray``:</span>
+
+<span class="sd">                Data range: -1 to 1</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">sensor</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">check_sensor</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">sensor</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">nodata</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">nodata</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">nodataval</span>
+
+        <span class="k">if</span> <span class="n">config</span><span class="p">[</span><span class="s1">&#39;scale_factor&#39;</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">scale_factor</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s1">&#39;scale_factor&#39;</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">scale_factor</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">scale_factor</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">scaleval</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">ndvi_math</span><span class="p">(</span>
+            <span class="n">data</span><span class="p">,</span>
+            <span class="n">sensor</span><span class="p">,</span>
+            <span class="n">data</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">wavelengths</span><span class="p">,</span>
+            <span class="n">nodata</span><span class="o">=</span><span class="n">nodata</span><span class="p">,</span>
+            <span class="n">mask</span><span class="o">=</span><span class="n">mask</span><span class="p">,</span>
+            <span class="n">scale_factor</span><span class="o">=</span><span class="n">scale_factor</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="VegetationIndices.kndvi"><a class="viewcode-back" href="../../../api/geowombat.core.html#geowombat.core.vi.VegetationIndices.kndvi">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">kndvi</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">nodata</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">mask</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">sensor</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">scale_factor</span><span class="o">=</span><span class="kc">None</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Calculates the kernel normalized difference vegetation index</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            data (DataArray): The ``xarray.DataArray`` to process.</span>
+<span class="sd">            nodata (Optional[int or float]): A &#39;no data&#39; value to fill NAs with. If ``None``,</span>
+<span class="sd">                the &#39;no data&#39; value is taken from the ``xarray.DataArray`` attributes.</span>
+<span class="sd">            mask (Optional[bool]): Whether to mask the results.</span>
+<span class="sd">            sensor (Optional[str]): The data&#39;s sensor. If ``None``, the band names should</span>
+<span class="sd">                reflect the index being calculated.</span>
+<span class="sd">            scale_factor (Optional[float]): A scale factor to apply to the data. If ``None``,</span>
+<span class="sd">                the scale value is taken from the ``xarray.DataArray`` attributes.</span>
+
+<span class="sd">        Equation:</span>
+
+<span class="sd">            .. math::</span>
+
+<span class="sd">                kNDVI = tanh({NDVI}^2)</span>
+
+<span class="sd">        Reference:</span>
+<span class="sd">            See :cite:`camps-valls_etal_2021`</span>
+
+<span class="sd">        Returns:</span>
+
+<span class="sd">            ``xarray.DataArray``:</span>
+
+<span class="sd">                Data range: -1 to 1</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">sensor</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">check_sensor</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">sensor</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">nodata</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">nodata</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">nodataval</span>
+
+        <span class="k">if</span> <span class="n">config</span><span class="p">[</span><span class="s1">&#39;scale_factor&#39;</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">scale_factor</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s1">&#39;scale_factor&#39;</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">scale_factor</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">scale_factor</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">scaleval</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">kndvi_math</span><span class="p">(</span>
+            <span class="n">data</span><span class="p">,</span>
+            <span class="n">sensor</span><span class="p">,</span>
+            <span class="n">data</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">wavelengths</span><span class="p">,</span>
+            <span class="n">nodata</span><span class="o">=</span><span class="n">nodata</span><span class="p">,</span>
+            <span class="n">mask</span><span class="o">=</span><span class="n">mask</span><span class="p">,</span>
+            <span class="n">scale_factor</span><span class="o">=</span><span class="n">scale_factor</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="VegetationIndices.wi"><a class="viewcode-back" href="../../../api/geowombat.core.html#geowombat.core.vi.VegetationIndices.wi">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">wi</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">nodata</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">mask</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">sensor</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">scale_factor</span><span class="o">=</span><span class="kc">None</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Calculates the woody vegetation index</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            data (DataArray): The ``xarray.DataArray`` to process.</span>
+<span class="sd">            nodata (Optional[int or float]): A &#39;no data&#39; value to fill NAs with. If ``None``,</span>
+<span class="sd">                the &#39;no data&#39; value is taken from the ``xarray.DataArray`` attributes.</span>
+<span class="sd">            mask (Optional[bool]): Whether to mask the results.</span>
+<span class="sd">            sensor (Optional[str]): The data&#39;s sensor. If ``None``, the band names should</span>
+<span class="sd">                reflect the index being calculated.</span>
+<span class="sd">            scale_factor (Optional[float]): A scale factor to apply to the data. If ``None``,</span>
+<span class="sd">                the scale value is taken from the ``xarray.DataArray`` attributes.</span>
+
+<span class="sd">        Equation:</span>
+
+<span class="sd">            .. math::</span>
+
+<span class="sd">                WI = \Biggl \lbrace</span>
+<span class="sd">                {</span>
+<span class="sd">                0,\text{ if }</span>
+<span class="sd">                   { red + SWIR1 \ge 0.5 }</span>
+<span class="sd">                \atop</span>
+<span class="sd">                1 - \frac{red + SWIR1}{0.5}, \text{ otherwise }</span>
+<span class="sd">                }</span>
+
+<span class="sd">        Reference:</span>
+<span class="sd">            See :cite:`lehmann_etal_2013`</span>
+
+<span class="sd">        Returns:</span>
+
+<span class="sd">            ``xarray.DataArray``:</span>
+
+<span class="sd">                Data range: 0 to 1</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">sensor</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">check_sensor</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">sensor</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">nodata</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">nodata</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">nodataval</span>
+
+        <span class="k">if</span> <span class="n">config</span><span class="p">[</span><span class="s1">&#39;scale_factor&#39;</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">scale_factor</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s1">&#39;scale_factor&#39;</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">scale_factor</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">scale_factor</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">scaleval</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">wi_math</span><span class="p">(</span>
+            <span class="n">data</span><span class="p">,</span>
+            <span class="n">sensor</span><span class="p">,</span>
+            <span class="n">data</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">wavelengths</span><span class="p">,</span>
+            <span class="n">nodata</span><span class="o">=</span><span class="n">nodata</span><span class="p">,</span>
+            <span class="n">mask</span><span class="o">=</span><span class="n">mask</span><span class="p">,</span>
+            <span class="n">scale_factor</span><span class="o">=</span><span class="n">scale_factor</span><span class="p">,</span>
+        <span class="p">)</span></div></div>
+</pre></div>
+
+                </article>
+              
+
+              
+              
+                <footer class="bd-footer-article">
+                  <!-- Previous / next buttons -->
+<div class="prev-next-area">
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            <div class="bd-footer-content__inner">
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+  <p class="copyright">
+    
+      © Copyright 2020-2026, GeoWombat.
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+</div></div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../../../_static/scripts/bootstrap.js?digest=12da95d707ffb74b382d"></script>
+<script src="../../../_static/scripts/pydata-sphinx-theme.js?digest=12da95d707ffb74b382d"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>

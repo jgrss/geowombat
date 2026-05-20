@@ -1,0 +1,1007 @@
+
+
+<!DOCTYPE html>
+
+
+<html lang="en" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>geowombat.core.util</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../../_static/styles/theme.css?digest=12da95d707ffb74b382d" rel="stylesheet" />
+<link href="../../../_static/styles/bootstrap.css?digest=12da95d707ffb74b382d" rel="stylesheet" />
+<link href="../../../_static/styles/pydata-sphinx-theme.css?digest=12da95d707ffb74b382d" rel="stylesheet" />
+
+  
+  <link href="../../../_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=12da95d707ffb74b382d" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css" />
+    <link rel="stylesheet" href="../../../_static/styles/sphinx-book-theme.css?digest=14f4ca6b54d191a8c7657f6c759bf11a5fb86285" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/custom.css" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=12da95d707ffb74b382d" />
+<link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=12da95d707ffb74b382d" />
+
+    <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+    <script src="../../../_static/doctools.js"></script>
+    <script src="../../../_static/sphinx_highlight.js"></script>
+    <script src="../../../_static/clipboard.min.js"></script>
+    <script src="../../../_static/copybutton.js"></script>
+    <script src="../../../_static/scripts/sphinx-book-theme.js?digest=5a5c038af52cf7bc1a1ec88eea08e6366ee68824"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/geowombat/core/util';</script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__primary"
+          id="__primary"/>
+  <label class="overlay overlay-primary" for="__primary"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__secondary"
+          id="__secondary"/>
+  <label class="overlay overlay-secondary" for="__secondary"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="../../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search..."
+         aria-label="Search..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+  
+    <nav class="bd-header navbar navbar-expand-lg bd-navbar">
+    </nav>
+  
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      <div class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+  
+
+<a class="navbar-brand logo" href="../../../index.html">
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../../../_static/logo.png" class="logo__image only-light" alt="GeoWombat"/>
+    <script>document.write(`<img src="../../../_static/logo.png" class="logo__image only-dark" alt="GeoWombat"/>`);</script>
+  
+  
+</a></div>
+        <div class="sidebar-primary-item"><nav class="bd-links" id="bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        <p aria-level="2" class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../../install.html">Installing GeoWombat</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../quick-overview.html">Quick overview</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../../tutorial.html">Tutorial</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-1"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../tutorial-why.html">Why GeoWombat?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../tutorial-open.html">Opening rasters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../tutorial-edit.html">Editing rasters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../tutorial-config.html">Configuration manager</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../tutorial-gw.html">GeoWombat DataArray accessor</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../tutorial-crs.html">Coordinate Reference Systems</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../tutorial-plot.html">Plotting raster data</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../../examples.html">Examples</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-2"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../io.html">Raster I/O</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../io-distributed.html">Distributed processing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../extraction.html">Data extraction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../band-math.html">Band math</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../apply.html">User functions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../ml.html">Machine learning</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../dl.html">Deep learning classifiers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../object-detection.html">Object detection</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../moving.html">Moving windows</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../radiometry.html">Radiometry</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../coreg.html">Co-registration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../tasks.html">Pipeline tasks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../web.html">Accessing STAC Catalogs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../external.html">External examples</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../gpu.html">Time series processes on the GPU</a></li>
+</ul>
+</li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Changes</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../../changelog.html">Changelog</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../issues.html">Issues</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Reference</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../../api.html">API reference</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-3"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.core.geoxarray.GeoWombatAccessor.html">GeoWombat DataArray (DataArray.gw)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.load.html">load</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.extract.html">extract</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.sample.html">sample</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.calc_area.html">calc_area</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.subset.html">subset</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.clip.html">clip</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.clip_by_polygon.html">clip_by_polygon</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.mask.html">mask</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.replace.html">replace</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.recode.html">recode</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.coregister.html">coregister</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.polygons_to_points.html">polygons_to_points</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.apply.html">apply</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.transform_crs.html">transform_crs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.save.html">save</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.to_raster.html">to_raster</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.to_netcdf.html">to_netcdf</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.to_vrt.html">to_vrt</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.array_to_polygon.html">array_to_polygon</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.polygon_to_array.html">polygon_to_array</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.moving.html">moving</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.norm_diff.html">norm_diff</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.avi.html">avi</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.evi.html">evi</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.evi2.html">evi2</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.kndvi.html">kndvi</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.nbr.html">nbr</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.ndvi.html">ndvi</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.wi.html">wi</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.tasseled_cap.html">tasseled_cap</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.coords_to_indices.html">coords_to_indices</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.indices_to_coords.html">indices_to_coords</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.bounds_to_coords.html">bounds_to_coords</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.lonlat_to_xy.html">lonlat_to_xy</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.xy_to_lonlat.html">xy_to_lonlat</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.open.html">open</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.series.html">series</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.TimeModulePipeline.html">TimeModulePipeline</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.TimeModule.html">TimeModule</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.core.stac.composite_stac.html">composite_stac</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.core.stac.merge_stac.html">merge_stac</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.core.stac.open_stac.html">open_stac</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.core.stac.STACCollectionURLNames.html">STACCollectionURLNames</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.core.stac.STACCollections.html">STACCollections</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.core.stac.STACNames.html">STACNames</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.core.stac.StrEnum.html">StrEnum</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.ml.fit.html">fit</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.ml.fit_predict.html">fit_predict</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.ml.predict.html">predict</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.ml.TabNetClassifier.html">TabNetClassifier</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.ml.LTAEClassifier.html">LTAEClassifier</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.ml.TorchGeoClassifier.html">TorchGeoClassifier</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.detect.boxes_from_polygons.html">boxes_from_polygons</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.detect.build_dataset.html">build_dataset</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.detect.build_yolo_dataset.html">build_yolo_dataset</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.detect.detection_accuracy.html">detection_accuracy</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.detect.export_for_review.html">export_for_review</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.detect.fit.html">fit</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.detect.fit_predict.html">fit_predict</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.detect.plot_detections.html">plot_detections</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.detect.predict.html">predict</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.detect.recompute_from_review.html">recompute_from_review</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.detect.SAMRefiner.html">SAMRefiner</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.detect.TorchGeoDetector.html">TorchGeoDetector</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.detect.YOLODetector.html">YOLODetector</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.radiometry.landsat_pixel_angles.html">landsat_pixel_angles</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.radiometry.sentinel_pixel_angles.html">sentinel_pixel_angles</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.radiometry.BRDF.html">BRDF</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.radiometry.Topo.html">Topo</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.radiometry.LinearAdjustments.html">LinearAdjustments</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.radiometry.RadTransforms.html">RadTransforms</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.radiometry.DOS.html">DOS</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.radiometry.SixS.html">SixS</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.radiometry.QAMasker.html">QAMasker</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.radiometry.QABits.html">QABits</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.radiometry.SCLValues.html">SCLValues</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.radiometry.HLSFmaskBits.html">HLSFmaskBits</a></li>
+</ul>
+</li>
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><label class="sidebar-toggle primary-toggle btn btn-sm" for="__primary" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</label></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+<a href="https://github.com/jgrss/geowombat" target="_blank"
+   class="btn btn-sm btn-source-repository-button"
+   title="Source repository"
+   data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fab fa-github"></i>
+  </span>
+
+</a>
+
+
+
+
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button"
+  title="Fullscreen mode"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+
+<script>
+document.write(`
+  <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
+    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
+    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
+  </button>
+`);
+</script>
+
+<script>
+document.write(`
+  <button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+  </button>
+`);
+</script>
+
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1></h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article" role="main">
+                  
+  <h1>Source code for geowombat.core.util</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">fnmatch</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">T</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">collections</span><span class="w"> </span><span class="kn">import</span> <span class="n">OrderedDict</span><span class="p">,</span> <span class="n">namedtuple</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">datetime</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">dask.array</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">da</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">geopandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">gpd</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">xarray</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">xr</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">affine</span><span class="w"> </span><span class="kn">import</span> <span class="n">Affine</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">rasterio</span><span class="w"> </span><span class="kn">import</span> <span class="n">features</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">rasterio.crs</span><span class="w"> </span><span class="kn">import</span> <span class="n">CRS</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">rasterio.transform</span><span class="w"> </span><span class="kn">import</span> <span class="n">from_bounds</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">rasterio.warp</span><span class="w"> </span><span class="kn">import</span> <span class="n">reproject</span><span class="p">,</span> <span class="n">transform_bounds</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">threadpoolctl</span><span class="w"> </span><span class="kn">import</span> <span class="n">threadpool_limits</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">..handler</span><span class="w"> </span><span class="kn">import</span> <span class="n">add_handler</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">..moving</span><span class="w"> </span><span class="kn">import</span> <span class="n">moving_window</span>
+
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">dateparser.search</span><span class="w"> </span><span class="kn">import</span> <span class="n">search_dates</span>
+
+    <span class="n">DATEPARSER_INSTALLED</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+    <span class="n">DATEPARSER_INSTALLED</span> <span class="o">=</span> <span class="kc">False</span>
+
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+<span class="n">logger</span> <span class="o">=</span> <span class="n">add_handler</span><span class="p">(</span><span class="n">logger</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="lazy_wombat"><a class="viewcode-back" href="../../../api/geowombat.core.html#geowombat.core.util.lazy_wombat">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">lazy_wombat</span><span class="p">(</span><span class="n">func</span><span class="p">):</span>
+    <span class="n">func</span><span class="o">.</span><span class="n">wombat_func_</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="k">return</span> <span class="n">func</span></div>
+
+
+<div class="viewcode-block" id="estimate_array_mem"><a class="viewcode-back" href="../../../api/geowombat.core.html#geowombat.core.util.estimate_array_mem">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">estimate_array_mem</span><span class="p">(</span><span class="n">ntime</span><span class="p">,</span> <span class="n">nbands</span><span class="p">,</span> <span class="n">nrows</span><span class="p">,</span> <span class="n">ncols</span><span class="p">,</span> <span class="n">dtype</span><span class="p">):</span>
+
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Estimates the size of an array in-memory.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        ntime (int): The number of time dimensions.</span>
+<span class="sd">        nbands (int): The number of band dimensions.</span>
+<span class="sd">        nrows (int): The number of row dimensions.</span>
+<span class="sd">        ncols (int): The number of column dimensions.</span>
+<span class="sd">        dtype (str): The data type.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        ``int`` in MB</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">return</span> <span class="p">(</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">((</span><span class="n">ntime</span><span class="p">,</span> <span class="n">nbands</span><span class="p">,</span> <span class="n">nrows</span><span class="p">,</span> <span class="n">ncols</span><span class="p">))</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">dtype</span><span class="p">)</span><span class="o">.</span><span class="n">nbytes</span>
+        <span class="o">*</span> <span class="mf">1e-6</span>
+    <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="parse_filename_dates"><a class="viewcode-back" href="../../../api/geowombat.core.html#geowombat.core.util.parse_filename_dates">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">parse_filename_dates</span><span class="p">(</span>
+    <span class="n">filenames</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Sequence</span><span class="p">[</span><span class="n">T</span><span class="o">.</span><span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">]]</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">T</span><span class="o">.</span><span class="n">Sequence</span><span class="p">:</span>
+
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Parses dates from file names.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        filenames (list): A list of files to parse.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        ``list``</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">date_filenames</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">fn</span> <span class="ow">in</span> <span class="n">filenames</span><span class="p">:</span>
+        <span class="n">__</span><span class="p">,</span> <span class="n">f_name</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">fn</span><span class="p">)</span>
+        <span class="n">f_base</span><span class="p">,</span> <span class="n">__</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">f_name</span><span class="p">)</span>
+
+        <span class="n">dt</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="k">if</span> <span class="n">DATEPARSER_INSTALLED</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">__</span><span class="p">,</span> <span class="n">dt</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span>
+                    <span class="nb">zip</span><span class="p">(</span>
+                        <span class="o">*</span><span class="n">search_dates</span><span class="p">(</span>
+                            <span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">f_base</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;_&#39;</span><span class="p">))</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;-&#39;</span><span class="p">)),</span>
+                            <span class="n">settings</span><span class="o">=</span><span class="p">{</span>
+                                <span class="s1">&#39;DATE_ORDER&#39;</span><span class="p">:</span> <span class="s1">&#39;YMD&#39;</span><span class="p">,</span>
+                                <span class="s1">&#39;STRICT_PARSING&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+                                <span class="s1">&#39;PREFER_LANGUAGE_DATE_ORDER&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+                            <span class="p">},</span>
+                        <span class="p">)</span>
+                    <span class="p">)</span>
+                <span class="p">)</span>
+
+            <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+                <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">filenames</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">))</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">dt</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">filenames</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">))</span>
+
+        <span class="n">date_filenames</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">dt</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+
+    <span class="k">return</span> <span class="n">date_filenames</span></div>
+
+
+<div class="viewcode-block" id="parse_wildcard"><a class="viewcode-back" href="../../../api/geowombat.core.html#geowombat.core.util.parse_wildcard">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">parse_wildcard</span><span class="p">(</span><span class="n">string</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">T</span><span class="o">.</span><span class="n">List</span><span class="p">[</span><span class="n">Path</span><span class="p">]:</span>
+
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Parses a search wildcard from a string.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        string (str): The string to parse.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        ``list``</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">string</span><span class="p">):</span>
+        <span class="n">dir_name</span><span class="p">,</span> <span class="n">wildcard</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">string</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+
+        <span class="n">dir_name</span> <span class="o">=</span> <span class="s1">&#39;.&#39;</span>
+        <span class="n">wildcard</span> <span class="o">=</span> <span class="n">string</span>
+
+    <span class="n">matches</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="n">dir_name</span><span class="p">)</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">wildcard</span><span class="p">)))</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">matches</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span>
+            <span class="s1">&#39;  There were no images found with the string search.&#39;</span>
+        <span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">matches</span></div>
+
+
+<div class="viewcode-block" id="sort_images_by_date"><a class="viewcode-back" href="../../../api/geowombat.core.html#geowombat.core.util.sort_images_by_date">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">sort_images_by_date</span><span class="p">(</span>
+    <span class="n">image_path</span><span class="p">:</span> <span class="n">Path</span><span class="p">,</span>
+    <span class="n">image_wildcard</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">date_pos</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+    <span class="n">date_start</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+    <span class="n">date_end</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">8</span><span class="p">,</span>
+    <span class="n">split_by</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;_&#39;</span><span class="p">,</span>
+    <span class="n">date_format</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;%Y%m</span><span class="si">%d</span><span class="s1">&#39;</span><span class="p">,</span>
+    <span class="n">file_list</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Optional</span><span class="p">[</span><span class="n">T</span><span class="o">.</span><span class="n">Sequence</span><span class="p">[</span><span class="n">Path</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">prepend_str</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OrderedDict</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Sorts images by date.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        image_path (Path): The image directory.</span>
+<span class="sd">        image_wildcard (str): The image search wildcard.</span>
+<span class="sd">        date_pos (int): The date starting position in the file name.</span>
+<span class="sd">        date_start (int): The date starting position in the split.</span>
+<span class="sd">        date_end (int): The date ending position in the split.</span>
+<span class="sd">        split_by (Optional[str]): How to split the file name.</span>
+<span class="sd">        date_format (Optional[str]): The date format for :func:`datetime.datetime.strptime`.</span>
+<span class="sd">        file_list (Optional[list of Paths]): A file list of names to sort. Overrides ``image_path``.</span>
+<span class="sd">        prepend_str (Optional[str]): A string to prepend to each filename.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        ``collections.OrderedDict``</span>
+
+<span class="sd">    Example:</span>
+<span class="sd">        &gt;&gt;&gt; from pathlib import Path</span>
+<span class="sd">        &gt;&gt;&gt; from geowombat.core import sort_images_by_date</span>
+<span class="sd">        &gt;&gt;&gt;</span>
+<span class="sd">        &gt;&gt;&gt; # image example: LC08_L1TP_176038_20190108_20190130_01_T1.tif</span>
+<span class="sd">        &gt;&gt;&gt; image_path = Path(&#39;/path/to/images&#39;)</span>
+<span class="sd">        &gt;&gt;&gt;</span>
+<span class="sd">        &gt;&gt;&gt; image_dict = sort_images_by_date(image_path, &#39;*.tif&#39;, 3, 0, 8)</span>
+<span class="sd">        &gt;&gt;&gt; image_names = list(image_dict.keys())</span>
+<span class="sd">        &gt;&gt;&gt; time_names = list(image_dict.values())</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">if</span> <span class="n">file_list</span><span class="p">:</span>
+        <span class="n">fl</span> <span class="o">=</span> <span class="n">file_list</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">fl</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">image_path</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">image_wildcard</span><span class="p">))</span>
+
+    <span class="k">if</span> <span class="n">prepend_str</span><span class="p">:</span>
+        <span class="n">fl</span> <span class="o">=</span> <span class="p">[</span><span class="n">Path</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">prepend_str</span><span class="si">}{</span><span class="nb">str</span><span class="p">(</span><span class="n">fn</span><span class="p">)</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span> <span class="k">for</span> <span class="n">fn</span> <span class="ow">in</span> <span class="n">fl</span><span class="p">]</span>
+
+    <span class="n">dates</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="n">datetime</span><span class="o">.</span><span class="n">strptime</span><span class="p">(</span>
+            <span class="n">fn</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">split_by</span><span class="p">)[</span><span class="n">date_pos</span><span class="p">][</span><span class="n">date_start</span><span class="p">:</span><span class="n">date_end</span><span class="p">],</span> <span class="n">date_format</span>
+        <span class="p">)</span>
+        <span class="k">for</span> <span class="n">fn</span> <span class="ow">in</span> <span class="n">fl</span>
+    <span class="p">]</span>
+
+    <span class="k">return</span> <span class="n">OrderedDict</span><span class="p">(</span>
+        <span class="nb">sorted</span><span class="p">(</span>
+            <span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">([</span><span class="nb">str</span><span class="p">(</span><span class="n">fn</span><span class="p">)</span> <span class="k">for</span> <span class="n">fn</span> <span class="ow">in</span> <span class="n">fl</span><span class="p">],</span> <span class="n">dates</span><span class="p">))</span><span class="o">.</span><span class="n">items</span><span class="p">(),</span>
+            <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x_</span><span class="p">:</span> <span class="n">x_</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
+        <span class="p">)</span>
+    <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="project_coords"><a class="viewcode-back" href="../../../api/geowombat.core.html#geowombat.core.util.project_coords">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">project_coords</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">src_crs</span><span class="p">,</span> <span class="n">dst_crs</span><span class="p">,</span> <span class="n">return_as</span><span class="o">=</span><span class="s1">&#39;1d&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Projects coordinates to a new CRS.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        x (1d array-like): The x coordinates.</span>
+<span class="sd">        y (1d array-like): The y coordinates.</span>
+<span class="sd">        src_crs (str, dict, object): The source CRS.</span>
+<span class="sd">        dst_crs (str, dict, object): The destination CRS.</span>
+<span class="sd">        return_as (Optional[str]): How to return the coordinates. Choices are [&#39;1d&#39;, &#39;2d&#39;].</span>
+<span class="sd">        kwargs (Optional[dict]): Keyword arguments passed to ``rasterio.warp.reproject``.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        ``numpy.array``, ``numpy.array`` or ``xr.DataArray``</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">if</span> <span class="n">return_as</span> <span class="o">==</span> <span class="s1">&#39;1d&#39;</span><span class="p">:</span>
+
+        <span class="n">df_tmp</span> <span class="o">=</span> <span class="n">gpd</span><span class="o">.</span><span class="n">GeoDataFrame</span><span class="p">(</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span>
+            <span class="n">geometry</span><span class="o">=</span><span class="n">gpd</span><span class="o">.</span><span class="n">points_from_xy</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">),</span>
+            <span class="n">crs</span><span class="o">=</span><span class="n">src_crs</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="n">df_tmp</span> <span class="o">=</span> <span class="n">df_tmp</span><span class="o">.</span><span class="n">to_crs</span><span class="p">(</span><span class="n">dst_crs</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">df_tmp</span><span class="o">.</span><span class="n">geometry</span><span class="o">.</span><span class="n">x</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="n">df_tmp</span><span class="o">.</span><span class="n">geometry</span><span class="o">.</span><span class="n">y</span><span class="o">.</span><span class="n">values</span>
+
+    <span class="k">else</span><span class="p">:</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;float64&#39;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+            <span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;float64&#39;</span><span class="p">)</span>
+
+        <span class="n">yy</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
+
+        <span class="n">latitudes</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">yy</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;float64&#39;</span><span class="p">)</span>
+
+        <span class="n">src_transform</span> <span class="o">=</span> <span class="n">from_bounds</span><span class="p">(</span>
+            <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">y</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">x</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">y</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">latitudes</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">latitudes</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="p">)</span>
+
+        <span class="n">west</span><span class="p">,</span> <span class="n">south</span><span class="p">,</span> <span class="n">east</span><span class="p">,</span> <span class="n">north</span> <span class="o">=</span> <span class="n">transform_bounds</span><span class="p">(</span>
+            <span class="n">src_crs</span><span class="p">,</span> <span class="n">CRS</span><span class="p">(</span><span class="n">dst_crs</span><span class="p">),</span> <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">y</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">x</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">y</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="p">)</span>
+        <span class="n">dst_transform</span> <span class="o">=</span> <span class="n">from_bounds</span><span class="p">(</span>
+            <span class="n">west</span><span class="p">,</span> <span class="n">south</span><span class="p">,</span> <span class="n">east</span><span class="p">,</span> <span class="n">north</span><span class="p">,</span> <span class="n">latitudes</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">latitudes</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="p">)</span>
+
+        <span class="n">latitudes</span> <span class="o">=</span> <span class="n">reproject</span><span class="p">(</span>
+            <span class="n">yy</span><span class="p">,</span>
+            <span class="n">destination</span><span class="o">=</span><span class="n">latitudes</span><span class="p">,</span>
+            <span class="n">src_transform</span><span class="o">=</span><span class="n">src_transform</span><span class="p">,</span>
+            <span class="n">dst_transform</span><span class="o">=</span><span class="n">dst_transform</span><span class="p">,</span>
+            <span class="n">src_crs</span><span class="o">=</span><span class="n">CRS</span><span class="o">.</span><span class="n">from_epsg</span><span class="p">(</span><span class="n">src_crs</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;:&#39;</span><span class="p">)[</span><span class="mi">1</span><span class="p">]),</span>
+            <span class="n">dst_crs</span><span class="o">=</span><span class="n">CRS</span><span class="p">(</span><span class="n">dst_crs</span><span class="p">),</span>
+            <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+        <span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="k">return</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">(</span>
+            <span class="n">data</span><span class="o">=</span><span class="n">da</span><span class="o">.</span><span class="n">from_array</span><span class="p">(</span>
+                <span class="n">latitudes</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">,</span> <span class="p">:,</span> <span class="p">:],</span> <span class="n">chunks</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">512</span><span class="p">,</span> <span class="mi">512</span><span class="p">)</span>
+            <span class="p">),</span>
+            <span class="n">dims</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;band&#39;</span><span class="p">,</span> <span class="s1">&#39;y&#39;</span><span class="p">,</span> <span class="s1">&#39;x&#39;</span><span class="p">),</span>
+            <span class="n">coords</span><span class="o">=</span><span class="p">{</span>
+                <span class="s1">&#39;band&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;lat&#39;</span><span class="p">],</span>
+                <span class="s1">&#39;y&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;y&#39;</span><span class="p">,</span> <span class="n">latitudes</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]),</span>
+                <span class="s1">&#39;x&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;x&#39;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">latitudes</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)),</span>
+            <span class="p">},</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="get_geometry_info"><a class="viewcode-back" href="../../../api/geowombat.core.html#geowombat.core.util.get_geometry_info">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">get_geometry_info</span><span class="p">(</span><span class="n">geometry</span><span class="p">:</span> <span class="nb">object</span><span class="p">,</span> <span class="n">res</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">namedtuple</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Gets information from a Shapely geometry object.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        geometry (object): A ``shapely.geometry`` object.</span>
+<span class="sd">        res (tuple): The cell resolution for the affine transform.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Geometry information as ``namedtuple``.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">GeomInfo</span> <span class="o">=</span> <span class="n">namedtuple</span><span class="p">(</span><span class="s1">&#39;GeomInfo&#39;</span><span class="p">,</span> <span class="s1">&#39;left bottom right top shape affine&#39;</span><span class="p">)</span>
+
+    <span class="n">resx</span><span class="p">,</span> <span class="n">resy</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">res</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span> <span class="nb">abs</span><span class="p">(</span><span class="n">res</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="n">minx</span><span class="p">,</span> <span class="n">miny</span><span class="p">,</span> <span class="n">maxx</span><span class="p">,</span> <span class="n">maxy</span> <span class="o">=</span> <span class="n">geometry</span><span class="o">.</span><span class="n">bounds</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">minx</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="n">minx</span><span class="p">,</span> <span class="n">miny</span><span class="p">,</span> <span class="n">maxx</span><span class="p">,</span> <span class="n">maxy</span> <span class="o">=</span> <span class="n">geometry</span><span class="o">.</span><span class="n">bounds</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="n">out_shape</span> <span class="o">=</span> <span class="p">(</span><span class="nb">int</span><span class="p">((</span><span class="n">maxy</span> <span class="o">-</span> <span class="n">miny</span><span class="p">)</span> <span class="o">/</span> <span class="n">resx</span><span class="p">),</span> <span class="nb">int</span><span class="p">((</span><span class="n">maxx</span> <span class="o">-</span> <span class="n">minx</span><span class="p">)</span> <span class="o">/</span> <span class="n">resy</span><span class="p">))</span>
+
+    <span class="k">return</span> <span class="n">GeomInfo</span><span class="p">(</span>
+        <span class="n">left</span><span class="o">=</span><span class="n">minx</span><span class="p">,</span>
+        <span class="n">bottom</span><span class="o">=</span><span class="n">miny</span><span class="p">,</span>
+        <span class="n">right</span><span class="o">=</span><span class="n">maxx</span><span class="p">,</span>
+        <span class="n">top</span><span class="o">=</span><span class="n">maxy</span><span class="p">,</span>
+        <span class="n">shape</span><span class="o">=</span><span class="n">out_shape</span><span class="p">,</span>
+        <span class="n">affine</span><span class="o">=</span><span class="n">Affine</span><span class="p">(</span><span class="n">resy</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="n">minx</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="o">-</span><span class="n">resx</span><span class="p">,</span> <span class="n">maxy</span><span class="p">),</span>
+    <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="get_file_extension"><a class="viewcode-back" href="../../../api/geowombat.core.html#geowombat.core.util.get_file_extension">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">get_file_extension</span><span class="p">(</span><span class="n">filename</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">namedtuple</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Gets file and directory name information.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        filename (str): The file name.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Name information as ``namedtuple``.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">FileNames</span> <span class="o">=</span> <span class="n">namedtuple</span><span class="p">(</span><span class="s1">&#39;FileNames&#39;</span><span class="p">,</span> <span class="s1">&#39;d_name f_name f_base f_ext&#39;</span><span class="p">)</span>
+
+    <span class="c1"># Strip URL query string / fragment so cloud-storage URLs like</span>
+    <span class="c1"># `.../scene.tif?st=...&amp;sig=...` are recognized by extension.</span>
+    <span class="n">clean</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;?&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;#&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="n">d_name</span><span class="p">,</span> <span class="n">f_name</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">clean</span><span class="p">)</span>
+    <span class="n">f_base</span><span class="p">,</span> <span class="n">f_ext</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">f_name</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">FileNames</span><span class="p">(</span><span class="n">d_name</span><span class="o">=</span><span class="n">d_name</span><span class="p">,</span> <span class="n">f_name</span><span class="o">=</span><span class="n">f_name</span><span class="p">,</span> <span class="n">f_base</span><span class="o">=</span><span class="n">f_base</span><span class="p">,</span> <span class="n">f_ext</span><span class="o">=</span><span class="n">f_ext</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="n_rows_cols"><a class="viewcode-back" href="../../../api/geowombat.core.html#geowombat.core.util.n_rows_cols">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">n_rows_cols</span><span class="p">(</span><span class="n">pixel_index</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">block_size</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">rows_cols</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Adjusts block size for the end of image rows and columns.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        pixel_index (int): The current pixel row or column index.</span>
+<span class="sd">        block_size (int): The image block size.</span>
+<span class="sd">        rows_cols (int): The total number of rows or columns in the image.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Adjusted block size as ``int``.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="p">(</span>
+        <span class="n">block_size</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">pixel_index</span> <span class="o">+</span> <span class="n">block_size</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">rows_cols</span>
+        <span class="k">else</span> <span class="n">rows_cols</span> <span class="o">-</span> <span class="n">pixel_index</span>
+    <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Chunks"><a class="viewcode-back" href="../../../api/geowombat.core.html#geowombat.core.util.Chunks">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">Chunks</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<div class="viewcode-block" id="Chunks.get_chunk_dim"><a class="viewcode-back" href="../../../api/geowombat.core.html#geowombat.core.util.Chunks.get_chunk_dim">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_chunk_dim</span><span class="p">(</span><span class="n">chunksize</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s1">&#39;</span><span class="si">{:d}</span><span class="s1">d&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">chunksize</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="Chunks.check_chunktype"><a class="viewcode-back" href="../../../api/geowombat.core.html#geowombat.core.util.Chunks.check_chunktype">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">check_chunktype</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">chunksize</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">output</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;3d&#39;</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">chunksize</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">chunksize</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">chunksize</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
+            <span class="n">chunksize</span> <span class="o">=</span> <span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">chunksize</span><span class="p">,</span> <span class="n">chunksize</span><span class="p">)</span>
+
+        <span class="n">chunk_len</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">chunksize</span><span class="p">)</span>
+        <span class="n">output_len</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">output</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">chunksize</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">):</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">chunksize</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">chunksize</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+                        <span class="s1">&#39;  The chunksize parameter should be a tuple, dictionary, or integer.&#39;</span>
+                    <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">chunk_len</span> <span class="o">!=</span> <span class="n">output_len</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">check_chunksize</span><span class="p">(</span><span class="n">chunksize</span><span class="p">,</span> <span class="n">output</span><span class="o">=</span><span class="n">output</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">chunksize</span></div>
+
+<div class="viewcode-block" id="Chunks.check_chunksize"><a class="viewcode-back" href="../../../api/geowombat.core.html#geowombat.core.util.Chunks.check_chunksize">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">check_chunksize</span><span class="p">(</span><span class="n">chunksize</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">output</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;3d&#39;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">:</span>
+        <span class="n">chunk_len</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">chunksize</span><span class="p">)</span>
+        <span class="n">output_len</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">output</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+
+        <span class="k">if</span> <span class="n">chunk_len</span> <span class="o">!=</span> <span class="n">output_len</span><span class="p">:</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">chunk_len</span> <span class="o">==</span> <span class="mi">2</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">output_len</span> <span class="o">==</span> <span class="mi">3</span><span class="p">):</span>
+                <span class="k">return</span> <span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,)</span> <span class="o">+</span> <span class="n">chunksize</span>
+            <span class="k">elif</span> <span class="p">(</span><span class="n">chunk_len</span> <span class="o">==</span> <span class="mi">3</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">output_len</span> <span class="o">==</span> <span class="mi">2</span><span class="p">):</span>
+                <span class="k">return</span> <span class="n">chunksize</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
+
+        <span class="k">return</span> <span class="n">chunksize</span></div></div>
+
+
+<div class="viewcode-block" id="MapProcesses"><a class="viewcode-back" href="../../../api/geowombat.core.html#geowombat.core.util.MapProcesses">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">MapProcesses</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<div class="viewcode-block" id="MapProcesses.moving"><a class="viewcode-back" href="../../../api/geowombat.core.html#geowombat.core.util.MapProcesses.moving">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">moving</span><span class="p">(</span>
+        <span class="n">data</span><span class="p">:</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">,</span>
+        <span class="n">stat</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;mean&#39;</span><span class="p">,</span>
+        <span class="n">perc</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="mi">50</span><span class="p">,</span>
+        <span class="n">w</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span>
+        <span class="n">nodata</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Optional</span><span class="p">[</span><span class="n">T</span><span class="o">.</span><span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">int</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">weights</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Applies a moving window function over Dask array blocks.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            data (DataArray): The ``xarray.DataArray`` to process.</span>
+<span class="sd">            stat (Optional[str]): The statistic to compute.</span>
+<span class="sd">                Choices are [&#39;mean&#39;, &#39;std&#39;, &#39;var&#39;, &#39;min&#39;, &#39;max&#39;, &#39;perc&#39;].</span>
+<span class="sd">            perc (Optional[int]): The percentile to return if ``stat`` = &#39;perc&#39;.</span>
+<span class="sd">            w (Optional[int]): The moving window size (in pixels).</span>
+<span class="sd">            nodata (Optional[int or float]): A &#39;no data&#39; value to ignore.</span>
+<span class="sd">            weights (Optional[bool]): Whether to weight values by distance from window center.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            ``xarray.DataArray``</span>
+
+<span class="sd">        Examples:</span>
+<span class="sd">            &gt;&gt;&gt; import geowombat as gw</span>
+<span class="sd">            &gt;&gt;&gt;</span>
+<span class="sd">            &gt;&gt;&gt; # Calculate the mean within a 5x5 window</span>
+<span class="sd">            &gt;&gt;&gt; with gw.open(&#39;image.tif&#39;) as src:</span>
+<span class="sd">            &gt;&gt;&gt;     res = gw.moving(ds, stat=&#39;mean&#39;, w=5, nodata=32767.0)</span>
+<span class="sd">            &gt;&gt;&gt;</span>
+<span class="sd">            &gt;&gt;&gt; # Calculate the 90th percentile within a 15x15 window</span>
+<span class="sd">            &gt;&gt;&gt; with gw.open(&#39;image.tif&#39;) as src:</span>
+<span class="sd">            &gt;&gt;&gt;     res = gw.moving(stat=&#39;perc&#39;, w=15, perc=90, nodata=32767.0)</span>
+<span class="sd">            &gt;&gt;&gt;     res.data.compute(num_workers=4)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">w</span> <span class="o">%</span> <span class="mi">2</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="s1">&#39;  The window size must be an odd number.&#39;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">):</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="s1">&#39;  The input data must be an Xarray DataArray.&#39;</span><span class="p">)</span>
+
+        <span class="n">y</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">y</span><span class="o">.</span><span class="n">values</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">x</span><span class="o">.</span><span class="n">values</span>
+        <span class="n">attrs</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">attrs</span>
+        <span class="n">hw</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">w</span> <span class="o">*</span> <span class="mf">0.5</span><span class="p">)</span>
+
+        <span class="nd">@threadpool_limits</span><span class="o">.</span><span class="n">wrap</span><span class="p">(</span><span class="n">limits</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">user_api</span><span class="o">=</span><span class="s1">&#39;blas&#39;</span><span class="p">)</span>
+        <span class="k">def</span><span class="w"> </span><span class="nf">_move_func_3d</span><span class="p">(</span><span class="n">block_data</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">            </span><span class="sd">&quot;&quot;&quot;Process all bands in a single block.</span>
+
+<span class="sd">            Args:</span>
+<span class="sd">                block_data: 3D array (band, y, x)</span>
+<span class="sd">            &quot;&quot;&quot;</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty_like</span><span class="p">(</span><span class="n">block_data</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">block_data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
+                <span class="n">band_slice</span> <span class="o">=</span> <span class="n">block_data</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+                <span class="k">if</span> <span class="nb">max</span><span class="p">(</span><span class="n">band_slice</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="n">hw</span><span class="p">:</span>
+                    <span class="n">result</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">band_slice</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">result</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">moving_window</span><span class="p">(</span>
+                        <span class="n">band_slice</span><span class="p">,</span>
+                        <span class="n">stat</span><span class="o">=</span><span class="n">stat</span><span class="p">,</span>
+                        <span class="n">w</span><span class="o">=</span><span class="n">w</span><span class="p">,</span>
+                        <span class="n">perc</span><span class="o">=</span><span class="n">perc</span><span class="p">,</span>
+                        <span class="n">nodata</span><span class="o">=</span><span class="n">nodata</span><span class="p">,</span>
+                        <span class="n">weights</span><span class="o">=</span><span class="n">weights</span><span class="p">,</span>
+                        <span class="n">n_jobs</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                    <span class="p">)</span>
+            <span class="k">return</span> <span class="n">result</span>
+
+        <span class="n">results</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;float64&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">map_overlap</span><span class="p">(</span>
+            <span class="n">_move_func_3d</span><span class="p">,</span>
+            <span class="n">depth</span><span class="o">=</span><span class="p">{</span><span class="mi">0</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">:</span> <span class="n">hw</span><span class="p">,</span> <span class="mi">2</span><span class="p">:</span> <span class="n">hw</span><span class="p">},</span>
+            <span class="n">trim</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="n">boundary</span><span class="o">=</span><span class="s1">&#39;reflect&#39;</span><span class="p">,</span>
+            <span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;float64&#39;</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="n">results</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">(</span>
+            <span class="n">data</span><span class="o">=</span><span class="n">results</span><span class="p">,</span>
+            <span class="n">dims</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;band&#39;</span><span class="p">,</span> <span class="s1">&#39;y&#39;</span><span class="p">,</span> <span class="s1">&#39;x&#39;</span><span class="p">),</span>
+            <span class="n">coords</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;band&#39;</span><span class="p">:</span> <span class="n">data</span><span class="o">.</span><span class="n">band</span><span class="p">,</span> <span class="s1">&#39;y&#39;</span><span class="p">:</span> <span class="n">y</span><span class="p">,</span> <span class="s1">&#39;x&#39;</span><span class="p">:</span> <span class="n">x</span><span class="p">},</span>
+            <span class="n">attrs</span><span class="o">=</span><span class="n">attrs</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="n">new_attrs</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;moving_stat&#39;</span><span class="p">:</span> <span class="n">stat</span><span class="p">,</span>
+            <span class="s1">&#39;moving_window_size&#39;</span><span class="p">:</span> <span class="n">w</span><span class="p">,</span>
+        <span class="p">}</span>
+        <span class="k">if</span> <span class="n">stat</span> <span class="o">==</span> <span class="s1">&#39;perc&#39;</span><span class="p">:</span>
+            <span class="n">new_attrs</span><span class="p">[</span><span class="s1">&#39;moving_perc&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">perc</span>
+
+        <span class="k">return</span> <span class="n">results</span><span class="o">.</span><span class="n">assign_attrs</span><span class="p">(</span><span class="o">**</span><span class="n">new_attrs</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="sample_feature"><a class="viewcode-back" href="../../../api/geowombat.core.html#geowombat.core.util.sample_feature">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">sample_feature</span><span class="p">(</span>
+    <span class="n">df_row</span><span class="p">,</span>
+    <span class="n">id_column</span><span class="p">,</span>
+    <span class="n">df_columns</span><span class="p">,</span>
+    <span class="n">crs</span><span class="p">,</span>
+    <span class="n">res</span><span class="p">,</span>
+    <span class="n">all_touched</span><span class="p">,</span>
+    <span class="n">meta</span><span class="p">,</span>
+    <span class="n">frac</span><span class="p">,</span>
+    <span class="n">min_frac_area</span><span class="p">,</span>
+    <span class="n">feature_array</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Samples polygon features.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        df_row (pandas.Series)</span>
+<span class="sd">        id_column (str)</span>
+<span class="sd">        df_columns (list)</span>
+<span class="sd">        crs (object)</span>
+<span class="sd">        res (tuple)</span>
+<span class="sd">        all_touched (bool)</span>
+<span class="sd">        meta (namedtuple)</span>
+<span class="sd">        frac (float)</span>
+<span class="sd">        min_frac_area (int | float)</span>
+<span class="sd">        feature_array (Optional[ndarray])</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        ``geopandas.GeoDataFrame``</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">geom</span> <span class="o">=</span> <span class="n">df_row</span><span class="o">.</span><span class="n">geometry</span>
+
+    <span class="c1"># Get the feature&#39;s bounding extent</span>
+    <span class="n">geom_info</span> <span class="o">=</span> <span class="n">get_geometry_info</span><span class="p">(</span><span class="n">geom</span><span class="p">,</span> <span class="n">res</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="nb">min</span><span class="p">(</span><span class="n">geom_info</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">gpd</span><span class="o">.</span><span class="n">GeoDataFrame</span><span class="p">([])</span>
+
+    <span class="n">fid</span> <span class="o">=</span> <span class="n">df_row</span><span class="p">[</span><span class="n">id_column</span><span class="p">]</span>
+    <span class="n">other_cols</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="n">col</span> <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">df_columns</span> <span class="k">if</span> <span class="n">col</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="n">id_column</span><span class="p">,</span> <span class="s1">&#39;geometry&#39;</span><span class="p">]</span>
+    <span class="p">]</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">feature_array</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+        <span class="c1"># &quot;Rasterize&quot; the geometry into a NumPy array</span>
+        <span class="n">feature_array</span> <span class="o">=</span> <span class="n">features</span><span class="o">.</span><span class="n">rasterize</span><span class="p">(</span>
+            <span class="p">[</span><span class="n">geom</span><span class="p">],</span>
+            <span class="n">out_shape</span><span class="o">=</span><span class="n">geom_info</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span>
+            <span class="n">fill</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+            <span class="n">out</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">transform</span><span class="o">=</span><span class="n">geom_info</span><span class="o">.</span><span class="n">affine</span><span class="p">,</span>
+            <span class="n">all_touched</span><span class="o">=</span><span class="n">all_touched</span><span class="p">,</span>
+            <span class="n">default_value</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+            <span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;int64&#39;</span><span class="p">,</span>
+        <span class="p">)</span>
+
+    <span class="c1"># Get the indices of the feature&#39;s envelope</span>
+    <span class="n">valid_samples</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">feature_array</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="c1"># Get geometry indices</span>
+    <span class="n">x_samples</span> <span class="o">=</span> <span class="n">valid_samples</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">y_samples</span> <span class="o">=</span> <span class="n">valid_samples</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="c1"># Convert the geometry indices to geometry map coordinates</span>
+    <span class="n">x_coords</span><span class="p">,</span> <span class="n">y_coords</span> <span class="o">=</span> <span class="n">geom_info</span><span class="o">.</span><span class="n">affine</span> <span class="o">*</span> <span class="p">(</span><span class="n">x_samples</span><span class="p">,</span> <span class="n">y_samples</span><span class="p">)</span>
+    <span class="c1"># Move coordinates offset from polygon left and top edges</span>
+    <span class="n">x_coords</span> <span class="o">+=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">res</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">*</span> <span class="mf">0.5</span>
+    <span class="n">y_coords</span> <span class="o">-=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">res</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">*</span> <span class="mf">0.5</span>
+
+    <span class="k">if</span> <span class="n">frac</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">take_subset</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">min_frac_area</span><span class="p">,</span> <span class="p">(</span><span class="nb">float</span><span class="p">,</span> <span class="nb">int</span><span class="p">)):</span>
+            <span class="k">if</span> <span class="n">y_coords</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">min_frac_area</span><span class="p">:</span>
+                <span class="n">take_subset</span> <span class="o">=</span> <span class="kc">False</span>
+
+        <span class="k">if</span> <span class="n">take_subset</span><span class="p">:</span>
+            <span class="n">rand_idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">y_coords</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span>
+                <span class="n">size</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">y_coords</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">frac</span><span class="p">),</span>
+                <span class="n">replace</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="n">y_coords</span> <span class="o">=</span> <span class="n">y_coords</span><span class="p">[</span><span class="n">rand_idx</span><span class="p">]</span>
+            <span class="n">x_coords</span> <span class="o">=</span> <span class="n">x_coords</span><span class="p">[</span><span class="n">rand_idx</span><span class="p">]</span>
+
+    <span class="n">n_samples</span> <span class="o">=</span> <span class="n">y_coords</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">fid_</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">fid</span><span class="p">)</span>
+        <span class="n">fid_</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n_samples</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;int64&#39;</span><span class="p">)</span> <span class="o">+</span> <span class="n">fid_</span>
+    <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+        <span class="n">fid_</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">fid</span><span class="p">)</span>
+        <span class="n">fid_</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">([</span><span class="n">fid_</span><span class="p">]</span> <span class="o">*</span> <span class="n">n_samples</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">object</span><span class="p">)</span>
+
+    <span class="c1"># Combine the coordinates into `Shapely` point geometry</span>
+    <span class="n">fea_df</span> <span class="o">=</span> <span class="n">gpd</span><span class="o">.</span><span class="n">GeoDataFrame</span><span class="p">(</span>
+        <span class="n">data</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">c_</span><span class="p">[</span><span class="n">fid_</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">n_samples</span><span class="p">)],</span>
+        <span class="n">geometry</span><span class="o">=</span><span class="n">gpd</span><span class="o">.</span><span class="n">points_from_xy</span><span class="p">(</span><span class="n">x_coords</span><span class="p">,</span> <span class="n">y_coords</span><span class="p">),</span>
+        <span class="n">crs</span><span class="o">=</span><span class="n">crs</span><span class="p">,</span>
+        <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="n">id_column</span><span class="p">,</span> <span class="s1">&#39;point&#39;</span><span class="p">],</span>
+    <span class="p">)</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">fea_df</span><span class="o">.</span><span class="n">empty</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">other_cols</span><span class="p">:</span>
+            <span class="n">fea_df</span> <span class="o">=</span> <span class="n">fea_df</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="o">**</span><span class="p">{</span><span class="n">col</span><span class="p">:</span> <span class="n">df_row</span><span class="p">[</span><span class="n">col</span><span class="p">]})</span>
+
+    <span class="k">return</span> <span class="n">fea_df</span></div>
+</pre></div>
+
+                </article>
+              
+
+              
+              
+                <footer class="bd-footer-article">
+                  <!-- Previous / next buttons -->
+<div class="prev-next-area">
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            <div class="bd-footer-content__inner">
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+  <p class="copyright">
+    
+      © Copyright 2020-2026, GeoWombat.
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+</div></div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../../../_static/scripts/bootstrap.js?digest=12da95d707ffb74b382d"></script>
+<script src="../../../_static/scripts/pydata-sphinx-theme.js?digest=12da95d707ffb74b382d"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>

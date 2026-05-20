@@ -1,0 +1,1035 @@
+
+
+<!DOCTYPE html>
+
+
+<html lang="en" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>geowombat.radiometry.brdf</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../../_static/styles/theme.css?digest=12da95d707ffb74b382d" rel="stylesheet" />
+<link href="../../../_static/styles/bootstrap.css?digest=12da95d707ffb74b382d" rel="stylesheet" />
+<link href="../../../_static/styles/pydata-sphinx-theme.css?digest=12da95d707ffb74b382d" rel="stylesheet" />
+
+  
+  <link href="../../../_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=12da95d707ffb74b382d" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css" />
+    <link rel="stylesheet" href="../../../_static/styles/sphinx-book-theme.css?digest=14f4ca6b54d191a8c7657f6c759bf11a5fb86285" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/custom.css" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=12da95d707ffb74b382d" />
+<link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=12da95d707ffb74b382d" />
+
+    <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+    <script src="../../../_static/doctools.js"></script>
+    <script src="../../../_static/sphinx_highlight.js"></script>
+    <script src="../../../_static/clipboard.min.js"></script>
+    <script src="../../../_static/copybutton.js"></script>
+    <script src="../../../_static/scripts/sphinx-book-theme.js?digest=5a5c038af52cf7bc1a1ec88eea08e6366ee68824"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/geowombat/radiometry/brdf';</script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__primary"
+          id="__primary"/>
+  <label class="overlay overlay-primary" for="__primary"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__secondary"
+          id="__secondary"/>
+  <label class="overlay overlay-secondary" for="__secondary"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="../../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search..."
+         aria-label="Search..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+  
+    <nav class="bd-header navbar navbar-expand-lg bd-navbar">
+    </nav>
+  
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      <div class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+  
+
+<a class="navbar-brand logo" href="../../../index.html">
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../../../_static/logo.png" class="logo__image only-light" alt="GeoWombat"/>
+    <script>document.write(`<img src="../../../_static/logo.png" class="logo__image only-dark" alt="GeoWombat"/>`);</script>
+  
+  
+</a></div>
+        <div class="sidebar-primary-item"><nav class="bd-links" id="bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        <p aria-level="2" class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../../install.html">Installing GeoWombat</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../quick-overview.html">Quick overview</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../../tutorial.html">Tutorial</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-1"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../tutorial-why.html">Why GeoWombat?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../tutorial-open.html">Opening rasters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../tutorial-edit.html">Editing rasters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../tutorial-config.html">Configuration manager</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../tutorial-gw.html">GeoWombat DataArray accessor</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../tutorial-crs.html">Coordinate Reference Systems</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../tutorial-plot.html">Plotting raster data</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../../examples.html">Examples</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-2"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../io.html">Raster I/O</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../io-distributed.html">Distributed processing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../extraction.html">Data extraction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../band-math.html">Band math</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../apply.html">User functions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../ml.html">Machine learning</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../dl.html">Deep learning classifiers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../object-detection.html">Object detection</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../moving.html">Moving windows</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../radiometry.html">Radiometry</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../coreg.html">Co-registration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../tasks.html">Pipeline tasks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../web.html">Accessing STAC Catalogs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../external.html">External examples</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../gpu.html">Time series processes on the GPU</a></li>
+</ul>
+</li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Changes</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../../changelog.html">Changelog</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../issues.html">Issues</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Reference</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../../api.html">API reference</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-3"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.core.geoxarray.GeoWombatAccessor.html">GeoWombat DataArray (DataArray.gw)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.load.html">load</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.extract.html">extract</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.sample.html">sample</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.calc_area.html">calc_area</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.subset.html">subset</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.clip.html">clip</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.clip_by_polygon.html">clip_by_polygon</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.mask.html">mask</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.replace.html">replace</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.recode.html">recode</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.coregister.html">coregister</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.polygons_to_points.html">polygons_to_points</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.apply.html">apply</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.transform_crs.html">transform_crs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.save.html">save</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.to_raster.html">to_raster</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.to_netcdf.html">to_netcdf</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.to_vrt.html">to_vrt</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.array_to_polygon.html">array_to_polygon</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.polygon_to_array.html">polygon_to_array</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.moving.html">moving</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.norm_diff.html">norm_diff</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.avi.html">avi</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.evi.html">evi</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.evi2.html">evi2</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.kndvi.html">kndvi</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.nbr.html">nbr</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.ndvi.html">ndvi</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.wi.html">wi</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.tasseled_cap.html">tasseled_cap</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.coords_to_indices.html">coords_to_indices</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.indices_to_coords.html">indices_to_coords</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.bounds_to_coords.html">bounds_to_coords</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.lonlat_to_xy.html">lonlat_to_xy</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.xy_to_lonlat.html">xy_to_lonlat</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.open.html">open</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.series.html">series</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.TimeModulePipeline.html">TimeModulePipeline</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.TimeModule.html">TimeModule</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.core.stac.composite_stac.html">composite_stac</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.core.stac.merge_stac.html">merge_stac</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.core.stac.open_stac.html">open_stac</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.core.stac.STACCollectionURLNames.html">STACCollectionURLNames</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.core.stac.STACCollections.html">STACCollections</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.core.stac.STACNames.html">STACNames</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.core.stac.StrEnum.html">StrEnum</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.ml.fit.html">fit</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.ml.fit_predict.html">fit_predict</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.ml.predict.html">predict</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.ml.TabNetClassifier.html">TabNetClassifier</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.ml.LTAEClassifier.html">LTAEClassifier</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.ml.TorchGeoClassifier.html">TorchGeoClassifier</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.detect.boxes_from_polygons.html">boxes_from_polygons</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.detect.build_dataset.html">build_dataset</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.detect.build_yolo_dataset.html">build_yolo_dataset</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.detect.detection_accuracy.html">detection_accuracy</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.detect.export_for_review.html">export_for_review</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.detect.fit.html">fit</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.detect.fit_predict.html">fit_predict</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.detect.plot_detections.html">plot_detections</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.detect.predict.html">predict</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.detect.recompute_from_review.html">recompute_from_review</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.detect.SAMRefiner.html">SAMRefiner</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.detect.TorchGeoDetector.html">TorchGeoDetector</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.detect.YOLODetector.html">YOLODetector</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.radiometry.landsat_pixel_angles.html">landsat_pixel_angles</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.radiometry.sentinel_pixel_angles.html">sentinel_pixel_angles</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.radiometry.BRDF.html">BRDF</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.radiometry.Topo.html">Topo</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.radiometry.LinearAdjustments.html">LinearAdjustments</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.radiometry.RadTransforms.html">RadTransforms</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.radiometry.DOS.html">DOS</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.radiometry.SixS.html">SixS</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.radiometry.QAMasker.html">QAMasker</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.radiometry.QABits.html">QABits</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.radiometry.SCLValues.html">SCLValues</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.radiometry.HLSFmaskBits.html">HLSFmaskBits</a></li>
+</ul>
+</li>
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><label class="sidebar-toggle primary-toggle btn btn-sm" for="__primary" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</label></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+<a href="https://github.com/jgrss/geowombat" target="_blank"
+   class="btn btn-sm btn-source-repository-button"
+   title="Source repository"
+   data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fab fa-github"></i>
+  </span>
+
+</a>
+
+
+
+
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button"
+  title="Fullscreen mode"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+
+<script>
+document.write(`
+  <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
+    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
+    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
+  </button>
+`);
+</script>
+
+<script>
+document.write(`
+  <button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+  </button>
+`);
+</script>
+
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1></h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article" role="main">
+                  
+  <h1>Source code for geowombat.radiometry.brdf</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">collections</span><span class="w"> </span><span class="kn">import</span> <span class="n">namedtuple</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">copy</span><span class="w"> </span><span class="kn">import</span> <span class="n">copy</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">dask.array</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">da</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">xarray</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">xr</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">..core.util</span><span class="w"> </span><span class="kn">import</span> <span class="n">project_coords</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">..handler</span><span class="w"> </span><span class="kn">import</span> <span class="n">add_handler</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.angles</span><span class="w"> </span><span class="kn">import</span> <span class="n">relative_azimuth</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+<span class="n">logger</span> <span class="o">=</span> <span class="n">add_handler</span><span class="p">(</span><span class="n">logger</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="Special"><a class="viewcode-back" href="../../../api/geowombat.radiometry.html#geowombat.radiometry.Special">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">Special</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<div class="viewcode-block" id="Special.get_distance"><a class="viewcode-back" href="../../../api/geowombat.radiometry.html#geowombat.radiometry.Special.get_distance">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_distance</span><span class="p">(</span><span class="n">tan1</span><span class="p">,</span> <span class="n">tan2</span><span class="p">,</span> <span class="n">cos3</span><span class="p">):</span>
+
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Gets distance component of Li kernels.&quot;&quot;&quot;</span>
+
+        <span class="n">temp</span> <span class="o">=</span> <span class="n">tan1</span> <span class="o">*</span> <span class="n">tan1</span> <span class="o">+</span> <span class="n">tan2</span> <span class="o">*</span> <span class="n">tan2</span> <span class="o">-</span> <span class="mf">2.0</span> <span class="o">*</span> <span class="n">tan1</span> <span class="o">*</span> <span class="n">tan2</span> <span class="o">*</span> <span class="n">cos3</span>
+
+        <span class="k">return</span> <span class="n">da</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">da</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">temp</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="Special.get_overlap"><a class="viewcode-back" href="../../../api/geowombat.radiometry.html#geowombat.radiometry.Special.get_overlap">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_overlap</span><span class="p">(</span><span class="n">cos1</span><span class="p">,</span> <span class="n">cos2</span><span class="p">,</span> <span class="n">tan1</span><span class="p">,</span> <span class="n">tan2</span><span class="p">,</span> <span class="n">sin3</span><span class="p">,</span> <span class="n">distance</span><span class="p">,</span> <span class="n">hb</span><span class="p">,</span> <span class="n">m_pi</span><span class="p">):</span>
+
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Applies the HB ratio transformation.&quot;&quot;&quot;</span>
+
+        <span class="n">OverlapInfo</span> <span class="o">=</span> <span class="n">namedtuple</span><span class="p">(</span><span class="s1">&#39;OverlapInfo&#39;</span><span class="p">,</span> <span class="s1">&#39;tvar sint overlap temp&#39;</span><span class="p">)</span>
+
+        <span class="n">temp</span> <span class="o">=</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">/</span> <span class="n">cos1</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">/</span> <span class="n">cos2</span><span class="p">)</span>
+
+        <span class="n">cost</span> <span class="o">=</span> <span class="n">da</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span>
+            <span class="n">hb</span>
+            <span class="o">*</span> <span class="n">da</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span>
+                <span class="n">distance</span> <span class="o">*</span> <span class="n">distance</span> <span class="o">+</span> <span class="n">tan1</span> <span class="o">*</span> <span class="n">tan1</span> <span class="o">*</span> <span class="n">tan2</span> <span class="o">*</span> <span class="n">tan2</span> <span class="o">*</span> <span class="n">sin3</span> <span class="o">*</span> <span class="n">sin3</span>
+            <span class="p">)</span>
+            <span class="o">/</span> <span class="n">temp</span><span class="p">,</span>
+            <span class="o">-</span><span class="mi">1</span><span class="p">,</span>
+            <span class="mi">1</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="n">tvar</span> <span class="o">=</span> <span class="n">da</span><span class="o">.</span><span class="n">arccos</span><span class="p">(</span><span class="n">cost</span><span class="p">)</span>
+        <span class="n">sint</span> <span class="o">=</span> <span class="n">da</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">tvar</span><span class="p">)</span>
+
+        <span class="n">overlap</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">/</span> <span class="n">m_pi</span> <span class="o">*</span> <span class="p">(</span><span class="n">tvar</span> <span class="o">-</span> <span class="n">sint</span> <span class="o">*</span> <span class="n">cost</span><span class="p">)</span> <span class="o">*</span> <span class="n">temp</span>
+        <span class="n">overlap</span> <span class="o">=</span> <span class="n">da</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">overlap</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">OverlapInfo</span><span class="p">(</span><span class="n">tvar</span><span class="o">=</span><span class="n">tvar</span><span class="p">,</span> <span class="n">sint</span><span class="o">=</span><span class="n">sint</span><span class="p">,</span> <span class="n">overlap</span><span class="o">=</span><span class="n">overlap</span><span class="p">,</span> <span class="n">temp</span><span class="o">=</span><span class="n">temp</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="Angles"><a class="viewcode-back" href="../../../api/geowombat.radiometry.html#geowombat.radiometry.Angles">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">Angles</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<div class="viewcode-block" id="Angles.get_phaang"><a class="viewcode-back" href="../../../api/geowombat.radiometry.html#geowombat.radiometry.Angles.get_phaang">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_phaang</span><span class="p">(</span><span class="n">cos_vza</span><span class="p">,</span> <span class="n">cos_sza</span><span class="p">,</span> <span class="n">sin_vza</span><span class="p">,</span> <span class="n">sin_sza</span><span class="p">,</span> <span class="n">cos_raa</span><span class="p">):</span>
+
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Gets the phase angle.&quot;&quot;&quot;</span>
+
+        <span class="n">cos_phase_angle</span> <span class="o">=</span> <span class="n">da</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span>
+            <span class="n">cos_vza</span> <span class="o">*</span> <span class="n">cos_sza</span> <span class="o">+</span> <span class="n">sin_vza</span> <span class="o">*</span> <span class="n">sin_sza</span> <span class="o">*</span> <span class="n">cos_raa</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span>
+        <span class="p">)</span>
+        <span class="n">phase_angle</span> <span class="o">=</span> <span class="n">da</span><span class="o">.</span><span class="n">arccos</span><span class="p">(</span><span class="n">cos_phase_angle</span><span class="p">)</span>
+        <span class="n">sin_phase_angle</span> <span class="o">=</span> <span class="n">da</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">phase_angle</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">cos_phase_angle</span><span class="p">,</span> <span class="n">phase_angle</span><span class="p">,</span> <span class="n">sin_phase_angle</span></div>
+
+<div class="viewcode-block" id="Angles.get_pangles"><a class="viewcode-back" href="../../../api/geowombat.radiometry.html#geowombat.radiometry.Angles.get_pangles">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_pangles</span><span class="p">(</span><span class="n">tan1</span><span class="p">,</span> <span class="n">br</span><span class="p">,</span> <span class="n">nearly_zero</span><span class="p">):</span>
+
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the prime angles.&quot;&quot;&quot;</span>
+
+        <span class="n">tanp</span> <span class="o">=</span> <span class="n">br</span> <span class="o">*</span> <span class="n">tan1</span>
+
+        <span class="n">tanp</span> <span class="o">=</span> <span class="n">da</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">tanp</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">tanp</span><span class="p">)</span>
+
+        <span class="n">angp</span> <span class="o">=</span> <span class="n">da</span><span class="o">.</span><span class="n">arctan</span><span class="p">(</span><span class="n">tanp</span><span class="p">)</span>
+        <span class="n">sinp</span> <span class="o">=</span> <span class="n">da</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">angp</span><span class="p">)</span>
+        <span class="n">cosp</span> <span class="o">=</span> <span class="n">da</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">angp</span><span class="p">)</span>
+
+        <span class="c1"># have to make sure c is not 0</span>
+        <span class="n">cosp</span> <span class="o">=</span> <span class="n">da</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">cosp</span> <span class="o">==</span> <span class="mi">0</span><span class="p">,</span> <span class="n">nearly_zero</span><span class="p">,</span> <span class="n">cosp</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">cosp</span><span class="p">,</span> <span class="n">sinp</span><span class="p">,</span> <span class="n">tanp</span></div>
+
+<div class="viewcode-block" id="Angles.get_angle_info"><a class="viewcode-back" href="../../../api/geowombat.radiometry.html#geowombat.radiometry.Angles.get_angle_info">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_angle_info</span><span class="p">(</span><span class="n">vza</span><span class="p">,</span> <span class="n">sza</span><span class="p">,</span> <span class="n">raa</span><span class="p">,</span> <span class="n">m_pi</span><span class="p">):</span>
+
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Gets the angle information.&quot;&quot;&quot;</span>
+
+        <span class="n">AngleInfo</span> <span class="o">=</span> <span class="n">namedtuple</span><span class="p">(</span>
+            <span class="s1">&#39;AngleInfo&#39;</span><span class="p">,</span> <span class="s1">&#39;vza sza raa vza_rad sza_rad raa_rad&#39;</span>
+        <span class="p">)</span>
+
+        <span class="c1"># View zenith angle</span>
+        <span class="n">vza_rad</span> <span class="o">=</span> <span class="n">da</span><span class="o">.</span><span class="n">deg2rad</span><span class="p">(</span><span class="n">vza</span><span class="p">)</span>
+
+        <span class="c1"># Solar zenith angle</span>
+        <span class="n">sza_rad</span> <span class="o">=</span> <span class="n">da</span><span class="o">.</span><span class="n">deg2rad</span><span class="p">(</span><span class="n">sza</span><span class="p">)</span>
+
+        <span class="c1"># Relative azimuth angle</span>
+        <span class="n">raa_rad</span> <span class="o">=</span> <span class="n">da</span><span class="o">.</span><span class="n">deg2rad</span><span class="p">(</span><span class="n">raa</span><span class="p">)</span>
+
+        <span class="n">vza_abs</span> <span class="o">=</span> <span class="n">da</span><span class="o">.</span><span class="n">fabs</span><span class="p">(</span><span class="n">vza_rad</span><span class="p">)</span>
+        <span class="n">sza_abs</span> <span class="o">=</span> <span class="n">da</span><span class="o">.</span><span class="n">fabs</span><span class="p">(</span><span class="n">sza_rad</span><span class="p">)</span>
+
+        <span class="n">raa_abs</span> <span class="o">=</span> <span class="n">da</span><span class="o">.</span><span class="n">where</span><span class="p">((</span><span class="n">vza_rad</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span> <span class="o">|</span> <span class="p">(</span><span class="n">sza_rad</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">),</span> <span class="n">m_pi</span><span class="p">,</span> <span class="n">raa_rad</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">AngleInfo</span><span class="p">(</span>
+            <span class="n">vza</span><span class="o">=</span><span class="n">vza</span><span class="p">,</span>
+            <span class="n">sza</span><span class="o">=</span><span class="n">sza</span><span class="p">,</span>
+            <span class="n">raa</span><span class="o">=</span><span class="n">raa</span><span class="p">,</span>
+            <span class="n">vza_rad</span><span class="o">=</span><span class="n">vza_abs</span><span class="p">,</span>
+            <span class="n">sza_rad</span><span class="o">=</span><span class="n">sza_abs</span><span class="p">,</span>
+            <span class="n">raa_rad</span><span class="o">=</span><span class="n">raa_abs</span><span class="p">,</span>
+        <span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="LiKernel"><a class="viewcode-back" href="../../../api/geowombat.radiometry.html#geowombat.radiometry.LiKernel">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">LiKernel</span><span class="p">(</span><span class="n">Special</span><span class="p">,</span> <span class="n">Angles</span><span class="p">):</span>
+<div class="viewcode-block" id="LiKernel.get_li"><a class="viewcode-back" href="../../../api/geowombat.radiometry.html#geowombat.radiometry.LiKernel.get_li">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">get_li</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">kernel_type</span><span class="p">,</span> <span class="n">li_recip</span><span class="p">):</span>
+
+        <span class="c1"># relative azimuth angle</span>
+        <span class="c1"># ensure it is in a [0,2] pi range</span>
+        <span class="n">phi</span> <span class="o">=</span> <span class="n">da</span><span class="o">.</span><span class="n">fabs</span><span class="p">(</span>
+            <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">angle_info</span><span class="o">.</span><span class="n">raa_rad</span> <span class="o">%</span> <span class="p">(</span><span class="mf">2.0</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">global_args</span><span class="o">.</span><span class="n">m_pi</span><span class="p">))</span>
+        <span class="p">)</span>
+
+        <span class="n">cos_phi</span> <span class="o">=</span> <span class="n">da</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">phi</span><span class="p">)</span>
+        <span class="n">sin_phi</span> <span class="o">=</span> <span class="n">da</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">phi</span><span class="p">)</span>
+
+        <span class="n">tanti</span> <span class="o">=</span> <span class="n">da</span><span class="o">.</span><span class="n">tan</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">angle_info</span><span class="o">.</span><span class="n">sza_rad</span><span class="p">)</span>
+        <span class="n">tantv</span> <span class="o">=</span> <span class="n">da</span><span class="o">.</span><span class="n">tan</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">angle_info</span><span class="o">.</span><span class="n">vza_rad</span><span class="p">)</span>
+
+        <span class="n">cos1</span><span class="p">,</span> <span class="n">sin1</span><span class="p">,</span> <span class="n">tan1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_pangles</span><span class="p">(</span>
+            <span class="n">tantv</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">global_args</span><span class="o">.</span><span class="n">br</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">global_args</span><span class="o">.</span><span class="n">nearly_zero</span>
+        <span class="p">)</span>
+        <span class="n">cos2</span><span class="p">,</span> <span class="n">sin2</span><span class="p">,</span> <span class="n">tan2</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_pangles</span><span class="p">(</span>
+            <span class="n">tanti</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">global_args</span><span class="o">.</span><span class="n">br</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">global_args</span><span class="o">.</span><span class="n">nearly_zero</span>
+        <span class="p">)</span>
+
+        <span class="c1"># sets cos &amp; sin phase angle terms</span>
+        <span class="n">cos_phaang</span><span class="p">,</span> <span class="n">phaang</span><span class="p">,</span> <span class="n">sin_phaang</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_phaang</span><span class="p">(</span>
+            <span class="n">cos1</span><span class="p">,</span> <span class="n">cos2</span><span class="p">,</span> <span class="n">sin1</span><span class="p">,</span> <span class="n">sin2</span><span class="p">,</span> <span class="n">cos_phi</span>
+        <span class="p">)</span>
+        <span class="n">distance</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_distance</span><span class="p">(</span><span class="n">tan1</span><span class="p">,</span> <span class="n">tan2</span><span class="p">,</span> <span class="n">cos_phi</span><span class="p">)</span>
+        <span class="n">overlap_info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_overlap</span><span class="p">(</span>
+            <span class="n">cos1</span><span class="p">,</span>
+            <span class="n">cos2</span><span class="p">,</span>
+            <span class="n">tan1</span><span class="p">,</span>
+            <span class="n">tan2</span><span class="p">,</span>
+            <span class="n">sin_phi</span><span class="p">,</span>
+            <span class="n">distance</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">global_args</span><span class="o">.</span><span class="n">hb</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">global_args</span><span class="o">.</span><span class="n">m_pi</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">kernel_type</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;sparse&#39;</span><span class="p">:</span>
+
+            <span class="k">if</span> <span class="n">li_recip</span><span class="p">:</span>
+                <span class="n">li</span> <span class="o">=</span> <span class="p">(</span>
+                    <span class="n">overlap_info</span><span class="o">.</span><span class="n">overlap</span>
+                    <span class="o">-</span> <span class="n">overlap_info</span><span class="o">.</span><span class="n">temp</span>
+                    <span class="o">+</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">+</span> <span class="n">cos_phaang</span><span class="p">)</span> <span class="o">/</span> <span class="n">cos1</span> <span class="o">/</span> <span class="n">cos2</span>
+                <span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">li</span> <span class="o">=</span> <span class="p">(</span>
+                    <span class="n">overlap_info</span><span class="o">.</span><span class="n">overlap</span>
+                    <span class="o">-</span> <span class="n">overlap_info</span><span class="o">.</span><span class="n">temp</span>
+                    <span class="o">+</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">+</span> <span class="n">cos_phaang</span><span class="p">)</span> <span class="o">/</span> <span class="n">cos1</span>
+                <span class="p">)</span>
+
+        <span class="k">else</span><span class="p">:</span>
+
+            <span class="k">if</span> <span class="n">kernel_type</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;dense&#39;</span><span class="p">:</span>
+
+                <span class="k">if</span> <span class="n">li_recip</span><span class="p">:</span>
+                    <span class="n">li</span> <span class="o">=</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">+</span> <span class="n">cos_phaang</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span>
+                        <span class="n">cos1</span>
+                        <span class="o">*</span> <span class="n">cos2</span>
+                        <span class="o">*</span> <span class="p">(</span><span class="n">overlap_info</span><span class="o">.</span><span class="n">temp</span> <span class="o">-</span> <span class="n">overlap_info</span><span class="o">.</span><span class="n">overlap</span><span class="p">)</span>
+                    <span class="p">)</span> <span class="o">-</span> <span class="mf">2.0</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">li</span> <span class="o">=</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">+</span> <span class="n">cos_phaang</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span>
+                        <span class="n">cos1</span> <span class="o">*</span> <span class="p">(</span><span class="n">overlap_info</span><span class="o">.</span><span class="n">temp</span> <span class="o">-</span> <span class="n">overlap_info</span><span class="o">.</span><span class="n">overlap</span><span class="p">)</span>
+                    <span class="p">)</span> <span class="o">-</span> <span class="mf">2.0</span>
+
+        <span class="k">return</span> <span class="n">li</span></div></div>
+
+
+<div class="viewcode-block" id="RossKernel"><a class="viewcode-back" href="../../../api/geowombat.radiometry.html#geowombat.radiometry.RossKernel">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">RossKernel</span><span class="p">(</span><span class="n">Special</span><span class="p">,</span> <span class="n">Angles</span><span class="p">):</span>
+<div class="viewcode-block" id="RossKernel.ross_part"><a class="viewcode-back" href="../../../api/geowombat.radiometry.html#geowombat.radiometry.RossKernel.ross_part">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">ross_part</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">angle_info</span><span class="p">,</span> <span class="n">global_args</span><span class="p">):</span>
+
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Calculates the main part of Ross kernel.&quot;&quot;&quot;</span>
+
+        <span class="n">RossKernelOutputs</span> <span class="o">=</span> <span class="n">namedtuple</span><span class="p">(</span>
+            <span class="s1">&#39;RossKernelOutputs&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;cos_vza cos_sza sin_vza sin_sza cos_raa ross_element cos_phase_angle phase_angle sin_phase_angle ross&#39;</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="n">cos_vza</span> <span class="o">=</span> <span class="n">da</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">angle_info</span><span class="o">.</span><span class="n">vza_rad</span><span class="p">)</span>
+        <span class="n">cos_sza</span> <span class="o">=</span> <span class="n">da</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">angle_info</span><span class="o">.</span><span class="n">sza_rad</span><span class="p">)</span>
+        <span class="n">sin_vza</span> <span class="o">=</span> <span class="n">da</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">angle_info</span><span class="o">.</span><span class="n">vza_rad</span><span class="p">)</span>
+        <span class="n">sin_sza</span> <span class="o">=</span> <span class="n">da</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">angle_info</span><span class="o">.</span><span class="n">sza_rad</span><span class="p">)</span>
+        <span class="n">cos_raa</span> <span class="o">=</span> <span class="n">da</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">angle_info</span><span class="o">.</span><span class="n">raa_rad</span><span class="p">)</span>
+
+        <span class="n">cos_phase_angle</span><span class="p">,</span> <span class="n">phase_angle</span><span class="p">,</span> <span class="n">sin_phase_angle</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_phaang</span><span class="p">(</span>
+            <span class="n">cos_vza</span><span class="p">,</span> <span class="n">cos_sza</span><span class="p">,</span> <span class="n">sin_vza</span><span class="p">,</span> <span class="n">sin_sza</span><span class="p">,</span> <span class="n">cos_raa</span>
+        <span class="p">)</span>
+
+        <span class="n">ross_element</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">global_args</span><span class="o">.</span><span class="n">m_pi</span> <span class="o">/</span> <span class="mf">2.0</span> <span class="o">-</span> <span class="n">phase_angle</span>
+        <span class="p">)</span> <span class="o">*</span> <span class="n">cos_phase_angle</span> <span class="o">+</span> <span class="n">sin_phase_angle</span>
+
+        <span class="k">return</span> <span class="n">RossKernelOutputs</span><span class="p">(</span>
+            <span class="n">cos_vza</span><span class="o">=</span><span class="n">cos_vza</span><span class="p">,</span>
+            <span class="n">cos_sza</span><span class="o">=</span><span class="n">cos_sza</span><span class="p">,</span>
+            <span class="n">sin_vza</span><span class="o">=</span><span class="n">sin_vza</span><span class="p">,</span>
+            <span class="n">sin_sza</span><span class="o">=</span><span class="n">sin_sza</span><span class="p">,</span>
+            <span class="n">cos_raa</span><span class="o">=</span><span class="n">cos_raa</span><span class="p">,</span>
+            <span class="n">ross_element</span><span class="o">=</span><span class="n">ross_element</span><span class="p">,</span>
+            <span class="n">cos_phase_angle</span><span class="o">=</span><span class="n">cos_phase_angle</span><span class="p">,</span>
+            <span class="n">phase_angle</span><span class="o">=</span><span class="n">phase_angle</span><span class="p">,</span>
+            <span class="n">sin_phase_angle</span><span class="o">=</span><span class="n">sin_phase_angle</span><span class="p">,</span>
+            <span class="n">ross</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="RossKernel.ross_thin"><a class="viewcode-back" href="../../../api/geowombat.radiometry.html#geowombat.radiometry.RossKernel.ross_thin">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">ross_thin</span><span class="p">(</span><span class="n">ross_outputs</span><span class="p">):</span>
+
+        <span class="n">RossThinOutputs</span> <span class="o">=</span> <span class="n">namedtuple</span><span class="p">(</span><span class="s1">&#39;RossThinOutputs&#39;</span><span class="p">,</span> <span class="s1">&#39;ross phase_angle&#39;</span><span class="p">)</span>
+
+        <span class="n">ross_</span> <span class="o">=</span> <span class="n">ross_outputs</span><span class="o">.</span><span class="n">ross_element</span> <span class="o">/</span> <span class="p">(</span>
+            <span class="n">ross_outputs</span><span class="o">.</span><span class="n">cos_vza</span> <span class="o">*</span> <span class="n">ross_outputs</span><span class="o">.</span><span class="n">cos_sza</span>
+        <span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">RossThinOutputs</span><span class="p">(</span>
+            <span class="n">ross</span><span class="o">=</span><span class="n">ross_</span><span class="p">,</span> <span class="n">phase_angle</span><span class="o">=</span><span class="n">ross_outputs</span><span class="o">.</span><span class="n">phase_angle</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="RossKernel.ross_thick"><a class="viewcode-back" href="../../../api/geowombat.radiometry.html#geowombat.radiometry.RossKernel.ross_thick">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">ross_thick</span><span class="p">(</span><span class="n">ross_outputs</span><span class="p">):</span>
+
+        <span class="n">RossThickOutputs</span> <span class="o">=</span> <span class="n">namedtuple</span><span class="p">(</span><span class="s1">&#39;RossThickOutputs&#39;</span><span class="p">,</span> <span class="s1">&#39;ross phase_angle&#39;</span><span class="p">)</span>
+
+        <span class="n">ross_</span> <span class="o">=</span> <span class="n">ross_outputs</span><span class="o">.</span><span class="n">ross_element</span> <span class="o">/</span> <span class="p">(</span>
+            <span class="n">ross_outputs</span><span class="o">.</span><span class="n">cos_vza</span> <span class="o">+</span> <span class="n">ross_outputs</span><span class="o">.</span><span class="n">cos_sza</span>
+        <span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">RossThickOutputs</span><span class="p">(</span>
+            <span class="n">ross</span><span class="o">=</span><span class="n">ross_</span><span class="p">,</span> <span class="n">phase_angle</span><span class="o">=</span><span class="n">ross_outputs</span><span class="o">.</span><span class="n">phase_angle</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="RossKernel.get_ross"><a class="viewcode-back" href="../../../api/geowombat.radiometry.html#geowombat.radiometry.RossKernel.get_ross">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">get_ross</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">kernel_type</span><span class="p">):</span>
+
+        <span class="n">ross_outputs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ross_part</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">angle_info</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">global_args</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">kernel_type</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;thin&#39;</span><span class="p">:</span>
+            <span class="n">ross_kernel_outputs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ross_thin</span><span class="p">(</span><span class="n">ross_outputs</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">ross_kernel_outputs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ross_thick</span><span class="p">(</span><span class="n">ross_outputs</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">global_args</span><span class="o">.</span><span class="n">hs</span><span class="p">:</span>
+            <span class="n">ross</span> <span class="o">=</span> <span class="n">ross_kernel_outputs</span><span class="o">.</span><span class="n">ross</span> <span class="o">*</span> <span class="p">(</span>
+                <span class="mf">1.0</span> <span class="o">+</span> <span class="mf">1.0</span> <span class="o">/</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">+</span> <span class="n">ross_kernel_outputs</span><span class="o">.</span><span class="n">phase_angle</span> <span class="o">/</span> <span class="mf">0.25</span><span class="p">)</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">ross</span> <span class="o">=</span> <span class="n">ross_kernel_outputs</span><span class="o">.</span><span class="n">ross</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">global_args</span><span class="o">.</span><span class="n">m_pi</span> <span class="o">/</span> <span class="mf">4.0</span>
+
+        <span class="k">return</span> <span class="n">ross</span></div></div>
+
+
+<div class="viewcode-block" id="BRDFKernels"><a class="viewcode-back" href="../../../api/geowombat.radiometry.html#geowombat.radiometry.BRDFKernels">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">BRDFKernels</span><span class="p">(</span><span class="n">LiKernel</span><span class="p">,</span> <span class="n">RossKernel</span><span class="p">):</span>
+
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;A class for the Li and Ross BRDF kernels.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        vza (dask.array): The view zenith angle.</span>
+<span class="sd">        sza (dask.array): The solar zenith angle.</span>
+<span class="sd">        raa (dask.array): The relative azimuth angle.</span>
+<span class="sd">        li_type (Optional[str]): The Li kernel type. Choices are [&#39;sparse&#39;, &#39;dense&#39;].</span>
+<span class="sd">        ross_type (Optional[str]): The Ross kernel type. Choices are [&#39;thin&#39;, &#39;thick&#39;].</span>
+<span class="sd">        br (Optional[float]): The BR ratio.</span>
+<span class="sd">        hb (Optional[float]): The HB ratio.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">vza</span><span class="p">,</span>
+        <span class="n">sza</span><span class="p">,</span>
+        <span class="n">raa</span><span class="p">,</span>
+        <span class="n">li_type</span><span class="o">=</span><span class="s1">&#39;sparse&#39;</span><span class="p">,</span>
+        <span class="n">ross_type</span><span class="o">=</span><span class="s1">&#39;thick&#39;</span><span class="p">,</span>
+        <span class="n">li_recip</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">br</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
+        <span class="n">hb</span><span class="o">=</span><span class="mf">2.0</span><span class="p">,</span>
+        <span class="n">hs</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="p">):</span>
+
+        <span class="n">GlobalArgs</span> <span class="o">=</span> <span class="n">namedtuple</span><span class="p">(</span><span class="s1">&#39;GlobalArgs&#39;</span><span class="p">,</span> <span class="s1">&#39;br m_pi hb hs nearly_zero&#39;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">global_args</span> <span class="o">=</span> <span class="n">GlobalArgs</span><span class="p">(</span>
+            <span class="n">br</span><span class="o">=</span><span class="n">br</span><span class="p">,</span> <span class="n">m_pi</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">,</span> <span class="n">hb</span><span class="o">=</span><span class="n">hb</span><span class="p">,</span> <span class="n">hs</span><span class="o">=</span><span class="n">hs</span><span class="p">,</span> <span class="n">nearly_zero</span><span class="o">=</span><span class="mf">1e-20</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">angle_info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_angle_info</span><span class="p">(</span>
+            <span class="n">vza</span><span class="p">,</span> <span class="n">sza</span><span class="p">,</span> <span class="n">raa</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">global_args</span><span class="o">.</span><span class="n">m_pi</span>
+        <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">li_k</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_li</span><span class="p">(</span><span class="n">li_type</span><span class="p">,</span> <span class="n">li_recip</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ross_k</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_ross</span><span class="p">(</span><span class="n">ross_type</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="GeoVolKernels"><a class="viewcode-back" href="../../../api/geowombat.radiometry.html#geowombat.radiometry.GeoVolKernels">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">GeoVolKernels</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<div class="viewcode-block" id="GeoVolKernels.get_mean_sza"><a class="viewcode-back" href="../../../api/geowombat.radiometry.html#geowombat.radiometry.GeoVolKernels.get_mean_sza">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_mean_sza</span><span class="p">(</span><span class="n">central_latitude</span><span class="p">):</span>
+
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns the mean solar zenith angle (SZA) as a function of the</span>
+<span class="sd">        central latitude.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            central_latitude (float): The central latitude.</span>
+
+<span class="sd">        Reference:</span>
+
+<span class="sd">            See :cite:`zhang_etal_2016`</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            ``float``</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="p">(</span>
+            <span class="mf">31.0076</span>
+            <span class="o">+</span> <span class="o">-</span><span class="mf">0.1272</span> <span class="o">*</span> <span class="n">central_latitude</span>
+            <span class="o">+</span> <span class="mf">0.01187</span> <span class="o">*</span> <span class="p">(</span><span class="n">central_latitude</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+            <span class="o">+</span> <span class="mf">2.40e-05</span> <span class="o">*</span> <span class="p">(</span><span class="n">central_latitude</span><span class="o">**</span><span class="mi">3</span><span class="p">)</span>
+            <span class="o">+</span> <span class="o">-</span><span class="mf">9.48e-07</span> <span class="o">*</span> <span class="p">(</span><span class="n">central_latitude</span><span class="o">**</span><span class="mi">4</span><span class="p">)</span>
+            <span class="o">+</span> <span class="o">-</span><span class="mf">1.95e-09</span> <span class="o">*</span> <span class="p">(</span><span class="n">central_latitude</span><span class="o">**</span><span class="mi">5</span><span class="p">)</span>
+            <span class="o">+</span> <span class="mf">6.15e-11</span> <span class="o">*</span> <span class="p">(</span><span class="n">central_latitude</span><span class="o">**</span><span class="mi">6</span><span class="p">)</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="GeoVolKernels.get_kernels"><a class="viewcode-back" href="../../../api/geowombat.radiometry.html#geowombat.radiometry.GeoVolKernels.get_kernels">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">get_kernels</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">central_latitude</span><span class="p">,</span> <span class="n">solar_za</span><span class="p">,</span> <span class="n">solar_az</span><span class="p">,</span> <span class="n">sensor_za</span><span class="p">,</span> <span class="n">sensor_az</span>
+    <span class="p">):</span>
+
+        <span class="c1"># Get the geometric scattering kernel.</span>
+        <span class="c1">#</span>
+        <span class="c1"># HLS uses a constant (per location) sun zenith angle (`solar_za`).</span>
+        <span class="c1"># HLS uses 0 for sun azimuth angle (`solar_az`).</span>
+        <span class="c1"># theta_v, theta_s, delta_gamma</span>
+        <span class="n">kl</span> <span class="o">=</span> <span class="n">BRDFKernels</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_mean_sza</span><span class="p">(</span><span class="n">central_latitude</span><span class="p">),</span> <span class="mf">0.0</span><span class="p">)</span>
+
+        <span class="c1"># Copy the geometric scattering</span>
+        <span class="c1">#   coefficients so they are</span>
+        <span class="c1">#   not overwritten by the</span>
+        <span class="c1">#   volume scattering coefficients.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">geo_norm</span> <span class="o">=</span> <span class="n">copy</span><span class="p">(</span><span class="n">kl</span><span class="o">.</span><span class="n">li_k</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">vol_norm</span> <span class="o">=</span> <span class="n">copy</span><span class="p">(</span><span class="n">kl</span><span class="o">.</span><span class="n">ross_k</span><span class="p">)</span>
+
+        <span class="c1"># Get the volume scattering kernel.</span>
+        <span class="c1">#</span>
+        <span class="c1"># theta_v=0 for nadir view zenith angle, theta_s, delta_gamma</span>
+        <span class="n">kl</span> <span class="o">=</span> <span class="n">BRDFKernels</span><span class="p">(</span>
+            <span class="n">sensor_za</span><span class="o">.</span><span class="n">data</span><span class="p">,</span>
+            <span class="n">solar_za</span><span class="o">.</span><span class="n">data</span><span class="p">,</span>
+            <span class="n">relative_azimuth</span><span class="p">(</span><span class="n">solar_az</span><span class="p">,</span> <span class="n">sensor_az</span><span class="p">)</span><span class="o">.</span><span class="n">data</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">geo_sensor</span> <span class="o">=</span> <span class="n">kl</span><span class="o">.</span><span class="n">li_k</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">vol_sensor</span> <span class="o">=</span> <span class="n">kl</span><span class="o">.</span><span class="n">ross_k</span></div></div>
+
+
+<div class="viewcode-block" id="BRDF"><a class="viewcode-back" href="../../../api/geowombat.radiometry.BRDF.html#geowombat.radiometry.BRDF">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">BRDF</span><span class="p">(</span><span class="n">GeoVolKernels</span><span class="p">):</span>
+
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;A class for Bidirectional Reflectance Distribution Function (BRDF)</span>
+<span class="sd">    normalization.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">geo_norm</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">vol_norm</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">geo_sensor</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">vol_sensor</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="c1"># Setup the c-factor equation.</span>
+        <span class="c1">#</span>
+        <span class="c1"># `SA` = the sensor array</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">c_equation</span> <span class="o">=</span> <span class="s1">&#39;SA * ((fiso + fvol*vol_norm + fgeo*geo_norm) / (fiso + fvol*vol_sensor + fgeo*geo_sensor))&#39;</span>
+
+        <span class="c1"># A dictionary of BRDF kernel coefficients</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">coeff_dict</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
+            <span class="n">blue</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">fiso</span><span class="o">=</span><span class="mf">0.0774</span><span class="p">,</span> <span class="n">fgeo</span><span class="o">=</span><span class="mf">0.0079</span><span class="p">,</span> <span class="n">fvol</span><span class="o">=</span><span class="mf">0.0372</span><span class="p">),</span>
+            <span class="n">green</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">fiso</span><span class="o">=</span><span class="mf">0.1306</span><span class="p">,</span> <span class="n">fgeo</span><span class="o">=</span><span class="mf">0.0178</span><span class="p">,</span> <span class="n">fvol</span><span class="o">=</span><span class="mf">0.058</span><span class="p">),</span>
+            <span class="n">red</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">fiso</span><span class="o">=</span><span class="mf">0.169</span><span class="p">,</span> <span class="n">fgeo</span><span class="o">=</span><span class="mf">0.0227</span><span class="p">,</span> <span class="n">fvol</span><span class="o">=</span><span class="mf">0.0574</span><span class="p">),</span>
+            <span class="n">nir</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">fiso</span><span class="o">=</span><span class="mf">0.3093</span><span class="p">,</span> <span class="n">fgeo</span><span class="o">=</span><span class="mf">0.033</span><span class="p">,</span> <span class="n">fvol</span><span class="o">=</span><span class="mf">0.1535</span><span class="p">),</span>
+            <span class="n">swir1</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">fiso</span><span class="o">=</span><span class="mf">0.343</span><span class="p">,</span> <span class="n">fgeo</span><span class="o">=</span><span class="mf">0.0453</span><span class="p">,</span> <span class="n">fvol</span><span class="o">=</span><span class="mf">0.1154</span><span class="p">),</span>
+            <span class="n">swir2</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">fiso</span><span class="o">=</span><span class="mf">0.2658</span><span class="p">,</span> <span class="n">fgeo</span><span class="o">=</span><span class="mf">0.0387</span><span class="p">,</span> <span class="n">fvol</span><span class="o">=</span><span class="mf">0.0639</span><span class="p">),</span>
+            <span class="n">pan</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">fiso</span><span class="o">=</span><span class="mf">0.12567</span><span class="p">,</span> <span class="n">fgeo</span><span class="o">=</span><span class="mf">0.01613</span><span class="p">,</span> <span class="n">fvol</span><span class="o">=</span><span class="mf">0.0509</span><span class="p">),</span>
+        <span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_coeffs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sensor_band</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">coeff_dict</span><span class="p">[</span><span class="n">sensor_band</span><span class="p">]</span>
+
+<div class="viewcode-block" id="BRDF.norm_brdf"><a class="viewcode-back" href="../../../api/geowombat.radiometry.BRDF.html#geowombat.radiometry.BRDF.norm_brdf">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">norm_brdf</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">data</span><span class="p">,</span>
+        <span class="n">solar_za</span><span class="p">,</span>
+        <span class="n">solar_az</span><span class="p">,</span>
+        <span class="n">sensor_za</span><span class="p">,</span>
+        <span class="n">sensor_az</span><span class="p">,</span>
+        <span class="n">central_latitude</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">sensor</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">wavelengths</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">src_nodata</span><span class="o">=-</span><span class="mi">32768</span><span class="p">,</span>
+        <span class="n">dst_nodata</span><span class="o">=-</span><span class="mi">32768</span><span class="p">,</span>
+        <span class="n">mask</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">scale_factor</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
+        <span class="n">out_range</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">scale_angles</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">vol_weight</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Applies Nadir Bidirectional Reflectance Distribution Function (BRDF) normalization</span>
+<span class="sd">        using the global c-factor method</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            data (2d or 3d DataArray): The data to normalize.</span>
+<span class="sd">            solar_za (2d DataArray): The solar zenith angles (degrees).</span>
+<span class="sd">            solar_az (2d DataArray): The solar azimuth angles (degrees).</span>
+<span class="sd">            sensor_za (2d DataArray): The sensor azimuth angles (degrees).</span>
+<span class="sd">            sensor_az (2d DataArray): The sensor azimuth angles (degrees).</span>
+<span class="sd">            central_latitude (Optional[float or 2d DataArray]): The central latitude.</span>
+<span class="sd">            sensor (Optional[str]): The satellite sensor.</span>
+<span class="sd">            wavelengths (str list): The wavelength(s) to normalize.</span>
+<span class="sd">            src_nodata (Optional[int or float]): The input &#39;no data&#39; value.</span>
+<span class="sd">            dst_nodata (Optional[int or float]): The output &#39;no data&#39; value.</span>
+<span class="sd">            mask (Optional[DataArray]): A data mask, where clear values are 0.</span>
+<span class="sd">            scale_factor (Optional[float]): A scale factor to apply to the input data.</span>
+<span class="sd">            out_range (Optional[float]): The out data range. If not given, the output data are return in a 0-1 range.</span>
+<span class="sd">            scale_angles (Optional[bool]): Whether to scale the pixel angle arrays.</span>
+<span class="sd">            vol_weight (Optional[float]): Weight to be applied to the volumetric kernel in the c-factor equation</span>
+
+<span class="sd">        References:</span>
+
+<span class="sd">            See :cite:`roy_etal_2016` for the c-factor method.</span>
+
+<span class="sd">            For further background on BRDF:</span>
+
+<span class="sd">                :cite:`li_strahler_1992`</span>
+
+<span class="sd">                :cite:`roujean_etal_1992`</span>
+
+<span class="sd">                :cite:`schaaf_etal_2002`</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            ``xarray.DataArray``</span>
+
+<span class="sd">        Examples:</span>
+<span class="sd">            &gt;&gt;&gt; import geowombat as gw</span>
+<span class="sd">            &gt;&gt;&gt; from geowombat.radiometry import BRDF</span>
+<span class="sd">            &gt;&gt;&gt;</span>
+<span class="sd">            &gt;&gt;&gt; brdf = BRDF()</span>
+<span class="sd">            &gt;&gt;&gt;</span>
+<span class="sd">            &gt;&gt;&gt; # Example where pixel angles are stored in separate GeoTiff files</span>
+<span class="sd">            &gt;&gt;&gt; with gw.config.update(sensor=&#39;l7&#39;, scale_factor=0.0001):</span>
+<span class="sd">            &gt;&gt;&gt;</span>
+<span class="sd">            &gt;&gt;&gt;     with gw.open(&#39;solarz.tif&#39;) as solarz,</span>
+<span class="sd">            &gt;&gt;&gt;         gw.open(&#39;solara.tif&#39;) as solara,</span>
+<span class="sd">            &gt;&gt;&gt;             gw.open(&#39;sensorz.tif&#39;) as sensorz,</span>
+<span class="sd">            &gt;&gt;&gt;                 gw.open(&#39;sensora.tif&#39;) as sensora:</span>
+<span class="sd">            &gt;&gt;&gt;</span>
+<span class="sd">            &gt;&gt;&gt;         with gw.open(&#39;landsat.tif&#39;) as src:</span>
+<span class="sd">            &gt;&gt;&gt;             src_norm = brdf.norm_brdf(src, solarz, solara, sensorz, sensora)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">wavelengths</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">sensor</span><span class="p">:</span>
+                <span class="n">wavelengths</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">wavelengths</span><span class="p">[</span><span class="n">sensor</span><span class="p">]</span><span class="o">.</span><span class="n">_fields</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">data</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">sensor</span><span class="p">:</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="s1">&#39;  The sensor must be supplied.&#39;</span><span class="p">)</span>
+
+                <span class="n">wavelengths</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">wavelengths</span><span class="p">[</span><span class="n">data</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">sensor</span><span class="p">]</span><span class="o">.</span><span class="n">_fields</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">wavelengths</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="s1">&#39;  The sensor or wavelength must be supplied.&#39;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">dst_nodata</span><span class="p">,</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">)):</span>
+            <span class="n">dst_nodata</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">nodataval</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">central_latitude</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">central_latitude</span><span class="p">,</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">):</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">central_latitude</span><span class="p">,</span> <span class="nb">float</span><span class="p">):</span>
+                    <span class="n">central_latitude</span> <span class="o">=</span> <span class="n">project_coords</span><span class="p">(</span>
+                        <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+                            <span class="p">[</span><span class="n">data</span><span class="o">.</span><span class="n">x</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)]],</span>
+                            <span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;float64&#39;</span><span class="p">,</span>
+                        <span class="p">),</span>
+                        <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+                            <span class="p">[</span><span class="n">data</span><span class="o">.</span><span class="n">y</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">y</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)]],</span>
+                            <span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;float64&#39;</span><span class="p">,</span>
+                        <span class="p">),</span>
+                        <span class="n">data</span><span class="o">.</span><span class="n">crs</span><span class="p">,</span>
+                        <span class="p">{</span><span class="s1">&#39;init&#39;</span><span class="p">:</span> <span class="s1">&#39;epsg:4326&#39;</span><span class="p">},</span>
+                    <span class="p">)[</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="n">attrs</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">attrs</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="c1"># Set &#39;no data&#39; as nans and scale the reflectance data</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">set_nodata</span><span class="p">(</span>
+            <span class="n">src_nodata</span><span class="p">,</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span>
+            <span class="n">out_range</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+            <span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;float64&#39;</span><span class="p">,</span>
+            <span class="n">scale_factor</span><span class="o">=</span><span class="n">scale_factor</span><span class="p">,</span>
+            <span class="n">offset</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">scale_angles</span><span class="p">:</span>
+            <span class="c1"># Scale the angle data to degrees</span>
+            <span class="n">solar_za</span> <span class="o">=</span> <span class="n">solar_za</span> <span class="o">*</span> <span class="mf">0.01</span>
+            <span class="n">solar_za</span><span class="o">.</span><span class="n">coords</span><span class="p">[</span><span class="s1">&#39;band&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+
+            <span class="n">solar_az</span> <span class="o">=</span> <span class="n">solar_az</span> <span class="o">*</span> <span class="mf">0.01</span>
+            <span class="n">solar_az</span><span class="o">.</span><span class="n">coords</span><span class="p">[</span><span class="s1">&#39;band&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+
+            <span class="n">sensor_za</span> <span class="o">=</span> <span class="n">sensor_za</span> <span class="o">*</span> <span class="mf">0.01</span>
+            <span class="n">sensor_za</span><span class="o">.</span><span class="n">coords</span><span class="p">[</span><span class="s1">&#39;band&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+
+            <span class="n">sensor_az</span> <span class="o">=</span> <span class="n">sensor_az</span> <span class="o">*</span> <span class="mf">0.01</span>
+            <span class="n">sensor_az</span><span class="o">.</span><span class="n">coords</span><span class="p">[</span><span class="s1">&#39;band&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+
+        <span class="c1"># Get the Ross and Li coefficients</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">get_kernels</span><span class="p">(</span>
+            <span class="n">central_latitude</span><span class="p">,</span> <span class="n">solar_za</span><span class="p">,</span> <span class="n">solar_az</span><span class="p">,</span> <span class="n">sensor_za</span><span class="p">,</span> <span class="n">sensor_az</span>
+        <span class="p">)</span>
+
+        <span class="n">results</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">si</span><span class="p">,</span> <span class="n">wavelength</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">wavelengths</span><span class="p">):</span>
+            <span class="c1"># Get the band iso, geo, and vol coefficients.</span>
+            <span class="n">coeffs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_coeffs</span><span class="p">(</span><span class="n">wavelength</span><span class="p">)</span>
+            <span class="c1"># c-factor</span>
+            <span class="n">c_factor</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">coeffs</span><span class="p">[</span><span class="s1">&#39;fiso&#39;</span><span class="p">]</span>
+                <span class="o">+</span> <span class="n">coeffs</span><span class="p">[</span><span class="s1">&#39;fvol&#39;</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">vol_norm</span> <span class="o">*</span> <span class="n">vol_weight</span>
+                <span class="o">+</span> <span class="n">coeffs</span><span class="p">[</span><span class="s1">&#39;fgeo&#39;</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">geo_norm</span>
+            <span class="p">)</span> <span class="o">/</span> <span class="p">(</span>
+                <span class="n">coeffs</span><span class="p">[</span><span class="s1">&#39;fiso&#39;</span><span class="p">]</span>
+                <span class="o">+</span> <span class="n">coeffs</span><span class="p">[</span><span class="s1">&#39;fvol&#39;</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">vol_sensor</span> <span class="o">*</span> <span class="n">vol_weight</span>
+                <span class="o">+</span> <span class="n">coeffs</span><span class="p">[</span><span class="s1">&#39;fgeo&#39;</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">geo_sensor</span>
+            <span class="p">)</span>
+
+            <span class="n">p_norm</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">sel</span><span class="p">(</span><span class="n">band</span><span class="o">=</span><span class="n">wavelength</span><span class="p">)</span><span class="o">.</span><span class="n">data</span> <span class="o">*</span> <span class="n">c_factor</span>
+            <span class="c1"># Apply the adjustment to the current layer.</span>
+            <span class="n">results</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">p_norm</span><span class="p">)</span>
+
+        <span class="n">data</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">(</span>
+            <span class="n">data</span><span class="o">=</span><span class="n">da</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">results</span><span class="p">),</span>
+            <span class="n">dims</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;band&#39;</span><span class="p">,</span> <span class="s1">&#39;y&#39;</span><span class="p">,</span> <span class="s1">&#39;x&#39;</span><span class="p">),</span>
+            <span class="n">coords</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;band&#39;</span><span class="p">:</span> <span class="n">data</span><span class="o">.</span><span class="n">band</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="s1">&#39;y&#39;</span><span class="p">:</span> <span class="n">data</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="s1">&#39;x&#39;</span><span class="p">:</span> <span class="n">data</span><span class="o">.</span><span class="n">x</span><span class="p">},</span>
+            <span class="n">attrs</span><span class="o">=</span><span class="n">data</span><span class="o">.</span><span class="n">attrs</span><span class="p">,</span>
+        <span class="p">)</span><span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="n">src_nodata</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">out_range</span><span class="p">,</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">)):</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">out_range</span><span class="p">,</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">)):</span>
+                <span class="n">range_max</span> <span class="o">=</span> <span class="n">out_range</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">range_max</span> <span class="o">=</span> <span class="n">out_range</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+
+            <span class="k">if</span> <span class="n">range_max</span> <span class="o">&lt;=</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">dtype</span> <span class="o">=</span> <span class="s1">&#39;float64&#39;</span>
+            <span class="k">elif</span> <span class="mi">1</span> <span class="o">&lt;</span> <span class="n">range_max</span> <span class="o">&lt;=</span> <span class="mi">255</span><span class="p">:</span>
+                <span class="n">dtype</span> <span class="o">=</span> <span class="s1">&#39;uint8&#39;</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">dtype</span> <span class="o">=</span> <span class="s1">&#39;uint16&#39;</span>
+
+            <span class="n">drange</span> <span class="o">=</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">range_max</span><span class="p">)</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">where</span><span class="p">(</span>
+                <span class="n">data</span> <span class="o">==</span> <span class="n">src_nodata</span><span class="p">,</span>
+                <span class="n">src_nodata</span><span class="p">,</span>
+                <span class="p">(</span><span class="n">data</span> <span class="o">*</span> <span class="n">range_max</span><span class="p">)</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">range_max</span><span class="p">),</span>
+            <span class="p">)</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">drange</span> <span class="o">=</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="n">dtype</span> <span class="o">=</span> <span class="s1">&#39;float64&#39;</span>
+
+        <span class="c1"># Mask data</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">mask</span><span class="p">,</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">):</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">where</span><span class="p">(</span>
+                <span class="p">(</span><span class="n">mask</span><span class="o">.</span><span class="n">sel</span><span class="p">(</span><span class="n">band</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span>
+                <span class="o">|</span> <span class="p">(</span><span class="n">solar_za</span><span class="o">.</span><span class="n">sel</span><span class="p">(</span><span class="n">band</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="o">==</span> <span class="o">-</span><span class="mi">32768</span> <span class="o">*</span> <span class="mf">0.01</span><span class="p">)</span>
+                <span class="o">|</span> <span class="p">(</span><span class="n">data</span> <span class="o">==</span> <span class="n">src_nodata</span><span class="p">),</span>
+                <span class="n">dst_nodata</span><span class="p">,</span>
+                <span class="n">data</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">where</span><span class="p">(</span>
+                <span class="p">(</span><span class="n">solar_za</span><span class="o">.</span><span class="n">sel</span><span class="p">(</span><span class="n">band</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="o">==</span> <span class="o">-</span><span class="mi">32768</span> <span class="o">*</span> <span class="mf">0.01</span><span class="p">)</span> <span class="o">|</span> <span class="p">(</span><span class="n">data</span> <span class="o">==</span> <span class="n">src_nodata</span><span class="p">),</span>
+                <span class="n">dst_nodata</span><span class="p">,</span>
+                <span class="n">data</span><span class="p">,</span>
+            <span class="p">)</span>
+
+        <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="s1">&#39;band&#39;</span><span class="p">,</span> <span class="s1">&#39;y&#39;</span><span class="p">,</span> <span class="s1">&#39;x&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">dtype</span><span class="p">)</span>
+        <span class="n">attrs</span><span class="p">[</span><span class="s1">&#39;sensor&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">sensor</span>
+        <span class="n">attrs</span><span class="p">[</span><span class="s1">&#39;calibration&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;BRDF-adjusted surface reflectance&#39;</span>
+        <span class="n">attrs</span><span class="p">[</span><span class="s1">&#39;drange&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">drange</span>
+
+        <span class="k">return</span> <span class="n">data</span><span class="o">.</span><span class="n">assign_attrs</span><span class="p">(</span><span class="o">**</span><span class="n">attrs</span><span class="p">)</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">assign_nodata_attrs</span><span class="p">(</span><span class="n">dst_nodata</span><span class="p">)</span></div></div>
+</pre></div>
+
+                </article>
+              
+
+              
+              
+                <footer class="bd-footer-article">
+                  <!-- Previous / next buttons -->
+<div class="prev-next-area">
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            <div class="bd-footer-content__inner">
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+  <p class="copyright">
+    
+      © Copyright 2020-2026, GeoWombat.
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+</div></div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../../../_static/scripts/bootstrap.js?digest=12da95d707ffb74b382d"></script>
+<script src="../../../_static/scripts/pydata-sphinx-theme.js?digest=12da95d707ffb74b382d"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>

@@ -1,0 +1,997 @@
+
+
+<!DOCTYPE html>
+
+
+<html lang="en" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>geowombat.radiometry.topo</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../../_static/styles/theme.css?digest=12da95d707ffb74b382d" rel="stylesheet" />
+<link href="../../../_static/styles/bootstrap.css?digest=12da95d707ffb74b382d" rel="stylesheet" />
+<link href="../../../_static/styles/pydata-sphinx-theme.css?digest=12da95d707ffb74b382d" rel="stylesheet" />
+
+  
+  <link href="../../../_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=12da95d707ffb74b382d" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css" />
+    <link rel="stylesheet" href="../../../_static/styles/sphinx-book-theme.css?digest=14f4ca6b54d191a8c7657f6c759bf11a5fb86285" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/custom.css" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=12da95d707ffb74b382d" />
+<link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=12da95d707ffb74b382d" />
+
+    <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+    <script src="../../../_static/doctools.js"></script>
+    <script src="../../../_static/sphinx_highlight.js"></script>
+    <script src="../../../_static/clipboard.min.js"></script>
+    <script src="../../../_static/copybutton.js"></script>
+    <script src="../../../_static/scripts/sphinx-book-theme.js?digest=5a5c038af52cf7bc1a1ec88eea08e6366ee68824"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/geowombat/radiometry/topo';</script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__primary"
+          id="__primary"/>
+  <label class="overlay overlay-primary" for="__primary"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__secondary"
+          id="__secondary"/>
+  <label class="overlay overlay-secondary" for="__secondary"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="../../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search..."
+         aria-label="Search..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+  
+    <nav class="bd-header navbar navbar-expand-lg bd-navbar">
+    </nav>
+  
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      <div class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+  
+
+<a class="navbar-brand logo" href="../../../index.html">
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../../../_static/logo.png" class="logo__image only-light" alt="GeoWombat"/>
+    <script>document.write(`<img src="../../../_static/logo.png" class="logo__image only-dark" alt="GeoWombat"/>`);</script>
+  
+  
+</a></div>
+        <div class="sidebar-primary-item"><nav class="bd-links" id="bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        <p aria-level="2" class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../../install.html">Installing GeoWombat</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../quick-overview.html">Quick overview</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../../tutorial.html">Tutorial</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-1"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../tutorial-why.html">Why GeoWombat?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../tutorial-open.html">Opening rasters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../tutorial-edit.html">Editing rasters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../tutorial-config.html">Configuration manager</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../tutorial-gw.html">GeoWombat DataArray accessor</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../tutorial-crs.html">Coordinate Reference Systems</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../tutorial-plot.html">Plotting raster data</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../../examples.html">Examples</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-2"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../io.html">Raster I/O</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../io-distributed.html">Distributed processing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../extraction.html">Data extraction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../band-math.html">Band math</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../apply.html">User functions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../ml.html">Machine learning</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../dl.html">Deep learning classifiers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../object-detection.html">Object detection</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../moving.html">Moving windows</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../radiometry.html">Radiometry</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../coreg.html">Co-registration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../tasks.html">Pipeline tasks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../web.html">Accessing STAC Catalogs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../external.html">External examples</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../gpu.html">Time series processes on the GPU</a></li>
+</ul>
+</li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Changes</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../../changelog.html">Changelog</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../issues.html">Issues</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Reference</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../../api.html">API reference</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-3"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.core.geoxarray.GeoWombatAccessor.html">GeoWombat DataArray (DataArray.gw)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.load.html">load</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.extract.html">extract</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.sample.html">sample</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.calc_area.html">calc_area</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.subset.html">subset</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.clip.html">clip</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.clip_by_polygon.html">clip_by_polygon</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.mask.html">mask</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.replace.html">replace</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.recode.html">recode</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.coregister.html">coregister</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.polygons_to_points.html">polygons_to_points</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.apply.html">apply</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.transform_crs.html">transform_crs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.save.html">save</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.to_raster.html">to_raster</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.to_netcdf.html">to_netcdf</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.to_vrt.html">to_vrt</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.array_to_polygon.html">array_to_polygon</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.polygon_to_array.html">polygon_to_array</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.moving.html">moving</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.norm_diff.html">norm_diff</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.avi.html">avi</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.evi.html">evi</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.evi2.html">evi2</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.kndvi.html">kndvi</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.nbr.html">nbr</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.ndvi.html">ndvi</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.wi.html">wi</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.tasseled_cap.html">tasseled_cap</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.coords_to_indices.html">coords_to_indices</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.indices_to_coords.html">indices_to_coords</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.bounds_to_coords.html">bounds_to_coords</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.lonlat_to_xy.html">lonlat_to_xy</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.xy_to_lonlat.html">xy_to_lonlat</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.open.html">open</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.series.html">series</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.TimeModulePipeline.html">TimeModulePipeline</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.TimeModule.html">TimeModule</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.core.stac.composite_stac.html">composite_stac</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.core.stac.merge_stac.html">merge_stac</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.core.stac.open_stac.html">open_stac</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.core.stac.STACCollectionURLNames.html">STACCollectionURLNames</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.core.stac.STACCollections.html">STACCollections</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.core.stac.STACNames.html">STACNames</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.core.stac.StrEnum.html">StrEnum</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.ml.fit.html">fit</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.ml.fit_predict.html">fit_predict</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.ml.predict.html">predict</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.ml.TabNetClassifier.html">TabNetClassifier</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.ml.LTAEClassifier.html">LTAEClassifier</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.ml.TorchGeoClassifier.html">TorchGeoClassifier</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.detect.boxes_from_polygons.html">boxes_from_polygons</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.detect.build_dataset.html">build_dataset</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.detect.build_yolo_dataset.html">build_yolo_dataset</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.detect.detection_accuracy.html">detection_accuracy</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.detect.export_for_review.html">export_for_review</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.detect.fit.html">fit</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.detect.fit_predict.html">fit_predict</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.detect.plot_detections.html">plot_detections</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.detect.predict.html">predict</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.detect.recompute_from_review.html">recompute_from_review</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.detect.SAMRefiner.html">SAMRefiner</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.detect.TorchGeoDetector.html">TorchGeoDetector</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.detect.YOLODetector.html">YOLODetector</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.radiometry.landsat_pixel_angles.html">landsat_pixel_angles</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.radiometry.sentinel_pixel_angles.html">sentinel_pixel_angles</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.radiometry.BRDF.html">BRDF</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.radiometry.Topo.html">Topo</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.radiometry.LinearAdjustments.html">LinearAdjustments</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.radiometry.RadTransforms.html">RadTransforms</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.radiometry.DOS.html">DOS</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.radiometry.SixS.html">SixS</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.radiometry.QAMasker.html">QAMasker</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.radiometry.QABits.html">QABits</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.radiometry.SCLValues.html">SCLValues</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.radiometry.HLSFmaskBits.html">HLSFmaskBits</a></li>
+</ul>
+</li>
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><label class="sidebar-toggle primary-toggle btn btn-sm" for="__primary" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</label></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+<a href="https://github.com/jgrss/geowombat" target="_blank"
+   class="btn btn-sm btn-source-repository-button"
+   title="Source repository"
+   data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fab fa-github"></i>
+  </span>
+
+</a>
+
+
+
+
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button"
+  title="Fullscreen mode"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+
+<script>
+document.write(`
+  <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
+    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
+    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
+  </button>
+`);
+</script>
+
+<script>
+document.write(`
+  <button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+  </button>
+`);
+</script>
+
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1></h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article" role="main">
+                  
+  <h1>Source code for geowombat.radiometry.topo</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">dask</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">dask.array</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">da</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">xarray</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">xr</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.linear_model</span><span class="w"> </span><span class="kn">import</span> <span class="n">LinearRegression</span><span class="p">,</span> <span class="n">TheilSenRegressor</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">..handler</span><span class="w"> </span><span class="kn">import</span> <span class="n">add_handler</span>
+
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">cv2</span>
+
+    <span class="n">OPENCV_INSTALLED</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+    <span class="n">OPENCV_INSTALLED</span> <span class="o">=</span> <span class="kc">False</span>
+
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+<span class="n">logger</span> <span class="o">=</span> <span class="n">add_handler</span><span class="p">(</span><span class="n">logger</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_resize_elev</span><span class="p">(</span><span class="n">elev</span><span class="p">,</span> <span class="n">proc_dims</span><span class="p">):</span>
+
+    <span class="k">if</span> <span class="n">OPENCV_INSTALLED</span><span class="p">:</span>
+
+        <span class="n">elev</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">resize</span><span class="p">(</span>
+            <span class="n">elev</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;float32&#39;</span><span class="p">),</span> <span class="n">proc_dims</span><span class="p">,</span> <span class="n">interpolation</span><span class="o">=</span><span class="n">cv2</span><span class="o">.</span><span class="n">INTER_LINEAR</span>
+        <span class="p">)</span>
+
+    <span class="k">else</span><span class="p">:</span>
+
+        <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+            <span class="s1">&#39;  OpenCV is not installed, so using scipy.ndimage.zoom to resize the data.&#39;</span>
+        <span class="p">)</span>
+
+        <span class="kn">from</span><span class="w"> </span><span class="nn">scipy.ndimage</span><span class="w"> </span><span class="kn">import</span> <span class="n">zoom</span>
+
+        <span class="n">elev</span> <span class="o">=</span> <span class="n">zoom</span><span class="p">(</span><span class="n">elev</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;float32&#39;</span><span class="p">),</span> <span class="n">proc_dims</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">elev</span>
+
+
+<div class="viewcode-block" id="calc_slope"><a class="viewcode-back" href="../../../api/geowombat.radiometry.html#geowombat.radiometry.calc_slope">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">calc_slope</span><span class="p">(</span><span class="n">elev</span><span class="p">,</span> <span class="n">proc_dims</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">w</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Calculates slope from elevation.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        elev (2d array): The elevation data.</span>
+<span class="sd">        proc_dims (Optional[tuple]): Dimensions to resize to.</span>
+<span class="sd">        w (Optional[int]): The smoothing window size when ``proc_dims`` is given.</span>
+<span class="sd">        kwargs (Optional[dict]): Keyword arguments passed to ``gdal.DEMProcessingOptions``.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        ``numpy.ndarray``</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">osgeo</span><span class="w"> </span><span class="kn">import</span> <span class="n">gdal</span><span class="p">,</span> <span class="n">gdal_array</span>
+    <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">..handler</span><span class="w"> </span><span class="kn">import</span> <span class="n">GDAL_INSTALL_MSG</span>
+
+        <span class="k">raise</span> <span class="ne">ImportError</span><span class="p">(</span><span class="n">GDAL_INSTALL_MSG</span><span class="p">)</span>
+
+    <span class="n">inrows</span><span class="p">,</span> <span class="n">incols</span> <span class="o">=</span> <span class="n">elev</span><span class="o">.</span><span class="n">shape</span>
+
+    <span class="k">if</span> <span class="n">proc_dims</span><span class="p">:</span>
+        <span class="n">elev</span> <span class="o">=</span> <span class="n">_resize_elev</span><span class="p">(</span><span class="n">elev</span><span class="p">,</span> <span class="n">proc_dims</span><span class="p">)</span>
+
+    <span class="n">ds</span> <span class="o">=</span> <span class="n">gdal_array</span><span class="o">.</span><span class="n">OpenArray</span><span class="p">(</span><span class="n">elev</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;float64&#39;</span><span class="p">))</span>
+
+    <span class="n">slope_options</span> <span class="o">=</span> <span class="n">gdal</span><span class="o">.</span><span class="n">DEMProcessingOptions</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+    <span class="n">out_ds</span> <span class="o">=</span> <span class="n">gdal</span><span class="o">.</span><span class="n">DEMProcessing</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">ds</span><span class="p">,</span> <span class="s1">&#39;slope&#39;</span><span class="p">,</span> <span class="n">options</span><span class="o">=</span><span class="n">slope_options</span><span class="p">)</span>
+
+    <span class="n">dst_array</span> <span class="o">=</span> <span class="n">out_ds</span><span class="o">.</span><span class="n">GetRasterBand</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">ReadAsArray</span><span class="p">()</span>
+
+    <span class="n">ds</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">out_ds</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="k">if</span> <span class="n">proc_dims</span><span class="p">:</span>
+
+        <span class="n">dst_array</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">resize</span><span class="p">(</span>
+            <span class="n">dst_array</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;float32&#39;</span><span class="p">),</span>
+            <span class="p">(</span><span class="n">incols</span><span class="p">,</span> <span class="n">inrows</span><span class="p">),</span>
+            <span class="n">interpolation</span><span class="o">=</span><span class="n">cv2</span><span class="o">.</span><span class="n">INTER_LINEAR</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">w</span><span class="p">:</span>
+            <span class="n">w</span> <span class="o">=</span> <span class="mi">15</span>
+
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">(</span>
+            <span class="n">cv2</span><span class="o">.</span><span class="n">bilateralFilter</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">(</span><span class="n">dst_array</span><span class="p">),</span> <span class="n">w</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>
+        <span class="p">)</span>
+
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">(</span><span class="n">dst_array</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="calc_aspect"><a class="viewcode-back" href="../../../api/geowombat.radiometry.html#geowombat.radiometry.calc_aspect">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">calc_aspect</span><span class="p">(</span><span class="n">elev</span><span class="p">,</span> <span class="n">proc_dims</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">w</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Calculates aspect from elevation.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        elev (2d array): The elevation data.</span>
+<span class="sd">        proc_dims (Optional[tuple]): Dimensions to resize to.</span>
+<span class="sd">        w (Optional[int]): The smoothing window size when ``proc_dims`` is given.</span>
+<span class="sd">        kwargs (Optional[dict]): Keyword arguments passed to ``gdal.DEMProcessingOptions``.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        ``numpy.ndarray``</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">osgeo</span><span class="w"> </span><span class="kn">import</span> <span class="n">gdal</span><span class="p">,</span> <span class="n">gdal_array</span>
+    <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">..handler</span><span class="w"> </span><span class="kn">import</span> <span class="n">GDAL_INSTALL_MSG</span>
+
+        <span class="k">raise</span> <span class="ne">ImportError</span><span class="p">(</span><span class="n">GDAL_INSTALL_MSG</span><span class="p">)</span>
+
+    <span class="n">inrows</span><span class="p">,</span> <span class="n">incols</span> <span class="o">=</span> <span class="n">elev</span><span class="o">.</span><span class="n">shape</span>
+
+    <span class="k">if</span> <span class="n">proc_dims</span><span class="p">:</span>
+
+        <span class="k">if</span> <span class="n">proc_dims</span><span class="p">:</span>
+            <span class="n">elev</span> <span class="o">=</span> <span class="n">_resize_elev</span><span class="p">(</span><span class="n">elev</span><span class="p">,</span> <span class="n">proc_dims</span><span class="p">)</span>
+
+    <span class="n">ds</span> <span class="o">=</span> <span class="n">gdal_array</span><span class="o">.</span><span class="n">OpenArray</span><span class="p">(</span><span class="n">elev</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;float64&#39;</span><span class="p">))</span>
+
+    <span class="n">aspect_options</span> <span class="o">=</span> <span class="n">gdal</span><span class="o">.</span><span class="n">DEMProcessingOptions</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+    <span class="n">out_ds</span> <span class="o">=</span> <span class="n">gdal</span><span class="o">.</span><span class="n">DEMProcessing</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">ds</span><span class="p">,</span> <span class="s1">&#39;aspect&#39;</span><span class="p">,</span> <span class="n">options</span><span class="o">=</span><span class="n">aspect_options</span><span class="p">)</span>
+
+    <span class="n">dst_array</span> <span class="o">=</span> <span class="n">out_ds</span><span class="o">.</span><span class="n">GetRasterBand</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">ReadAsArray</span><span class="p">()</span>
+
+    <span class="n">ds</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">out_ds</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="k">if</span> <span class="n">proc_dims</span><span class="p">:</span>
+
+        <span class="n">dst_array</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">resize</span><span class="p">(</span>
+            <span class="n">dst_array</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;float32&#39;</span><span class="p">),</span>
+            <span class="p">(</span><span class="n">incols</span><span class="p">,</span> <span class="n">inrows</span><span class="p">),</span>
+            <span class="n">interpolation</span><span class="o">=</span><span class="n">cv2</span><span class="o">.</span><span class="n">INTER_LINEAR</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">w</span><span class="p">:</span>
+            <span class="n">w</span> <span class="o">=</span> <span class="mi">15</span>
+
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">(</span>
+            <span class="n">cv2</span><span class="o">.</span><span class="n">bilateralFilter</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">(</span><span class="n">dst_array</span><span class="p">),</span> <span class="n">w</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>
+        <span class="p">)</span>
+
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">(</span><span class="n">dst_array</span><span class="p">)</span></div>
+
+
+<span class="n">calc_slope_delayed</span> <span class="o">=</span> <span class="n">dask</span><span class="o">.</span><span class="n">delayed</span><span class="p">(</span><span class="n">calc_slope</span><span class="p">)</span>
+<span class="n">calc_aspect_delayed</span> <span class="o">=</span> <span class="n">dask</span><span class="o">.</span><span class="n">delayed</span><span class="p">(</span><span class="n">calc_aspect</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="Topo"><a class="viewcode-back" href="../../../api/geowombat.radiometry.Topo.html#geowombat.radiometry.Topo">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">Topo</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;A class for topographic normalization.&quot;&quot;&quot;</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_regress_a</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">robust</span><span class="p">,</span> <span class="n">n_jobs</span><span class="p">):</span>
+
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Calculates the slope and intercept.&quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="n">robust</span><span class="p">:</span>
+            <span class="n">model</span> <span class="o">=</span> <span class="n">TheilSenRegressor</span><span class="p">(</span><span class="n">n_jobs</span><span class="o">=</span><span class="n">n_jobs</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">model</span> <span class="o">=</span> <span class="n">LinearRegression</span><span class="p">(</span><span class="n">n_jobs</span><span class="o">=</span><span class="n">n_jobs</span><span class="p">)</span>
+
+        <span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+
+        <span class="n">slope_m</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">coef_</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">intercept_b</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">intercept_</span>
+
+        <span class="k">return</span> <span class="n">slope_m</span><span class="p">,</span> <span class="n">intercept_b</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_method_empirical_rotation</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">sr</span><span class="p">,</span>
+        <span class="n">il</span><span class="p">,</span>
+        <span class="n">cos_z</span><span class="p">,</span>
+        <span class="n">nodata_samps</span><span class="p">,</span>
+        <span class="n">min_samples</span><span class="p">,</span>
+        <span class="n">n_jobs</span><span class="p">,</span>
+        <span class="n">robust</span><span class="p">,</span>
+        <span class="n">band_coeffs</span><span class="p">,</span>
+        <span class="n">band</span><span class="p">,</span>
+    <span class="p">):</span>
+
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Normalizes terrain using the Empirical Rotation method</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            sr (Dask Array): The surface reflectance data.</span>
+<span class="sd">            il (Dask Array): The solar illumination.</span>
+<span class="sd">            cos_z (Dask Array): The cosine of the solar zenith angle.</span>
+<span class="sd">            nodata_samps (Dask Array): Samples where 1=&#39;no data&#39; and 0=&#39;valid data&#39;.</span>
+<span class="sd">            min_samples (Optional[int]): The minimum number of samples required to fit a regression.</span>
+<span class="sd">            n_jobs (Optional[int]): The number of parallel workers for ``LinearRegression.fit`` or</span>
+<span class="sd">                ``TheilSenRegressor.fit``.</span>
+<span class="sd">            robust (Optional[bool]): Whether to fit a robust regression.</span>
+<span class="sd">            band_coeffs (dict): Slope and intercept coefficients for each band.</span>
+<span class="sd">            band (int | str): The band.</span>
+
+<span class="sd">        References:</span>
+
+<span class="sd">            See :cite:`tan_etal_2010` for the Empirical Rotation method.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            ``dask.array``</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># Batch compute to avoid redundant graph traversals</span>
+        <span class="k">if</span> <span class="n">band_coeffs</span><span class="p">:</span>
+            <span class="n">nodata</span><span class="p">,</span> <span class="n">X_raw</span> <span class="o">=</span> <span class="n">dask</span><span class="o">.</span><span class="n">compute</span><span class="p">(</span><span class="n">nodata_samps</span><span class="p">,</span> <span class="n">il</span><span class="p">)</span>
+            <span class="n">nodata</span> <span class="o">=</span> <span class="n">nodata</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>
+            <span class="n">idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">nodata</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+
+            <span class="k">if</span> <span class="n">idx</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">min_samples</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">sr</span>
+
+            <span class="n">X</span> <span class="o">=</span> <span class="n">X_raw</span><span class="o">.</span><span class="n">flatten</span><span class="p">()[</span><span class="n">idx</span><span class="p">][:,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]</span>
+            <span class="n">slope_m</span><span class="p">,</span> <span class="n">intercept_b</span> <span class="o">=</span> <span class="n">band_coeffs</span><span class="p">[</span><span class="n">band</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">nodata</span><span class="p">,</span> <span class="n">X_raw</span><span class="p">,</span> <span class="n">y_raw</span> <span class="o">=</span> <span class="n">dask</span><span class="o">.</span><span class="n">compute</span><span class="p">(</span><span class="n">nodata_samps</span><span class="p">,</span> <span class="n">il</span><span class="p">,</span> <span class="n">sr</span><span class="p">)</span>
+            <span class="n">nodata</span> <span class="o">=</span> <span class="n">nodata</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>
+            <span class="n">idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">nodata</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+
+            <span class="k">if</span> <span class="n">idx</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">min_samples</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">sr</span>
+
+            <span class="n">X</span> <span class="o">=</span> <span class="n">X_raw</span><span class="o">.</span><span class="n">flatten</span><span class="p">()[</span><span class="n">idx</span><span class="p">][:,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]</span>
+            <span class="n">y</span> <span class="o">=</span> <span class="n">y_raw</span><span class="o">.</span><span class="n">flatten</span><span class="p">()[</span><span class="n">idx</span><span class="p">]</span>
+
+            <span class="n">slope_m</span><span class="p">,</span> <span class="n">intercept_b</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_regress_a</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">robust</span><span class="p">,</span> <span class="n">n_jobs</span><span class="p">)</span>
+
+        <span class="c1"># https://reader.elsevier.com/reader/sd/pii/S0034425713001673?token=6C93FB2E69ABF5729CE9ECBBDFD9C2D985613156753C822A3D160102D46135E01457EE33500DB4648C6AF636F39D8B62</span>
+        <span class="c1"># Improved forest change detection with terrain illumination corrected Landsat images</span>
+        <span class="n">sr_a</span> <span class="o">=</span> <span class="n">sr</span> <span class="o">-</span> <span class="n">slope_m</span> <span class="o">*</span> <span class="p">(</span><span class="n">il</span> <span class="o">-</span> <span class="n">cos_z</span><span class="p">)</span>
+        <span class="c1"># sr_a = sr - (slope_m * il + intercept_b)</span>
+
+        <span class="k">return</span> <span class="n">da</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">nodata_samps</span> <span class="o">==</span> <span class="mi">1</span><span class="p">,</span> <span class="n">sr</span><span class="p">,</span> <span class="n">sr_a</span><span class="p">)</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_method_cos</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sr</span><span class="p">,</span> <span class="n">il</span><span class="p">,</span> <span class="n">cos_z</span><span class="p">,</span> <span class="n">nodata_samps</span><span class="p">):</span>
+
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Normalizes terrain using the Cosine method</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            sr (Dask Array): The surface reflectance data.</span>
+<span class="sd">            il (Dask Array): The solar illumination.</span>
+<span class="sd">            cos_z (Dask Array): The cosine of the solar zenith angle.</span>
+<span class="sd">            nodata_samps (Dask Array): Samples where 1=&#39;no data&#39; and 0=&#39;valid data&#39;.</span>
+
+<span class="sd">        References:</span>
+
+<span class="sd">            See :cite:`teillet_etal_1982` for the C-correction method.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            ``dask.array``</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">sr_a</span> <span class="o">=</span> <span class="n">sr</span> <span class="o">*</span> <span class="p">(</span><span class="n">cos_z</span> <span class="o">/</span> <span class="n">il</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">da</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">nodata_samps</span> <span class="o">==</span> <span class="mi">1</span><span class="p">,</span> <span class="n">sr</span><span class="p">,</span> <span class="n">sr_a</span><span class="p">)</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_method_c</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">sr</span><span class="p">,</span>
+        <span class="n">il</span><span class="p">,</span>
+        <span class="n">cos_z</span><span class="p">,</span>
+        <span class="n">nodata_samps</span><span class="p">,</span>
+        <span class="n">min_samples</span><span class="p">,</span>
+        <span class="n">n_jobs</span><span class="p">,</span>
+        <span class="n">robust</span><span class="p">,</span>
+        <span class="n">band_coeffs</span><span class="p">,</span>
+        <span class="n">band</span><span class="p">,</span>
+    <span class="p">):</span>
+
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Normalizes terrain using the C-correction method</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            sr (Dask Array): The surface reflectance data.</span>
+<span class="sd">            il (Dask Array): The solar illumination.</span>
+<span class="sd">            cos_z (Dask Array): The cosine of the solar zenith angle.</span>
+<span class="sd">            nodata_samps (Dask Array): Samples where 1=&#39;no data&#39; and 0=&#39;valid data&#39;.</span>
+<span class="sd">            min_samples (Optional[int]): The minimum number of samples required to fit a regression.</span>
+<span class="sd">            n_jobs (Optional[int]): The number of parallel workers for ``LinearRegression.fit`` or</span>
+<span class="sd">                ``TheilSenRegressor.fit``.</span>
+<span class="sd">            robust (Optional[bool]): Whether to fit a robust regression.</span>
+<span class="sd">            band_coeffs (dict): Slope and intercept coefficients for each band.</span>
+<span class="sd">            band (int | str): The band.</span>
+
+<span class="sd">        References:</span>
+
+<span class="sd">            See :cite:`teillet_etal_1982` for the C-correction method.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            ``dask.array``</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># Batch compute to avoid redundant graph traversals</span>
+        <span class="k">if</span> <span class="n">band_coeffs</span><span class="p">:</span>
+            <span class="n">nodata</span><span class="p">,</span> <span class="n">X_raw</span> <span class="o">=</span> <span class="n">dask</span><span class="o">.</span><span class="n">compute</span><span class="p">(</span><span class="n">nodata_samps</span><span class="p">,</span> <span class="n">il</span><span class="p">)</span>
+            <span class="n">nodata</span> <span class="o">=</span> <span class="n">nodata</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>
+            <span class="n">idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">nodata</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+
+            <span class="k">if</span> <span class="n">idx</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">min_samples</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">sr</span>
+
+            <span class="n">X</span> <span class="o">=</span> <span class="n">X_raw</span><span class="o">.</span><span class="n">flatten</span><span class="p">()[</span><span class="n">idx</span><span class="p">][:,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]</span>
+            <span class="n">slope_m</span><span class="p">,</span> <span class="n">intercept_b</span> <span class="o">=</span> <span class="n">band_coeffs</span><span class="p">[</span><span class="n">band</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">nodata</span><span class="p">,</span> <span class="n">X_raw</span><span class="p">,</span> <span class="n">y_raw</span> <span class="o">=</span> <span class="n">dask</span><span class="o">.</span><span class="n">compute</span><span class="p">(</span><span class="n">nodata_samps</span><span class="p">,</span> <span class="n">il</span><span class="p">,</span> <span class="n">sr</span><span class="p">)</span>
+            <span class="n">nodata</span> <span class="o">=</span> <span class="n">nodata</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>
+            <span class="n">idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">nodata</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+
+            <span class="k">if</span> <span class="n">idx</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">min_samples</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">sr</span>
+
+            <span class="n">X</span> <span class="o">=</span> <span class="n">X_raw</span><span class="o">.</span><span class="n">flatten</span><span class="p">()[</span><span class="n">idx</span><span class="p">][:,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]</span>
+            <span class="n">y</span> <span class="o">=</span> <span class="n">y_raw</span><span class="o">.</span><span class="n">flatten</span><span class="p">()[</span><span class="n">idx</span><span class="p">]</span>
+
+            <span class="n">slope_m</span><span class="p">,</span> <span class="n">intercept_b</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_regress_a</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">robust</span><span class="p">,</span> <span class="n">n_jobs</span><span class="p">)</span>
+
+        <span class="n">c</span> <span class="o">=</span> <span class="n">intercept_b</span> <span class="o">/</span> <span class="n">slope_m</span>
+
+        <span class="c1"># Get the A-factor</span>
+        <span class="n">a_factor</span> <span class="o">=</span> <span class="p">(</span><span class="n">cos_z</span> <span class="o">+</span> <span class="n">c</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">il</span> <span class="o">+</span> <span class="n">c</span><span class="p">)</span>
+
+        <span class="n">a_factor</span> <span class="o">=</span> <span class="n">da</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">da</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">a_factor</span><span class="p">),</span> <span class="mi">1</span><span class="p">,</span> <span class="n">a_factor</span><span class="p">)</span>
+
+        <span class="n">sr_a</span> <span class="o">=</span> <span class="n">sr</span> <span class="o">*</span> <span class="n">a_factor</span>
+
+        <span class="k">return</span> <span class="n">da</span><span class="o">.</span><span class="n">where</span><span class="p">((</span><span class="n">sr_a</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">)</span> <span class="o">|</span> <span class="p">(</span><span class="n">nodata_samps</span> <span class="o">==</span> <span class="mi">1</span><span class="p">),</span> <span class="n">sr</span><span class="p">,</span> <span class="n">sr_a</span><span class="p">)</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+
+<div class="viewcode-block" id="Topo.norm_topo"><a class="viewcode-back" href="../../../api/geowombat.radiometry.Topo.html#geowombat.radiometry.Topo.norm_topo">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">norm_topo</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">data</span><span class="p">,</span>
+        <span class="n">elev</span><span class="p">,</span>
+        <span class="n">solar_za</span><span class="p">,</span>
+        <span class="n">solar_az</span><span class="p">,</span>
+        <span class="n">slope</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">aspect</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">method</span><span class="o">=</span><span class="s1">&#39;empirical-rotation&#39;</span><span class="p">,</span>
+        <span class="n">slope_thresh</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+        <span class="n">nodata</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+        <span class="n">elev_nodata</span><span class="o">=-</span><span class="mi">32768</span><span class="p">,</span>
+        <span class="n">scale_factor</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+        <span class="n">angle_scale</span><span class="o">=</span><span class="mf">0.01</span><span class="p">,</span>
+        <span class="n">n_jobs</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+        <span class="n">robust</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">min_samples</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
+        <span class="n">slope_kwargs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">aspect_kwargs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">band_coeffs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="p">):</span>
+
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Applies topographic normalization.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            data (2d or 3d DataArray): The data to normalize, in the range 0-1.</span>
+<span class="sd">            elev (2d DataArray): The elevation data.</span>
+<span class="sd">            solar_za (2d DataArray): The solar zenith angles (degrees).</span>
+<span class="sd">            solar_az (2d DataArray): The solar azimuth angles (degrees).</span>
+<span class="sd">            slope (2d DataArray): The slope data. If not given, slope is calculated from ``elev``.</span>
+<span class="sd">            aspect (2d DataArray): The aspect data. If not given, aspect is calculated from ``elev``.</span>
+<span class="sd">            method (Optional[str]): The method to apply. Choices are [&#39;c&#39;, &#39;empirical-rotation&#39;].</span>
+<span class="sd">            slope_thresh (Optional[float or int]): The slope threshold. Any samples with</span>
+<span class="sd">                values &lt; ``slope_thresh`` are not adjusted.</span>
+<span class="sd">            nodata (Optional[int or float]): The &#39;no data&#39; value for ``data``.</span>
+<span class="sd">            elev_nodata (Optional[float or int]): The &#39;no data&#39; value for ``elev``.</span>
+<span class="sd">            scale_factor (Optional[float]): A scale factor to apply to the input data.</span>
+<span class="sd">            angle_scale (Optional[float]): The angle scale factor.</span>
+<span class="sd">            n_jobs (Optional[int]): The number of parallel workers for ``LinearRegression.fit``.</span>
+<span class="sd">            robust (Optional[bool]): Whether to fit a robust regression.</span>
+<span class="sd">            min_samples (Optional[int]): The minimum number of samples required to fit a regression.</span>
+<span class="sd">            slope_kwargs (Optional[dict]): Keyword arguments passed to ``gdal.DEMProcessingOptions``</span>
+<span class="sd">                to calculate the slope.</span>
+<span class="sd">            aspect_kwargs (Optional[dict]): Keyword arguments passed to ``gdal.DEMProcessingOptions``</span>
+<span class="sd">                to calculate the aspect.</span>
+<span class="sd">            band_coeffs (Optional[dict]): Slope and intercept coefficients for each band.</span>
+
+<span class="sd">        References:</span>
+
+<span class="sd">            See :cite:`teillet_etal_1982` for the C-correction method.</span>
+<span class="sd">            See :cite:`tan_etal_2010` for the Empirical Rotation method.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            ``xarray.DataArray``</span>
+
+<span class="sd">        Examples:</span>
+<span class="sd">            &gt;&gt;&gt; import geowombat as gw</span>
+<span class="sd">            &gt;&gt;&gt; from geowombat.radiometry import Topo</span>
+<span class="sd">            &gt;&gt;&gt;</span>
+<span class="sd">            &gt;&gt;&gt; topo = Topo()</span>
+<span class="sd">            &gt;&gt;&gt;</span>
+<span class="sd">            &gt;&gt;&gt; # Example where pixel angles are stored in separate GeoTiff files</span>
+<span class="sd">            &gt;&gt;&gt; with gw.config.update(sensor=&#39;l7&#39;, scale_factor=0.0001, nodata=0):</span>
+<span class="sd">            &gt;&gt;&gt;</span>
+<span class="sd">            &gt;&gt;&gt;     with gw.open(&#39;landsat.tif&#39;) as src,</span>
+<span class="sd">            &gt;&gt;&gt;         gw.open(&#39;srtm&#39;) as elev,</span>
+<span class="sd">            &gt;&gt;&gt;             gw.open(&#39;solarz.tif&#39;) as solarz,</span>
+<span class="sd">            &gt;&gt;&gt;                 gw.open(&#39;solara.tif&#39;) as solara:</span>
+<span class="sd">            &gt;&gt;&gt;</span>
+<span class="sd">            &gt;&gt;&gt;         src_norm = topo.norm_topo(src, elev, solarz, solara, n_jobs=-1)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">method</span> <span class="o">=</span> <span class="n">method</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="n">method</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;c&#39;</span><span class="p">,</span> <span class="s1">&#39;empirical-rotation&#39;</span><span class="p">]:</span>
+
+            <span class="n">logger</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span>
+                <span class="s2">&quot;  Currently, the only supported methods are &#39;c&#39; and &#39;empirical-rotation&#39;.&quot;</span>
+            <span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">NameError</span>
+
+        <span class="n">attrs</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">attrs</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">nodata</span><span class="p">:</span>
+            <span class="n">nodata</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">nodata</span>
+
+        <span class="k">if</span> <span class="n">scale_factor</span> <span class="o">==</span> <span class="mf">1.0</span><span class="p">:</span>
+            <span class="n">scale_factor</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">scale_factor</span>
+
+        <span class="c1"># Scale the reflectance data</span>
+        <span class="k">if</span> <span class="n">scale_factor</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="n">data</span> <span class="o">*</span> <span class="n">scale_factor</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">slope_kwargs</span><span class="p">:</span>
+
+            <span class="n">slope_kwargs</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
+                <span class="nb">format</span><span class="o">=</span><span class="s1">&#39;MEM&#39;</span><span class="p">,</span>
+                <span class="n">computeEdges</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                <span class="n">alg</span><span class="o">=</span><span class="s1">&#39;ZevenbergenThorne&#39;</span><span class="p">,</span>
+                <span class="n">slopeFormat</span><span class="o">=</span><span class="s1">&#39;degree&#39;</span><span class="p">,</span>
+            <span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">aspect_kwargs</span><span class="p">:</span>
+
+            <span class="n">aspect_kwargs</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
+                <span class="nb">format</span><span class="o">=</span><span class="s1">&#39;MEM&#39;</span><span class="p">,</span>
+                <span class="n">computeEdges</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                <span class="n">alg</span><span class="o">=</span><span class="s1">&#39;ZevenbergenThorne&#39;</span><span class="p">,</span>
+                <span class="n">trigonometric</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                <span class="n">zeroForFlat</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="p">)</span>
+
+        <span class="n">slope_kwargs</span><span class="p">[</span><span class="s1">&#39;format&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;MEM&#39;</span>
+        <span class="n">slope_kwargs</span><span class="p">[</span><span class="s1">&#39;slopeFormat&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;degree&#39;</span>
+        <span class="n">aspect_kwargs</span><span class="p">[</span><span class="s1">&#39;format&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;MEM&#39;</span>
+
+        <span class="c1"># Force to SRTM resolution</span>
+        <span class="n">proc_dims</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="nb">int</span><span class="p">((</span><span class="n">data</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">ncols</span> <span class="o">*</span> <span class="n">data</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">cellx</span><span class="p">)</span> <span class="o">/</span> <span class="mf">30.0</span><span class="p">),</span>
+            <span class="nb">int</span><span class="p">((</span><span class="n">data</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">nrows</span> <span class="o">*</span> <span class="n">data</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">celly</span><span class="p">)</span> <span class="o">/</span> <span class="mf">30.0</span><span class="p">),</span>
+        <span class="p">)</span>
+
+        <span class="n">w</span> <span class="o">=</span> <span class="nb">int</span><span class="p">((</span><span class="mi">5</span> <span class="o">*</span> <span class="mf">30.0</span><span class="p">)</span> <span class="o">/</span> <span class="n">data</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">celly</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">w</span> <span class="o">%</span> <span class="mi">2</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">w</span> <span class="o">+=</span> <span class="mi">1</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">slope</span><span class="p">,</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">):</span>
+            <span class="n">slope_deg_fd</span> <span class="o">=</span> <span class="n">slope</span><span class="o">.</span><span class="n">squeeze</span><span class="p">()</span><span class="o">.</span><span class="n">data</span>
+        <span class="k">else</span><span class="p">:</span>
+
+            <span class="n">slope_deg</span> <span class="o">=</span> <span class="n">calc_slope_delayed</span><span class="p">(</span>
+                <span class="n">elev</span><span class="o">.</span><span class="n">squeeze</span><span class="p">()</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">proc_dims</span><span class="o">=</span><span class="n">proc_dims</span><span class="p">,</span> <span class="n">w</span><span class="o">=</span><span class="n">w</span><span class="p">,</span> <span class="o">**</span><span class="n">slope_kwargs</span>
+            <span class="p">)</span>
+            <span class="n">slope_deg_fd</span> <span class="o">=</span> <span class="n">da</span><span class="o">.</span><span class="n">from_delayed</span><span class="p">(</span>
+                <span class="n">slope_deg</span><span class="p">,</span> <span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">nrows</span><span class="p">,</span> <span class="n">data</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">ncols</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;float64&#39;</span>
+            <span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">aspect</span><span class="p">,</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">):</span>
+            <span class="n">aspect_deg_fd</span> <span class="o">=</span> <span class="n">aspect</span><span class="o">.</span><span class="n">squeeze</span><span class="p">()</span><span class="o">.</span><span class="n">data</span>
+        <span class="k">else</span><span class="p">:</span>
+
+            <span class="n">aspect_deg</span> <span class="o">=</span> <span class="n">calc_aspect_delayed</span><span class="p">(</span>
+                <span class="n">elev</span><span class="o">.</span><span class="n">squeeze</span><span class="p">()</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">proc_dims</span><span class="o">=</span><span class="n">proc_dims</span><span class="p">,</span> <span class="n">w</span><span class="o">=</span><span class="n">w</span><span class="p">,</span> <span class="o">**</span><span class="n">aspect_kwargs</span>
+            <span class="p">)</span>
+            <span class="n">aspect_deg_fd</span> <span class="o">=</span> <span class="n">da</span><span class="o">.</span><span class="n">from_delayed</span><span class="p">(</span>
+                <span class="n">aspect_deg</span><span class="p">,</span> <span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">nrows</span><span class="p">,</span> <span class="n">data</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">ncols</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;float64&#39;</span>
+            <span class="p">)</span>
+
+        <span class="n">nodata_samps</span> <span class="o">=</span> <span class="n">da</span><span class="o">.</span><span class="n">where</span><span class="p">(</span>
+            <span class="p">(</span><span class="n">elev</span><span class="o">.</span><span class="n">data</span> <span class="o">==</span> <span class="n">elev_nodata</span><span class="p">)</span>
+            <span class="o">|</span> <span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="s1">&#39;band&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">data</span> <span class="o">==</span> <span class="n">nodata</span><span class="p">)</span>
+            <span class="o">|</span> <span class="p">(</span><span class="n">slope_deg_fd</span> <span class="o">&lt;</span> <span class="n">slope_thresh</span><span class="p">),</span>
+            <span class="mi">1</span><span class="p">,</span>
+            <span class="mi">0</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="n">slope_rad</span> <span class="o">=</span> <span class="n">da</span><span class="o">.</span><span class="n">deg2rad</span><span class="p">(</span><span class="n">slope_deg_fd</span><span class="p">)</span>
+        <span class="n">aspect_rad</span> <span class="o">=</span> <span class="n">da</span><span class="o">.</span><span class="n">deg2rad</span><span class="p">(</span><span class="n">aspect_deg_fd</span><span class="p">)</span>
+
+        <span class="c1"># Convert degrees to radians</span>
+        <span class="n">solar_za</span> <span class="o">=</span> <span class="n">da</span><span class="o">.</span><span class="n">deg2rad</span><span class="p">(</span><span class="n">solar_za</span><span class="o">.</span><span class="n">squeeze</span><span class="p">()</span><span class="o">.</span><span class="n">data</span> <span class="o">*</span> <span class="n">angle_scale</span><span class="p">)</span>
+        <span class="n">solar_az</span> <span class="o">=</span> <span class="n">da</span><span class="o">.</span><span class="n">deg2rad</span><span class="p">(</span><span class="n">solar_az</span><span class="o">.</span><span class="n">squeeze</span><span class="p">()</span><span class="o">.</span><span class="n">data</span> <span class="o">*</span> <span class="n">angle_scale</span><span class="p">)</span>
+
+        <span class="n">cos_z</span> <span class="o">=</span> <span class="n">da</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">solar_za</span><span class="p">)</span>
+
+        <span class="c1"># Calculate the illumination angle</span>
+        <span class="n">il</span> <span class="o">=</span> <span class="n">da</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">slope_rad</span><span class="p">)</span> <span class="o">*</span> <span class="n">cos_z</span> <span class="o">+</span> <span class="n">da</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">slope_rad</span><span class="p">)</span> <span class="o">*</span> <span class="n">da</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span>
+            <span class="n">solar_za</span>
+        <span class="p">)</span> <span class="o">*</span> <span class="n">da</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">solar_az</span> <span class="o">-</span> <span class="n">aspect_rad</span><span class="p">)</span>
+
+        <span class="n">sr_adj</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">band</span> <span class="ow">in</span> <span class="n">data</span><span class="o">.</span><span class="n">band</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">tolist</span><span class="p">():</span>
+
+            <span class="k">if</span> <span class="n">method</span> <span class="o">==</span> <span class="s1">&#39;c&#39;</span><span class="p">:</span>
+
+                <span class="n">sr_adj</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_method_c</span><span class="p">(</span>
+                        <span class="n">data</span><span class="o">.</span><span class="n">sel</span><span class="p">(</span><span class="n">band</span><span class="o">=</span><span class="n">band</span><span class="p">)</span><span class="o">.</span><span class="n">data</span><span class="p">,</span>
+                        <span class="n">il</span><span class="p">,</span>
+                        <span class="n">cos_z</span><span class="p">,</span>
+                        <span class="n">nodata_samps</span><span class="p">,</span>
+                        <span class="n">min_samples</span><span class="p">,</span>
+                        <span class="n">n_jobs</span><span class="p">,</span>
+                        <span class="n">robust</span><span class="p">,</span>
+                        <span class="n">band_coeffs</span><span class="p">,</span>
+                        <span class="n">band</span><span class="p">,</span>
+                    <span class="p">)</span>
+                <span class="p">)</span>
+
+            <span class="k">else</span><span class="p">:</span>
+
+                <span class="n">sr_adj</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_method_empirical_rotation</span><span class="p">(</span>
+                        <span class="n">data</span><span class="o">.</span><span class="n">sel</span><span class="p">(</span><span class="n">band</span><span class="o">=</span><span class="n">band</span><span class="p">)</span><span class="o">.</span><span class="n">data</span><span class="p">,</span>
+                        <span class="n">il</span><span class="p">,</span>
+                        <span class="n">cos_z</span><span class="p">,</span>
+                        <span class="n">nodata_samps</span><span class="p">,</span>
+                        <span class="n">min_samples</span><span class="p">,</span>
+                        <span class="n">n_jobs</span><span class="p">,</span>
+                        <span class="n">robust</span><span class="p">,</span>
+                        <span class="n">band_coeffs</span><span class="p">,</span>
+                        <span class="n">band</span><span class="p">,</span>
+                    <span class="p">)</span>
+                <span class="p">)</span>
+
+        <span class="n">adj_data</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">(</span>
+            <span class="n">data</span><span class="o">=</span><span class="n">da</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">sr_adj</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span>
+                <span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">nbands</span><span class="p">,</span> <span class="n">data</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">nrows</span><span class="p">,</span> <span class="n">data</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">ncols</span><span class="p">)</span>
+            <span class="p">),</span>
+            <span class="n">coords</span><span class="o">=</span><span class="p">{</span>
+                <span class="s1">&#39;band&#39;</span><span class="p">:</span> <span class="n">data</span><span class="o">.</span><span class="n">band</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">tolist</span><span class="p">(),</span>
+                <span class="s1">&#39;y&#39;</span><span class="p">:</span> <span class="n">data</span><span class="o">.</span><span class="n">y</span><span class="o">.</span><span class="n">values</span><span class="p">,</span>
+                <span class="s1">&#39;x&#39;</span><span class="p">:</span> <span class="n">data</span><span class="o">.</span><span class="n">x</span><span class="o">.</span><span class="n">values</span><span class="p">,</span>
+            <span class="p">},</span>
+            <span class="n">dims</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;band&#39;</span><span class="p">,</span> <span class="s1">&#39;y&#39;</span><span class="p">,</span> <span class="s1">&#39;x&#39;</span><span class="p">),</span>
+            <span class="n">attrs</span><span class="o">=</span><span class="n">data</span><span class="o">.</span><span class="n">attrs</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="n">attrs</span><span class="p">[</span><span class="s1">&#39;calibration&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;Topographic-adjusted&#39;</span>
+        <span class="n">attrs</span><span class="p">[</span><span class="s1">&#39;nodata&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">nodata</span>
+        <span class="n">attrs</span><span class="p">[</span><span class="s1">&#39;drange&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+
+        <span class="n">adj_data</span><span class="o">.</span><span class="n">attrs</span> <span class="o">=</span> <span class="n">attrs</span>
+
+        <span class="k">return</span> <span class="n">adj_data</span></div></div>
+</pre></div>
+
+                </article>
+              
+
+              
+              
+                <footer class="bd-footer-article">
+                  <!-- Previous / next buttons -->
+<div class="prev-next-area">
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            <div class="bd-footer-content__inner">
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+  <p class="copyright">
+    
+      © Copyright 2020-2026, GeoWombat.
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+</div></div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../../../_static/scripts/bootstrap.js?digest=12da95d707ffb74b382d"></script>
+<script src="../../../_static/scripts/pydata-sphinx-theme.js?digest=12da95d707ffb74b382d"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>

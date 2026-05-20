@@ -1,0 +1,1765 @@
+
+
+<!DOCTYPE html>
+
+
+<html lang="en" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>geowombat.core.api</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../../_static/styles/theme.css?digest=12da95d707ffb74b382d" rel="stylesheet" />
+<link href="../../../_static/styles/bootstrap.css?digest=12da95d707ffb74b382d" rel="stylesheet" />
+<link href="../../../_static/styles/pydata-sphinx-theme.css?digest=12da95d707ffb74b382d" rel="stylesheet" />
+
+  
+  <link href="../../../_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=12da95d707ffb74b382d" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css" />
+    <link rel="stylesheet" href="../../../_static/styles/sphinx-book-theme.css?digest=14f4ca6b54d191a8c7657f6c759bf11a5fb86285" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/custom.css" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=12da95d707ffb74b382d" />
+<link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=12da95d707ffb74b382d" />
+
+    <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+    <script src="../../../_static/doctools.js"></script>
+    <script src="../../../_static/sphinx_highlight.js"></script>
+    <script src="../../../_static/clipboard.min.js"></script>
+    <script src="../../../_static/copybutton.js"></script>
+    <script src="../../../_static/scripts/sphinx-book-theme.js?digest=5a5c038af52cf7bc1a1ec88eea08e6366ee68824"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/geowombat/core/api';</script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__primary"
+          id="__primary"/>
+  <label class="overlay overlay-primary" for="__primary"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__secondary"
+          id="__secondary"/>
+  <label class="overlay overlay-secondary" for="__secondary"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="../../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search..."
+         aria-label="Search..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+  
+    <nav class="bd-header navbar navbar-expand-lg bd-navbar">
+    </nav>
+  
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      <div class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+  
+
+<a class="navbar-brand logo" href="../../../index.html">
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../../../_static/logo.png" class="logo__image only-light" alt="GeoWombat"/>
+    <script>document.write(`<img src="../../../_static/logo.png" class="logo__image only-dark" alt="GeoWombat"/>`);</script>
+  
+  
+</a></div>
+        <div class="sidebar-primary-item"><nav class="bd-links" id="bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        <p aria-level="2" class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../../install.html">Installing GeoWombat</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../quick-overview.html">Quick overview</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../../tutorial.html">Tutorial</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-1"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../tutorial-why.html">Why GeoWombat?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../tutorial-open.html">Opening rasters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../tutorial-edit.html">Editing rasters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../tutorial-config.html">Configuration manager</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../tutorial-gw.html">GeoWombat DataArray accessor</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../tutorial-crs.html">Coordinate Reference Systems</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../tutorial-plot.html">Plotting raster data</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../../examples.html">Examples</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-2"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../io.html">Raster I/O</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../io-distributed.html">Distributed processing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../extraction.html">Data extraction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../band-math.html">Band math</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../apply.html">User functions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../ml.html">Machine learning</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../dl.html">Deep learning classifiers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../object-detection.html">Object detection</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../moving.html">Moving windows</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../radiometry.html">Radiometry</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../coreg.html">Co-registration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../tasks.html">Pipeline tasks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../web.html">Accessing STAC Catalogs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../external.html">External examples</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../gpu.html">Time series processes on the GPU</a></li>
+</ul>
+</li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Changes</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../../changelog.html">Changelog</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../issues.html">Issues</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Reference</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../../api.html">API reference</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-3"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.core.geoxarray.GeoWombatAccessor.html">GeoWombat DataArray (DataArray.gw)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.load.html">load</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.extract.html">extract</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.sample.html">sample</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.calc_area.html">calc_area</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.subset.html">subset</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.clip.html">clip</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.clip_by_polygon.html">clip_by_polygon</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.mask.html">mask</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.replace.html">replace</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.recode.html">recode</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.coregister.html">coregister</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.polygons_to_points.html">polygons_to_points</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.apply.html">apply</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.transform_crs.html">transform_crs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.save.html">save</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.to_raster.html">to_raster</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.to_netcdf.html">to_netcdf</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.to_vrt.html">to_vrt</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.array_to_polygon.html">array_to_polygon</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.polygon_to_array.html">polygon_to_array</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.moving.html">moving</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.norm_diff.html">norm_diff</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.avi.html">avi</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.evi.html">evi</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.evi2.html">evi2</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.kndvi.html">kndvi</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.nbr.html">nbr</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.ndvi.html">ndvi</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.wi.html">wi</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.tasseled_cap.html">tasseled_cap</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.coords_to_indices.html">coords_to_indices</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.indices_to_coords.html">indices_to_coords</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.bounds_to_coords.html">bounds_to_coords</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.lonlat_to_xy.html">lonlat_to_xy</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.xy_to_lonlat.html">xy_to_lonlat</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.open.html">open</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.series.html">series</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.TimeModulePipeline.html">TimeModulePipeline</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.TimeModule.html">TimeModule</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.core.stac.composite_stac.html">composite_stac</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.core.stac.merge_stac.html">merge_stac</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.core.stac.open_stac.html">open_stac</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.core.stac.STACCollectionURLNames.html">STACCollectionURLNames</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.core.stac.STACCollections.html">STACCollections</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.core.stac.STACNames.html">STACNames</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.core.stac.StrEnum.html">StrEnum</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.ml.fit.html">fit</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.ml.fit_predict.html">fit_predict</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.ml.predict.html">predict</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.ml.TabNetClassifier.html">TabNetClassifier</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.ml.LTAEClassifier.html">LTAEClassifier</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.ml.TorchGeoClassifier.html">TorchGeoClassifier</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.detect.boxes_from_polygons.html">boxes_from_polygons</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.detect.build_dataset.html">build_dataset</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.detect.build_yolo_dataset.html">build_yolo_dataset</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.detect.detection_accuracy.html">detection_accuracy</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.detect.export_for_review.html">export_for_review</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.detect.fit.html">fit</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.detect.fit_predict.html">fit_predict</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.detect.plot_detections.html">plot_detections</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.detect.predict.html">predict</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.detect.recompute_from_review.html">recompute_from_review</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.detect.SAMRefiner.html">SAMRefiner</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.detect.TorchGeoDetector.html">TorchGeoDetector</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.detect.YOLODetector.html">YOLODetector</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.radiometry.landsat_pixel_angles.html">landsat_pixel_angles</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.radiometry.sentinel_pixel_angles.html">sentinel_pixel_angles</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.radiometry.BRDF.html">BRDF</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.radiometry.Topo.html">Topo</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.radiometry.LinearAdjustments.html">LinearAdjustments</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.radiometry.RadTransforms.html">RadTransforms</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.radiometry.DOS.html">DOS</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.radiometry.SixS.html">SixS</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.radiometry.QAMasker.html">QAMasker</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.radiometry.QABits.html">QABits</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.radiometry.SCLValues.html">SCLValues</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/geowombat.radiometry.HLSFmaskBits.html">HLSFmaskBits</a></li>
+</ul>
+</li>
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><label class="sidebar-toggle primary-toggle btn btn-sm" for="__primary" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</label></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+<a href="https://github.com/jgrss/geowombat" target="_blank"
+   class="btn btn-sm btn-source-repository-button"
+   title="Source repository"
+   data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fab fa-github"></i>
+  </span>
+
+</a>
+
+
+
+
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button"
+  title="Fullscreen mode"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+
+<script>
+document.write(`
+  <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
+    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
+    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
+  </button>
+`);
+</script>
+
+<script>
+document.write(`
+  <button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+  </button>
+`);
+</script>
+
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1></h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article" role="main">
+                  
+  <h1>Source code for geowombat.core.api</h1><div class="highlight"><pre>
+<span></span><span class="c1"># https://github.com/pydata/xarray/issues/2560</span>
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">netCDF4</span>
+<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+    <span class="k">pass</span>
+
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">h5netcdf</span>
+<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+    <span class="k">pass</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">concurrent.futures</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">threading</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">T</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">contextlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">contextmanager</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">functools</span><span class="w"> </span><span class="kn">import</span> <span class="n">singledispatch</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">dask</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">dask.array</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">da</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">rasterio</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">rio</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">xarray</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">xr</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">rasterio.coords</span><span class="w"> </span><span class="kn">import</span> <span class="n">BoundingBox</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">rasterio.windows</span><span class="w"> </span><span class="kn">import</span> <span class="n">Window</span><span class="p">,</span> <span class="n">from_bounds</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">tqdm.auto</span><span class="w"> </span><span class="kn">import</span> <span class="n">tqdm</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">..backends</span><span class="w"> </span><span class="kn">import</span> <span class="n">concat</span> <span class="k">as</span> <span class="n">gw_concat</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">..backends</span><span class="w"> </span><span class="kn">import</span> <span class="n">mosaic</span> <span class="k">as</span> <span class="n">gw_mosaic</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">..backends</span><span class="w"> </span><span class="kn">import</span> <span class="n">warp_open</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">..backends.rasterio_</span><span class="w"> </span><span class="kn">import</span> <span class="n">check_src_crs</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">..config</span><span class="w"> </span><span class="kn">import</span> <span class="n">_set_defaults</span><span class="p">,</span> <span class="n">config</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">..handler</span><span class="w"> </span><span class="kn">import</span> <span class="n">add_handler</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.</span><span class="w"> </span><span class="kn">import</span> <span class="n">geoxarray</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.series</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseSeries</span><span class="p">,</span> <span class="n">SeriesStats</span><span class="p">,</span> <span class="n">TransferLib</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.util</span><span class="w"> </span><span class="kn">import</span> <span class="n">Chunks</span><span class="p">,</span> <span class="n">get_file_extension</span><span class="p">,</span> <span class="n">parse_wildcard</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+<span class="n">logger</span> <span class="o">=</span> <span class="n">add_handler</span><span class="p">(</span><span class="n">logger</span><span class="p">)</span>
+<span class="n">warnings</span><span class="o">.</span><span class="n">filterwarnings</span><span class="p">(</span><span class="s2">&quot;ignore&quot;</span><span class="p">)</span>
+
+<span class="n">ch</span> <span class="o">=</span> <span class="n">Chunks</span><span class="p">()</span>
+
+<span class="n">IO_DICT</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
+    <span class="n">rasterio</span><span class="o">=</span><span class="p">[</span>
+        <span class="s2">&quot;.tif&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;.tiff&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;.TIF&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;.TIFF&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;.img&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;.IMG&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;.kea&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;.vrt&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;.VRT&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;.jp2&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;.JP2&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;.hgt&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;.HGT&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;.hdf&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;.HDF&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;.h5&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;.H5&quot;</span><span class="p">,</span>
+    <span class="p">],</span>
+    <span class="n">xarray</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;.nc&quot;</span><span class="p">],</span>
+<span class="p">)</span>
+
+
+<span class="nd">@contextmanager</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_tqdm</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">yield</span> <span class="kc">None</span>
+
+
+<div class="viewcode-block" id="get_image_chunks"><a class="viewcode-back" href="../../../api/geowombat.core.html#geowombat.get_image_chunks">[docs]</a><span class="nd">@singledispatch</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_image_chunks</span><span class="p">(</span><span class="n">filename</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+    <span class="k">with</span> <span class="n">rio</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span> <span class="k">as</span> <span class="n">src_</span><span class="p">:</span>
+        <span class="n">w</span> <span class="o">=</span> <span class="n">src_</span><span class="o">.</span><span class="n">block_window</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="n">chunks</span> <span class="o">=</span> <span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">w</span><span class="o">.</span><span class="n">height</span><span class="p">,</span> <span class="n">w</span><span class="o">.</span><span class="n">width</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">chunks</span></div>
+
+
+<span class="nd">@get_image_chunks</span><span class="o">.</span><span class="n">register</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_</span><span class="p">(</span><span class="n">filename</span><span class="p">:</span> <span class="nb">list</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+    <span class="k">return</span> <span class="n">get_image_chunks</span><span class="p">(</span><span class="n">filename</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+
+
+<span class="nd">@get_image_chunks</span><span class="o">.</span><span class="n">register</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_</span><span class="p">(</span><span class="n">filename</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+    <span class="k">return</span> <span class="n">get_image_chunks</span><span class="p">(</span><span class="n">filename</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_get_attrs</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="n">cellxh</span> <span class="o">=</span> <span class="n">src</span><span class="o">.</span><span class="n">res</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="mf">2.0</span>
+    <span class="n">cellyh</span> <span class="o">=</span> <span class="n">src</span><span class="o">.</span><span class="n">res</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">/</span> <span class="mf">2.0</span>
+
+    <span class="n">left_</span> <span class="o">=</span> <span class="n">src</span><span class="o">.</span><span class="n">bounds</span><span class="o">.</span><span class="n">left</span> <span class="o">+</span> <span class="p">(</span><span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;window&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">col_off</span> <span class="o">*</span> <span class="n">src</span><span class="o">.</span><span class="n">res</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">+</span> <span class="n">cellxh</span>
+    <span class="n">top_</span> <span class="o">=</span> <span class="n">src</span><span class="o">.</span><span class="n">bounds</span><span class="o">.</span><span class="n">top</span> <span class="o">-</span> <span class="p">(</span><span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;window&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">row_off</span> <span class="o">*</span> <span class="n">src</span><span class="o">.</span><span class="n">res</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">-</span> <span class="n">cellyh</span>
+
+    <span class="n">xcoords</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span>
+        <span class="n">left_</span><span class="p">,</span> <span class="n">left_</span> <span class="o">+</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;window&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">width</span> <span class="o">*</span> <span class="n">src</span><span class="o">.</span><span class="n">res</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">src</span><span class="o">.</span><span class="n">res</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="p">)</span>
+    <span class="n">ycoords</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span>
+        <span class="n">top_</span><span class="p">,</span> <span class="n">top_</span> <span class="o">-</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;window&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">height</span> <span class="o">*</span> <span class="n">src</span><span class="o">.</span><span class="n">res</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="o">-</span><span class="n">src</span><span class="o">.</span><span class="n">res</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+    <span class="p">)</span>
+
+    <span class="n">attrs</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;transform&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">src</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">transform</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="s2">&quot;gw&quot;</span><span class="p">)</span> <span class="k">else</span> <span class="n">src</span><span class="o">.</span><span class="n">transform</span>
+    <span class="p">)</span>
+
+    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="s2">&quot;crs&quot;</span><span class="p">):</span>
+        <span class="n">src_crs</span> <span class="o">=</span> <span class="n">check_src_crs</span><span class="p">(</span><span class="n">src</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;crs&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">src_crs</span><span class="o">.</span><span class="n">to_proj4</span><span class="p">()</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;crs&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">src_crs</span><span class="o">.</span><span class="n">to_string</span><span class="p">()</span>
+
+    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="s2">&quot;res&quot;</span><span class="p">):</span>
+        <span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;res&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">src</span><span class="o">.</span><span class="n">res</span>
+
+    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="s2">&quot;is_tiled&quot;</span><span class="p">):</span>
+        <span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;is_tiled&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">(</span><span class="n">src</span><span class="o">.</span><span class="n">is_tiled</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="s2">&quot;nodatavals&quot;</span><span class="p">):</span>
+        <span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;nodatavals&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">nan</span> <span class="k">if</span> <span class="n">nodataval</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">nodataval</span>
+            <span class="k">for</span> <span class="n">nodataval</span> <span class="ow">in</span> <span class="n">src</span><span class="o">.</span><span class="n">nodatavals</span>
+        <span class="p">)</span>
+
+    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="s2">&quot;offsets&quot;</span><span class="p">):</span>
+        <span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;offsets&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">src</span><span class="o">.</span><span class="n">scales</span>
+
+    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="s2">&quot;offsets&quot;</span><span class="p">):</span>
+        <span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;offsets&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">src</span><span class="o">.</span><span class="n">offsets</span>
+
+    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="s2">&quot;descriptions&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">any</span><span class="p">(</span><span class="n">src</span><span class="o">.</span><span class="n">descriptions</span><span class="p">):</span>
+        <span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;descriptions&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">src</span><span class="o">.</span><span class="n">descriptions</span>
+
+    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="s2">&quot;units&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">any</span><span class="p">(</span><span class="n">src</span><span class="o">.</span><span class="n">units</span><span class="p">):</span>
+        <span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;units&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">src</span><span class="o">.</span><span class="n">units</span>
+
+    <span class="k">return</span> <span class="n">ycoords</span><span class="p">,</span> <span class="n">xcoords</span><span class="p">,</span> <span class="n">attrs</span>
+
+
+<span class="nd">@dask</span><span class="o">.</span><span class="n">delayed</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">read_delayed</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">chunks</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">with</span> <span class="n">rio</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span> <span class="k">as</span> <span class="n">src</span><span class="p">:</span>
+        <span class="n">data_slice</span> <span class="o">=</span> <span class="n">src</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">single_band</span> <span class="o">=</span> <span class="kc">True</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">data_slice</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span> <span class="k">else</span> <span class="kc">False</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">chunks</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
+            <span class="n">chunks_</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">chunks</span><span class="p">,</span> <span class="n">chunks</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">chunks</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">):</span>
+            <span class="n">chunks_</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="p">,)</span> <span class="o">+</span> <span class="n">chunks</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">chunks</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">3</span> <span class="k">else</span> <span class="n">chunks</span>
+
+        <span class="k">if</span> <span class="n">single_band</span><span class="p">:</span>
+            <span class="c1"># Expand to 1 band</span>
+            <span class="n">data_slice</span> <span class="o">=</span> <span class="n">da</span><span class="o">.</span><span class="n">from_array</span><span class="p">(</span><span class="n">data_slice</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">],</span> <span class="n">chunks</span><span class="o">=</span><span class="n">chunks_</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">data_slice</span> <span class="o">=</span> <span class="n">da</span><span class="o">.</span><span class="n">from_array</span><span class="p">(</span><span class="n">data_slice</span><span class="p">,</span> <span class="n">chunks</span><span class="o">=</span><span class="n">chunks</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">data_slice</span>
+
+
+<div class="viewcode-block" id="read_list"><a class="viewcode-back" href="../../../api/geowombat.core.html#geowombat.read_list">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">read_list</span><span class="p">(</span><span class="n">file_list</span><span class="p">,</span> <span class="n">chunks</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">return</span> <span class="p">[</span><span class="n">read_delayed</span><span class="p">(</span><span class="n">fn</span><span class="p">,</span> <span class="n">chunks</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="k">for</span> <span class="n">fn</span> <span class="ow">in</span> <span class="n">file_list</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="read"><a class="viewcode-back" href="../../../api/geowombat.core.html#geowombat.read">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">read</span><span class="p">(</span>
+    <span class="n">filename</span><span class="p">,</span>
+    <span class="n">band_names</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">time_names</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">bounds</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">chunks</span><span class="o">=</span><span class="mi">256</span><span class="p">,</span>
+    <span class="n">num_workers</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+    <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Reads a window slice in-memory.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        filename (str or list): A file name or list of file names to open read.</span>
+<span class="sd">        band_names (Optional[list]): A list of names to give the output band dimension.</span>
+<span class="sd">        time_names (Optional[list]): A list of names to give the time dimension.</span>
+<span class="sd">        bounds (Optional[1d array-like]): A bounding box to subset to, given as</span>
+<span class="sd">            [minx, miny, maxx, maxy] or [left, bottom, right, top].</span>
+<span class="sd">        chunks (Optional[tuple]): The data chunk size.</span>
+<span class="sd">        num_workers (Optional[int]): The number of parallel ``dask`` workers.</span>
+<span class="sd">        kwargs (Optional[dict]): Keyword arguments to pass to ``rasterio.write``.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        ``xarray.DataArray``</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Cannot pass &#39;chunks&#39; to rasterio</span>
+    <span class="k">if</span> <span class="s2">&quot;chunks&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+        <span class="k">del</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;chunks&quot;</span><span class="p">]</span>
+
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="k">with</span> <span class="n">rio</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span> <span class="k">as</span> <span class="n">src</span><span class="p">:</span>
+            <span class="n">src_transform</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">src</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">transform</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="s2">&quot;gw&quot;</span><span class="p">)</span> <span class="k">else</span> <span class="n">src</span><span class="o">.</span><span class="n">transform</span>
+            <span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">bounds</span> <span class="ow">and</span> <span class="p">(</span><span class="s2">&quot;window&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">):</span>
+                <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;window&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">from_bounds</span><span class="p">(</span>
+                    <span class="o">*</span><span class="n">bounds</span><span class="p">,</span> <span class="n">transform</span><span class="o">=</span><span class="n">src_transform</span>
+                <span class="p">)</span>
+
+            <span class="n">ycoords</span><span class="p">,</span> <span class="n">xcoords</span><span class="p">,</span> <span class="n">attrs</span> <span class="o">=</span> <span class="n">_get_attrs</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+        <span class="n">data</span> <span class="o">=</span> <span class="n">dask</span><span class="o">.</span><span class="n">compute</span><span class="p">(</span>
+            <span class="n">read_delayed</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">chunks</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">),</span> <span class="n">num_workers</span><span class="o">=</span><span class="n">num_workers</span>
+        <span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">band_names</span><span class="p">:</span>
+            <span class="n">band_names</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">band_names</span><span class="p">)</span> <span class="o">!=</span> <span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span>
+                <span class="s2">&quot;  The band names do not match the output dimensions.&quot;</span>
+            <span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span>
+
+        <span class="n">data</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">(</span>
+            <span class="n">data</span><span class="p">,</span>
+            <span class="n">dims</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;band&quot;</span><span class="p">,</span> <span class="s2">&quot;y&quot;</span><span class="p">,</span> <span class="s2">&quot;x&quot;</span><span class="p">),</span>
+            <span class="n">coords</span><span class="o">=</span><span class="p">{</span>
+                <span class="s2">&quot;band&quot;</span><span class="p">:</span> <span class="n">band_names</span><span class="p">,</span>
+                <span class="s2">&quot;y&quot;</span><span class="p">:</span> <span class="n">ycoords</span><span class="p">[:</span> <span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">]],</span>
+                <span class="s2">&quot;x&quot;</span><span class="p">:</span> <span class="n">xcoords</span><span class="p">[:</span> <span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]],</span>
+            <span class="p">},</span>
+            <span class="n">attrs</span><span class="o">=</span><span class="n">attrs</span><span class="p">,</span>
+        <span class="p">)</span>
+
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">with</span> <span class="n">rio</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">filename</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="k">as</span> <span class="n">src</span><span class="p">:</span>
+            <span class="n">src_transform</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">src</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">transform</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="s2">&quot;gw&quot;</span><span class="p">)</span> <span class="k">else</span> <span class="n">src</span><span class="o">.</span><span class="n">transform</span>
+            <span class="p">)</span>
+            <span class="k">if</span> <span class="n">bounds</span> <span class="ow">and</span> <span class="p">(</span><span class="s2">&quot;window&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">):</span>
+                <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;window&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">from_bounds</span><span class="p">(</span>
+                    <span class="o">*</span><span class="n">bounds</span><span class="p">,</span> <span class="n">transform</span><span class="o">=</span><span class="n">src_transform</span>
+                <span class="p">)</span>
+
+            <span class="n">ycoords</span><span class="p">,</span> <span class="n">xcoords</span><span class="p">,</span> <span class="n">attrs</span> <span class="o">=</span> <span class="n">_get_attrs</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+        <span class="n">data</span> <span class="o">=</span> <span class="n">da</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span>
+            <span class="n">dask</span><span class="o">.</span><span class="n">compute</span><span class="p">(</span>
+                <span class="n">read_list</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">chunks</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">),</span> <span class="n">num_workers</span><span class="o">=</span><span class="n">num_workers</span>
+            <span class="p">),</span>
+            <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">band_names</span><span class="p">:</span>
+            <span class="n">band_names</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">3</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">band_names</span><span class="p">)</span> <span class="o">!=</span> <span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">3</span><span class="p">]:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span>
+                <span class="s2">&quot;  The band names do not match the output dimensions.&quot;</span>
+            <span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">time_names</span><span class="p">:</span>
+            <span class="n">time_names</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">time_names</span><span class="p">)</span> <span class="o">!=</span> <span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">4</span><span class="p">]:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span>
+                <span class="s2">&quot;  The time names do not match the output dimensions.&quot;</span>
+            <span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span>
+
+        <span class="n">data</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">(</span>
+            <span class="n">data</span><span class="p">,</span>
+            <span class="n">dims</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;time&quot;</span><span class="p">,</span> <span class="s2">&quot;band&quot;</span><span class="p">,</span> <span class="s2">&quot;y&quot;</span><span class="p">,</span> <span class="s2">&quot;x&quot;</span><span class="p">),</span>
+            <span class="n">coords</span><span class="o">=</span><span class="p">{</span>
+                <span class="s2">&quot;time&quot;</span><span class="p">:</span> <span class="n">time_names</span><span class="p">,</span>
+                <span class="s2">&quot;band&quot;</span><span class="p">:</span> <span class="n">band_names</span><span class="p">,</span>
+                <span class="s2">&quot;y&quot;</span><span class="p">:</span> <span class="n">ycoords</span><span class="p">[:</span> <span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">]],</span>
+                <span class="s2">&quot;x&quot;</span><span class="p">:</span> <span class="n">xcoords</span><span class="p">[:</span> <span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]],</span>
+            <span class="p">},</span>
+            <span class="n">attrs</span><span class="o">=</span><span class="n">attrs</span><span class="p">,</span>
+        <span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">data</span></div>
+
+
+<span class="n">data_</span> <span class="o">=</span> <span class="kc">None</span>
+
+
+<div class="viewcode-block" id="open"><a class="viewcode-back" href="../../../api/geowombat.open.html#geowombat.open">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">open</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Opens one or more raster files.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        filename (str or list): The file name, search string, or a list of files to open.</span>
+<span class="sd">        band_names (Optional[1d array-like]): A list of band names if ``bounds`` is given or ``window``</span>
+<span class="sd">            is given. Default is None.</span>
+<span class="sd">        time_names (Optional[1d array-like]): A list of names to give the time dimension if ``bounds`` is given.</span>
+<span class="sd">            Default is None.</span>
+<span class="sd">        stack_dim (Optional[str]): The stack dimension. Choices are [&#39;time&#39;, &#39;band&#39;].</span>
+<span class="sd">        bounds (Optional[1d array-like]): A bounding box to subset to, given as [minx, maxy, miny, maxx].</span>
+<span class="sd">            Default is None.</span>
+<span class="sd">        bounds_by (Optional[str]): How to concatenate the output extent if ``filename`` is a ``list`` and</span>
+<span class="sd">            ``mosaic`` = ``False``. Choices are [&#39;intersection&#39;, &#39;union&#39;, &#39;reference&#39;].</span>
+<span class="sd">            * reference: Use the bounds of the reference image. If a ``ref_image`` is not given, the first image in</span>
+<span class="sd">              the ``filename`` list is used.</span>
+<span class="sd">            * intersection: Use the intersection (i.e., minimum extent) of all the image bounds</span>
+<span class="sd">            * union: Use the union (i.e., maximum extent) of all the image bounds</span>
+
+<span class="sd">        resampling (Optional[str]): The resampling method if ``filename`` is a ``list``. Choices are</span>
+<span class="sd">            [&#39;average&#39;, &#39;bilinear&#39;, &#39;cubic&#39;, &#39;cubic_spline&#39;, &#39;gauss&#39;,</span>
+<span class="sd">            &#39;lanczos&#39;, &#39;max&#39;, &#39;med&#39;, &#39;min&#39;, &#39;mode&#39;, &#39;nearest&#39;].</span>
+<span class="sd">        persist_filenames (Optional[bool]): Whether to persist the filenames list with the ``xarray.DataArray`` attributes.</span>
+<span class="sd">            By default, ``persist_filenames=False`` to avoid storing large file lists.</span>
+<span class="sd">        netcdf_vars (Optional[list]): NetCDF variables to open as a band stack.</span>
+<span class="sd">        mosaic (Optional[bool]): If ``filename`` is a ``list``, whether to mosaic the arrays instead of stacking.</span>
+<span class="sd">        overlap (Optional[str]): The keyword that determines how to handle overlapping data if ``filenames``</span>
+<span class="sd">            is a ``list``. Choices are [&#39;min&#39;, &#39;max&#39;, &#39;mean&#39;].</span>
+<span class="sd">        nodata (Optional[float | int]): A &#39;no data&#39; value to set. Default is ``None``. If ``nodata`` is ``None``,</span>
+<span class="sd">            the &#39;no data&#39; value is set from the file metadata. If ``nodata`` is given, then the file &#39;no data&#39;</span>
+<span class="sd">            value is overridden. See docstring examples for use of ``nodata`` in ``geowombat.config.update``.</span>
+
+<span class="sd">            .. note:: The ``geowombat.config.update`` overrides this argument. Thus, preference is always given</span>
+<span class="sd">                in the following order:</span>
+
+<span class="sd">                1. ``geowombat.config.update(nodata not None)``</span>
+<span class="sd">                2. ``open(nodata not None)``</span>
+<span class="sd">                3. file &#39;no data&#39; value from metadata &#39;_FillValue&#39; or &#39;nodatavals&#39;</span>
+<span class="sd">        scale_factor (Optional[float | int]): A scale value to apply to the opened data. The same rules used in</span>
+<span class="sd">            ``nodata`` apply. I.e.,</span>
+
+<span class="sd">            .. note:: The ``geowombat.config.update`` overrides this argument. Thus, preference is always given</span>
+<span class="sd">                in the following order:</span>
+
+<span class="sd">                1. ``geowombat.config.update(scale_factor not None)``</span>
+<span class="sd">                2. ``open(scale_factor not None)``</span>
+<span class="sd">                3. file scale value from metadata &#39;scales&#39;</span>
+<span class="sd">        offset (Optional[float | int]): An offset value to apply to the opened data. The same rules used in</span>
+<span class="sd">            ``nodata`` apply. I.e.,</span>
+
+<span class="sd">            .. note:: The ``geowombat.config.update`` overrides this argument. Thus, preference is always given</span>
+<span class="sd">                in the following order:</span>
+
+<span class="sd">                1. ``geowombat.config.update(offset not None)``</span>
+<span class="sd">                2. ``open(offset not None)``</span>
+<span class="sd">                3. file offset value from metadata &#39;offsets&#39;</span>
+<span class="sd">        dtype (Optional[str]): A data type to force the output to. If not given, the data type is extracted</span>
+<span class="sd">            from the file.</span>
+<span class="sd">        scale_data (Optional[bool]): Whether to apply scaling to the opened data. Default is ``False``. Scaled</span>
+<span class="sd">            data are returned as::</span>
+
+<span class="sd">                scaled = data * gain + offset</span>
+
+<span class="sd">            See the arguments ``nodata``, ``scale_factor``, and ``offset`` for rules regarding how scaling is applied.</span>
+<span class="sd">        num_workers (Optional[int]): The number of parallel workers for Dask if ``bounds``</span>
+<span class="sd">            is given or ``window`` is given. Default is 1.</span>
+<span class="sd">        kwargs (Optional[dict]): Keyword arguments passed to the file opener.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        ``xarray.DataArray`` or ``xarray.Dataset``</span>
+
+<span class="sd">    Examples:</span>
+<span class="sd">        &gt;&gt;&gt; import geowombat as gw</span>
+<span class="sd">        &gt;&gt;&gt;</span>
+<span class="sd">        &gt;&gt;&gt; # Open an image</span>
+<span class="sd">        &gt;&gt;&gt; with gw.open(&#39;image.tif&#39;) as ds:</span>
+<span class="sd">        &gt;&gt;&gt;     print(ds)</span>
+<span class="sd">        &gt;&gt;&gt;</span>
+<span class="sd">        &gt;&gt;&gt; # Open a list of images, stacking along the &#39;time&#39; dimension</span>
+<span class="sd">        &gt;&gt;&gt; with gw.open([&#39;image1.tif&#39;, &#39;image2.tif&#39;]) as ds:</span>
+<span class="sd">        &gt;&gt;&gt;     print(ds)</span>
+<span class="sd">        &gt;&gt;&gt;</span>
+<span class="sd">        &gt;&gt;&gt; # Open all GeoTiffs in a directory, stack along the &#39;time&#39; dimension</span>
+<span class="sd">        &gt;&gt;&gt; with gw.open(&#39;*.tif&#39;) as ds:</span>
+<span class="sd">        &gt;&gt;&gt;     print(ds)</span>
+<span class="sd">        &gt;&gt;&gt;</span>
+<span class="sd">        &gt;&gt;&gt; # Use a context manager to handle images of difference sizes and projections</span>
+<span class="sd">        &gt;&gt;&gt; with gw.config.update(ref_image=&#39;image1.tif&#39;):</span>
+<span class="sd">        &gt;&gt;&gt;     # Use &#39;time&#39; names to stack and mosaic non-aligned images with identical dates</span>
+<span class="sd">        &gt;&gt;&gt;     with gw.open([&#39;image1.tif&#39;, &#39;image2.tif&#39;, &#39;image3.tif&#39;],</span>
+<span class="sd">        &gt;&gt;&gt;</span>
+<span class="sd">        &gt;&gt;&gt;         # The first two images were acquired on the same date</span>
+<span class="sd">        &gt;&gt;&gt;         #   and will be merged into a single time layer</span>
+<span class="sd">        &gt;&gt;&gt;         time_names=[&#39;date1&#39;, &#39;date1&#39;, &#39;date2&#39;]) as ds:</span>
+<span class="sd">        &gt;&gt;&gt;</span>
+<span class="sd">        &gt;&gt;&gt;         print(ds)</span>
+<span class="sd">        &gt;&gt;&gt;</span>
+<span class="sd">        &gt;&gt;&gt; # Mosaic images across space using a reference</span>
+<span class="sd">        &gt;&gt;&gt; #   image for the CRS and cell resolution</span>
+<span class="sd">        &gt;&gt;&gt; with gw.config.update(ref_image=&#39;image1.tif&#39;):</span>
+<span class="sd">        &gt;&gt;&gt;     with gw.open([&#39;image1.tif&#39;, &#39;image2.tif&#39;], mosaic=True) as ds:</span>
+<span class="sd">        &gt;&gt;&gt;         print(ds)</span>
+<span class="sd">        &gt;&gt;&gt;</span>
+<span class="sd">        &gt;&gt;&gt; # Mix configuration keywords</span>
+<span class="sd">        &gt;&gt;&gt; with gw.config.update(ref_crs=&#39;image1.tif&#39;, ref_res=&#39;image1.tif&#39;, ref_bounds=&#39;image2.tif&#39;):</span>
+<span class="sd">        &gt;&gt;&gt;     # The ``bounds_by`` keyword overrides the extent bounds</span>
+<span class="sd">        &gt;&gt;&gt;     with gw.open([&#39;image1.tif&#39;, &#39;image2.tif&#39;], bounds_by=&#39;union&#39;) as ds:</span>
+<span class="sd">        &gt;&gt;&gt;         print(ds)</span>
+<span class="sd">        &gt;&gt;&gt;</span>
+<span class="sd">        &gt;&gt;&gt; # Resample an image to 10m x 10m cell size</span>
+<span class="sd">        &gt;&gt;&gt; with gw.config.update(ref_crs=(10, 10)):</span>
+<span class="sd">        &gt;&gt;&gt;     with gw.open(&#39;image.tif&#39;, resampling=&#39;cubic&#39;) as ds:</span>
+<span class="sd">        &gt;&gt;&gt;         print(ds)</span>
+<span class="sd">        &gt;&gt;&gt;</span>
+<span class="sd">        &gt;&gt;&gt; # Open a list of images at a window slice</span>
+<span class="sd">        &gt;&gt;&gt; from rasterio.windows import Window</span>
+<span class="sd">        &gt;&gt;&gt; # Stack two images, opening band 3</span>
+<span class="sd">        &gt;&gt;&gt; with gw.open(</span>
+<span class="sd">        &gt;&gt;&gt;     [&#39;image1.tif&#39;, &#39;image2.tif&#39;],</span>
+<span class="sd">        &gt;&gt;&gt;     band_names=[&#39;date1&#39;, &#39;date2&#39;],</span>
+<span class="sd">        &gt;&gt;&gt;     num_workers=8,</span>
+<span class="sd">        &gt;&gt;&gt;     indexes=3,</span>
+<span class="sd">        &gt;&gt;&gt;     window=Window(row_off=0, col_off=0, height=100, width=100),</span>
+<span class="sd">        &gt;&gt;&gt;     dtype=&#39;float32&#39;</span>
+<span class="sd">        &gt;&gt;&gt; ) as ds:</span>
+<span class="sd">        &gt;&gt;&gt;     print(ds)</span>
+<span class="sd">        &gt;&gt;&gt;</span>
+<span class="sd">        &gt;&gt;&gt; # Scale data upon opening, using the image metadata to get scales and offsets</span>
+<span class="sd">        &gt;&gt;&gt; with gw.open(&#39;image.tif&#39;, scale_data=True) as ds:</span>
+<span class="sd">        &gt;&gt;&gt;     print(ds)</span>
+<span class="sd">        &gt;&gt;&gt;</span>
+<span class="sd">        &gt;&gt;&gt; # Scale data upon opening, specifying scales and overriding metadata</span>
+<span class="sd">        &gt;&gt;&gt; with gw.open(&#39;image.tif&#39;, scale_data=True, scale_factor=1e-4) as ds:</span>
+<span class="sd">        &gt;&gt;&gt;     print(ds)</span>
+<span class="sd">        &gt;&gt;&gt;</span>
+<span class="sd">        &gt;&gt;&gt; # Scale data upon opening, specifying scales and overriding metadata</span>
+<span class="sd">        &gt;&gt;&gt; with gw.config.update(scale_factor=1e-4):</span>
+<span class="sd">        &gt;&gt;&gt;     with gw.open(&#39;image.tif&#39;, scale_data=True) as ds:</span>
+<span class="sd">        &gt;&gt;&gt;         print(ds)</span>
+<span class="sd">        &gt;&gt;&gt;</span>
+<span class="sd">        &gt;&gt;&gt; # Open a NetCDF variable, specifying a NetCDF prefix and variable to open</span>
+<span class="sd">        &gt;&gt;&gt; with gw.open(&#39;netcdf:image.nc:blue&#39;) as src:</span>
+<span class="sd">        &gt;&gt;&gt;     print(src)</span>
+<span class="sd">        &gt;&gt;&gt;</span>
+<span class="sd">        &gt;&gt;&gt; # Open a NetCDF image without access to transforms by providing full file path</span>
+<span class="sd">        &gt;&gt;&gt; # NOTE: This will be faster than the above method</span>
+<span class="sd">        &gt;&gt;&gt; # as it uses ``xarray.open_dataset`` and bypasses CRS checks.</span>
+<span class="sd">        &gt;&gt;&gt; # NOTE: The chunks must be provided by the user.</span>
+<span class="sd">        &gt;&gt;&gt; # NOTE: Providing band names will ensure the correct order when reading from a NetCDF dataset.</span>
+<span class="sd">        &gt;&gt;&gt; with gw.open(</span>
+<span class="sd">        &gt;&gt;&gt;     &#39;image.nc&#39;,</span>
+<span class="sd">        &gt;&gt;&gt;     chunks={&#39;band&#39;: -1, &#39;y&#39;: 256, &#39;x&#39;: 256},</span>
+<span class="sd">        &gt;&gt;&gt;     band_names=[&#39;blue&#39;, &#39;green&#39;, &#39;red&#39;, &#39;nir&#39;, &#39;swir1&#39;, &#39;swir2&#39;],</span>
+<span class="sd">        &gt;&gt;&gt;     engine=&#39;h5netcdf&#39;</span>
+<span class="sd">        &gt;&gt;&gt; ) as src:</span>
+<span class="sd">        &gt;&gt;&gt;     print(src)</span>
+<span class="sd">        &gt;&gt;&gt;</span>
+<span class="sd">        &gt;&gt;&gt; # Open multiple NetCDF variables as an array stack</span>
+<span class="sd">        &gt;&gt;&gt; with gw.open(&#39;netcdf:image.nc&#39;, netcdf_vars=[&#39;blue&#39;, &#39;green&#39;, &#39;red&#39;]) as src:</span>
+<span class="sd">        &gt;&gt;&gt;     print(src)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">filename</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">,</span> <span class="n">T</span><span class="o">.</span><span class="n">Sequence</span><span class="p">[</span><span class="n">T</span><span class="o">.</span><span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">]]],</span>
+        <span class="n">band_names</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Optional</span><span class="p">[</span><span class="n">T</span><span class="o">.</span><span class="n">Union</span><span class="p">[</span><span class="n">T</span><span class="o">.</span><span class="n">Sequence</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">time_names</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Optional</span><span class="p">[</span><span class="n">T</span><span class="o">.</span><span class="n">Sequence</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">stack_dim</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;time&quot;</span><span class="p">,</span>
+        <span class="n">bounds</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Optional</span><span class="p">[</span><span class="n">T</span><span class="o">.</span><span class="n">Union</span><span class="p">[</span><span class="n">BoundingBox</span><span class="p">,</span> <span class="n">T</span><span class="o">.</span><span class="n">Sequence</span><span class="p">[</span><span class="nb">float</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">bounds_by</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;reference&quot;</span><span class="p">,</span>
+        <span class="n">resampling</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;nearest&quot;</span><span class="p">,</span>
+        <span class="n">persist_filenames</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">netcdf_vars</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Optional</span><span class="p">[</span><span class="n">T</span><span class="o">.</span><span class="n">Union</span><span class="p">[</span><span class="n">T</span><span class="o">.</span><span class="n">Sequence</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">mosaic</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">overlap</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;max&quot;</span><span class="p">,</span>
+        <span class="n">nodata</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Optional</span><span class="p">[</span><span class="n">T</span><span class="o">.</span><span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">int</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">scale_factor</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Optional</span><span class="p">[</span><span class="n">T</span><span class="o">.</span><span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">int</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">offset</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Optional</span><span class="p">[</span><span class="n">T</span><span class="o">.</span><span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">int</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">dtype</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Optional</span><span class="p">[</span><span class="n">T</span><span class="o">.</span><span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">dtype</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">scale_data</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">num_workers</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="k">if</span> <span class="n">stack_dim</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span>
+            <span class="s2">&quot;band&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;time&quot;</span><span class="p">,</span>
+        <span class="p">):</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;  The &#39;stack_dim&#39; keyword argument must be either &#39;band&#39; or &#39;time&#39;, but not </span><span class="si">{</span><span class="n">stack_dim</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">Path</span><span class="p">):</span>
+            <span class="n">filename</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">))</span> <span class="ow">and</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">):</span>
+            <span class="n">filename</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">filename</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">data_</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__is_context_manager</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__data_are_separate</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__data_are_stacked</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__filenames</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="n">band_chunks</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+        <span class="k">if</span> <span class="s2">&quot;chunks&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+            <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;chunks&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">ch</span><span class="o">.</span><span class="n">check_chunktype</span><span class="p">(</span>
+                <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;chunks&quot;</span><span class="p">],</span> <span class="n">output</span><span class="o">=</span><span class="s2">&quot;3d&quot;</span>
+            <span class="p">)</span>
+
+        <span class="k">if</span> <span class="p">(</span><span class="n">bounds</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span>
+            <span class="p">(</span><span class="s2">&quot;window&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;window&quot;</span><span class="p">],</span> <span class="n">Window</span><span class="p">)</span>
+        <span class="p">):</span>
+            <span class="k">if</span> <span class="s2">&quot;chunks&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+                <span class="n">chunks</span> <span class="o">=</span> <span class="n">get_image_chunks</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">chunks</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;chunks&quot;</span><span class="p">]</span>
+                <span class="k">del</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;chunks&quot;</span><span class="p">]</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">read</span><span class="p">(</span>
+                <span class="n">filename</span><span class="p">,</span>
+                <span class="n">band_names</span><span class="o">=</span><span class="n">band_names</span><span class="p">,</span>
+                <span class="n">time_names</span><span class="o">=</span><span class="n">time_names</span><span class="p">,</span>
+                <span class="n">bounds</span><span class="o">=</span><span class="n">bounds</span><span class="p">,</span>
+                <span class="n">chunks</span><span class="o">=</span><span class="n">chunks</span><span class="p">,</span>
+                <span class="n">num_workers</span><span class="o">=</span><span class="n">num_workers</span><span class="p">,</span>
+                <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__filenames</span> <span class="o">=</span> <span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">filename</span><span class="p">)]</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="s2">&quot;*&quot;</span> <span class="ow">in</span> <span class="n">filename</span><span class="p">))</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span>
+                <span class="n">filename</span><span class="p">,</span> <span class="nb">list</span>
+            <span class="p">):</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+                    <span class="n">filename</span> <span class="o">=</span> <span class="n">parse_wildcard</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+
+                <span class="k">if</span> <span class="s2">&quot;chunks&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+                    <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;chunks&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">get_image_chunks</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+
+                <span class="k">if</span> <span class="n">mosaic</span><span class="p">:</span>
+                    <span class="c1"># Mosaic images over space</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">gw_mosaic</span><span class="p">(</span>
+                        <span class="n">filename</span><span class="p">,</span>
+                        <span class="n">overlap</span><span class="o">=</span><span class="n">overlap</span><span class="p">,</span>
+                        <span class="n">bounds_by</span><span class="o">=</span><span class="n">bounds_by</span><span class="p">,</span>
+                        <span class="n">resampling</span><span class="o">=</span><span class="n">resampling</span><span class="p">,</span>
+                        <span class="n">band_names</span><span class="o">=</span><span class="n">band_names</span><span class="p">,</span>
+                        <span class="n">nodata</span><span class="o">=</span><span class="n">nodata</span><span class="p">,</span>
+                        <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">,</span>
+                        <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+                    <span class="p">)</span>
+
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="c1"># Stack images along the &#39;time&#39; axis</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">gw_concat</span><span class="p">(</span>
+                        <span class="n">filename</span><span class="p">,</span>
+                        <span class="n">stack_dim</span><span class="o">=</span><span class="n">stack_dim</span><span class="p">,</span>
+                        <span class="n">bounds_by</span><span class="o">=</span><span class="n">bounds_by</span><span class="p">,</span>
+                        <span class="n">resampling</span><span class="o">=</span><span class="n">resampling</span><span class="p">,</span>
+                        <span class="n">time_names</span><span class="o">=</span><span class="n">time_names</span><span class="p">,</span>
+                        <span class="n">band_names</span><span class="o">=</span><span class="n">band_names</span><span class="p">,</span>
+                        <span class="n">nodata</span><span class="o">=</span><span class="n">nodata</span><span class="p">,</span>
+                        <span class="n">overlap</span><span class="o">=</span><span class="n">overlap</span><span class="p">,</span>
+                        <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">,</span>
+                        <span class="n">netcdf_vars</span><span class="o">=</span><span class="n">netcdf_vars</span><span class="p">,</span>
+                        <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+                    <span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">__data_are_stacked</span> <span class="o">=</span> <span class="kc">True</span>
+
+                <span class="bp">self</span><span class="o">.</span><span class="n">__data_are_separate</span> <span class="o">=</span> <span class="kc">True</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">__filenames</span> <span class="o">=</span> <span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">fn</span><span class="p">)</span> <span class="k">for</span> <span class="n">fn</span> <span class="ow">in</span> <span class="n">filename</span><span class="p">]</span>
+
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">__filenames</span> <span class="o">=</span> <span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">filename</span><span class="p">)]</span>
+                <span class="n">file_names</span> <span class="o">=</span> <span class="n">get_file_extension</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+
+                <span class="k">if</span> <span class="p">(</span>
+                    <span class="n">file_names</span><span class="o">.</span><span class="n">f_ext</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+                    <span class="ow">not</span> <span class="ow">in</span> <span class="n">IO_DICT</span><span class="p">[</span><span class="s2">&quot;rasterio&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="n">IO_DICT</span><span class="p">[</span><span class="s2">&quot;xarray&quot;</span><span class="p">]</span>
+                <span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">filename</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;netcdf:&quot;</span><span class="p">):</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="s2">&quot;  The file format is not recognized.&quot;</span><span class="p">)</span>
+                    <span class="k">raise</span> <span class="ne">OSError</span>
+
+                <span class="k">if</span> <span class="p">(</span>
+                    <span class="n">file_names</span><span class="o">.</span><span class="n">f_ext</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">in</span> <span class="n">IO_DICT</span><span class="p">[</span><span class="s2">&quot;rasterio&quot;</span><span class="p">]</span>
+                <span class="p">)</span> <span class="ow">or</span> <span class="n">filename</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;netcdf:&quot;</span><span class="p">):</span>
+                    <span class="k">if</span> <span class="s2">&quot;chunks&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+                        <span class="k">with</span> <span class="n">rio</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span> <span class="k">as</span> <span class="n">src</span><span class="p">:</span>
+                            <span class="n">w</span> <span class="o">=</span> <span class="n">src</span><span class="o">.</span><span class="n">block_window</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+                            <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;chunks&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">band_chunks</span><span class="p">,</span> <span class="n">w</span><span class="o">.</span><span class="n">height</span><span class="p">,</span> <span class="n">w</span><span class="o">.</span><span class="n">width</span><span class="p">)</span>
+
+                    <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">warp_open</span><span class="p">(</span>
+                        <span class="n">filename</span><span class="p">,</span>
+                        <span class="n">band_names</span><span class="o">=</span><span class="n">band_names</span><span class="p">,</span>
+                        <span class="n">resampling</span><span class="o">=</span><span class="n">resampling</span><span class="p">,</span>
+                        <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">,</span>
+                        <span class="n">netcdf_vars</span><span class="o">=</span><span class="n">netcdf_vars</span><span class="p">,</span>
+                        <span class="n">nodata</span><span class="o">=</span><span class="n">nodata</span><span class="p">,</span>
+                        <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+                    <span class="p">)</span>
+
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="s2">&quot;chunks&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span>
+                        <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;chunks&quot;</span><span class="p">],</span> <span class="nb">dict</span>
+                    <span class="p">):</span>
+                        <span class="n">logger</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span>
+                            <span class="s2">&quot;  The chunks should be a dictionary.&quot;</span>
+                        <span class="p">)</span>
+                        <span class="k">raise</span> <span class="ne">TypeError</span>
+
+                    <span class="k">with</span> <span class="n">xr</span><span class="o">.</span><span class="n">open_dataset</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="k">as</span> <span class="n">src</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">src</span><span class="o">.</span><span class="n">to_array</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="s2">&quot;band&quot;</span><span class="p">)</span>
+                    <span class="c1"># Ensure the filename attribute gets updated as the NetCDF file</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">assign_attrs</span><span class="p">(</span>
+                        <span class="o">**</span><span class="p">{</span><span class="s2">&quot;filename&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">filename</span><span class="p">)}</span>
+                    <span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">__filenames</span> <span class="o">=</span> <span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">filename</span><span class="p">)]</span>
+                    <span class="c1"># Order bands from the NetCDF dataset</span>
+                    <span class="k">if</span> <span class="n">band_names</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">band_names</span><span class="p">)</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;band&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
+                            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                                <span class="s2">&quot;The length of band_names must match the length of the band coordinate.&quot;</span>
+                            <span class="p">)</span>
+                        <span class="n">band_names_new</span> <span class="o">=</span> <span class="p">[]</span>
+                        <span class="n">band_names_old</span> <span class="o">=</span> <span class="p">[]</span>
+                        <span class="k">for</span> <span class="n">bname_new</span><span class="p">,</span> <span class="n">bname_old</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span>
+                            <span class="n">band_names</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;band&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
+                        <span class="p">):</span>
+                            <span class="n">band_names_new</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">bname_new</span><span class="p">)</span>
+                            <span class="k">if</span> <span class="n">bname_new</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;band&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">:</span>
+                                <span class="n">band_names_old</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">bname_new</span><span class="p">)</span>
+                            <span class="k">else</span><span class="p">:</span>
+                                <span class="n">band_names_old</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">bname_old</span><span class="p">)</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">sel</span><span class="p">(</span><span class="n">band</span><span class="o">=</span><span class="n">band_names_old</span><span class="p">)</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">assign_coords</span><span class="p">(</span>
+                            <span class="o">**</span><span class="p">{</span><span class="s2">&quot;band&quot;</span><span class="p">:</span> <span class="n">band_names_new</span><span class="p">}</span>
+                        <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">assign_attrs</span><span class="p">(</span>
+            <span class="p">{</span>
+                <span class="s2">&quot;_data_are_separate&quot;</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__data_are_separate</span><span class="p">),</span>
+                <span class="s2">&quot;_data_are_stacked&quot;</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__data_are_stacked</span><span class="p">),</span>
+            <span class="p">}</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="n">persist_filenames</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">assign_attrs</span><span class="p">(</span>
+                <span class="o">**</span><span class="p">{</span><span class="s2">&quot;_filenames&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">__filenames</span><span class="p">}</span>
+            <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">scale_data</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">set_nodata</span><span class="p">(</span>
+                <span class="n">src_nodata</span><span class="o">=</span><span class="n">nodata</span><span class="p">,</span>
+                <span class="n">dst_nodata</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span>
+                <span class="n">out_range</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                <span class="n">dtype</span><span class="o">=</span><span class="s2">&quot;float64&quot;</span><span class="p">,</span>
+                <span class="n">scale_factor</span><span class="o">=</span><span class="n">scale_factor</span><span class="p">,</span>
+                <span class="n">offset</span><span class="o">=</span><span class="n">offset</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># No scaling is applied, but the user assigned a scale factor to update the attributes</span>
+            <span class="k">if</span> <span class="n">scale_factor</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">assign_attrs</span><span class="p">(</span>
+                    <span class="o">**</span><span class="p">{</span><span class="s2">&quot;scales&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">scale_factor</span><span class="p">,)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">nbands</span><span class="p">}</span>
+                <span class="p">)</span>
+            <span class="c1"># No scaling is applied, but the user assigned an offset to update the attributes</span>
+            <span class="k">if</span> <span class="n">offset</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">assign_attrs</span><span class="p">(</span>
+                    <span class="o">**</span><span class="p">{</span><span class="s2">&quot;offsets&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">offset</span><span class="p">,)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">nbands</span><span class="p">}</span>
+                <span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__enter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__is_context_manager</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__exit__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;with_config&quot;</span><span class="p">]:</span>
+            <span class="n">_set_defaults</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        <span class="n">d</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_reset</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_reset</span><span class="p">(</span><span class="n">d</span><span class="p">):</span>
+        <span class="n">d</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="nd">@contextmanager</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_optional_lock</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">needs_lock</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Context manager for optionally acquiring a lock.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">needs_lock</span><span class="p">:</span>
+            <span class="k">with</span> <span class="n">threading</span><span class="o">.</span><span class="n">Lock</span><span class="p">():</span>
+                <span class="k">yield</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">yield</span>
+
+<div class="viewcode-block" id="open.close"><a class="viewcode-back" href="../../../api/geowombat.core.html#geowombat.open.close">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;data&quot;</span><span class="p">):</span>
+            <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="s2">&quot;gw&quot;</span><span class="p">):</span>
+                <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">gw</span><span class="p">,</span> <span class="s2">&quot;_obj&quot;</span><span class="p">):</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">_obj</span> <span class="o">=</span> <span class="kc">None</span>
+
+            <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="s2">&quot;close&quot;</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="s2">&quot;gw&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">_cache</span><span class="p">:</span>
+            <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_optional_lock</span><span class="p">(</span><span class="kc">True</span><span class="p">):</span>
+                <span class="n">file</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">_cache</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;gw&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="kc">None</span></div></div>
+
+
+<div class="viewcode-block" id="load"><a class="viewcode-back" href="../../../api/geowombat.load.html#geowombat.load">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">load</span><span class="p">(</span>
+    <span class="n">image_list</span><span class="p">,</span>
+    <span class="n">time_names</span><span class="p">,</span>
+    <span class="n">band_names</span><span class="p">,</span>
+    <span class="n">chunks</span><span class="o">=</span><span class="mi">512</span><span class="p">,</span>
+    <span class="n">nodata</span><span class="o">=</span><span class="mi">65535</span><span class="p">,</span>
+    <span class="n">in_range</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">out_range</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">data_slice</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">num_workers</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+    <span class="n">src</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">scheduler</span><span class="o">=</span><span class="s2">&quot;ray&quot;</span><span class="p">,</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Loads data into memory using :func:`xarray.open_mfdataset` and ``ray``.</span>
+<span class="sd">    This function does not check data alignments and CRSs. It assumes each</span>
+<span class="sd">    image in ``image_list`` has the same y and x dimensions and that the</span>
+<span class="sd">    coordinates align.</span>
+
+<span class="sd">    The ``load`` function cannot be used if ``dataclasses`` was pip installed.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        image_list (list): The list of image file paths.</span>
+<span class="sd">        time_names (list): The list of image ``datetime`` objects.</span>
+<span class="sd">        band_names (list): The list of bands to open.</span>
+<span class="sd">        chunks (Optional[int]): The dask chunk size.</span>
+<span class="sd">        nodata (Optional[float | int]): The &#39;no data&#39; value.</span>
+<span class="sd">        in_range (Optional[tuple]): The input (min, max) range. If not given, defaults to (0, 10000).</span>
+<span class="sd">        out_range (Optional[tuple]): The output (min, max) range. If not given, defaults to (0, 1).</span>
+<span class="sd">        data_slice (Optional[tuple]): The slice object to read, given as (time, bands, rows, columns).</span>
+<span class="sd">        num_workers (Optional[int]): The number of threads.</span>
+<span class="sd">        scheduler (Optional[str]): The distributed scheduler. Currently not implemented.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        ``list``, ``numpy.ndarray``:</span>
+<span class="sd">            Datetime list, array of (time x bands x rows x columns)</span>
+
+<span class="sd">    Example:</span>
+<span class="sd">        &gt;&gt;&gt; import datetime</span>
+<span class="sd">        &gt;&gt;&gt; import geowombat as gw</span>
+<span class="sd">        &gt;&gt;&gt;</span>
+<span class="sd">        &gt;&gt;&gt; image_names = [&#39;LT05_L1TP_227082_19990311_20161220_01_T1.nc&#39;,</span>
+<span class="sd">        &gt;&gt;&gt;                &#39;LT05_L1TP_227081_19990311_20161220_01_T1.nc&#39;,</span>
+<span class="sd">        &gt;&gt;&gt;                &#39;LT05_L1TP_227082_19990327_20161220_01_T1.nc&#39;]</span>
+<span class="sd">        &gt;&gt;&gt;</span>
+<span class="sd">        &gt;&gt;&gt; image_dates = [datetime.datetime(1999, 3, 11, 0, 0),</span>
+<span class="sd">        &gt;&gt;&gt;                datetime.datetime(1999, 3, 11, 0, 0),</span>
+<span class="sd">        &gt;&gt;&gt;                datetime.datetime(1999, 3, 27, 0, 0)]</span>
+<span class="sd">        &gt;&gt;&gt;</span>
+<span class="sd">        &gt;&gt;&gt; data_slice = (slice(0, None), slice(0, None), slice(0, 64), slice(0, 64))</span>
+<span class="sd">        &gt;&gt;&gt;</span>
+<span class="sd">        &gt;&gt;&gt; # Load data into memory</span>
+<span class="sd">        &gt;&gt;&gt; dates, y = gw.load(image_names,</span>
+<span class="sd">        &gt;&gt;&gt;                    image_dates,</span>
+<span class="sd">        &gt;&gt;&gt;                    [&#39;red&#39;, &#39;nir&#39;],</span>
+<span class="sd">        &gt;&gt;&gt;                    chunks=512,</span>
+<span class="sd">        &gt;&gt;&gt;                    nodata=65535,</span>
+<span class="sd">        &gt;&gt;&gt;                    data_slice=data_slice,</span>
+<span class="sd">        &gt;&gt;&gt;                    num_workers=4)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">dask</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">ray</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">dask.diagnostics</span><span class="w"> </span><span class="kn">import</span> <span class="n">ProgressBar</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">ray.util.dask</span><span class="w"> </span><span class="kn">import</span> <span class="n">ray_dask_get</span>
+
+    <span class="n">netcdf_prepend</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="kc">True</span> <span class="k">for</span> <span class="n">fn</span> <span class="ow">in</span> <span class="n">image_list</span> <span class="k">if</span> <span class="nb">str</span><span class="p">(</span><span class="n">fn</span><span class="p">)</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;netcdf:&quot;</span><span class="p">)</span>
+    <span class="p">]</span>
+
+    <span class="k">if</span> <span class="nb">any</span><span class="p">(</span><span class="n">netcdf_prepend</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NameError</span><span class="p">(</span>
+            <span class="s2">&quot;The NetCDF names cannot be prepended with netcdf: when using `geowombat.load()`.&quot;</span>
+        <span class="p">)</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">in_range</span><span class="p">:</span>
+        <span class="n">in_range</span> <span class="o">=</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">10000</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">out_range</span><span class="p">:</span>
+        <span class="n">out_range</span> <span class="o">=</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+
+    <span class="n">scale_factor</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">out_range</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">/</span> <span class="nb">float</span><span class="p">(</span><span class="n">in_range</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+
+    <span class="k">if</span> <span class="n">src</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span>
+            <span class="n">image_list</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+            <span class="n">time_names</span><span class="o">=</span><span class="n">time_names</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+            <span class="n">band_names</span><span class="o">=</span><span class="n">band_names</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">str</span><span class="p">(</span><span class="n">image_list</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;.nc&quot;</span><span class="p">)</span>
+            <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="n">netcdf_vars</span><span class="o">=</span><span class="n">band_names</span>
+            <span class="k">if</span> <span class="nb">str</span><span class="p">(</span><span class="n">image_list</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;.nc&quot;</span><span class="p">)</span>
+            <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="n">chunks</span><span class="o">=</span><span class="n">chunks</span><span class="p">,</span>
+        <span class="p">)</span> <span class="k">as</span> <span class="n">src</span><span class="p">:</span>
+            <span class="k">pass</span>
+
+    <span class="n">attrs</span> <span class="o">=</span> <span class="n">src</span><span class="o">.</span><span class="n">attrs</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="n">nrows</span> <span class="o">=</span> <span class="n">src</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">nrows</span>
+    <span class="n">ncols</span> <span class="o">=</span> <span class="n">src</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">ncols</span>
+    <span class="n">ycoords</span> <span class="o">=</span> <span class="n">src</span><span class="o">.</span><span class="n">y</span>
+    <span class="n">xcoords</span> <span class="o">=</span> <span class="n">src</span><span class="o">.</span><span class="n">x</span>
+
+    <span class="k">if</span> <span class="n">data_slice</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">data_slice</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="nb">slice</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
+            <span class="nb">slice</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
+            <span class="nb">slice</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
+            <span class="nb">slice</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
+        <span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">expand_time</span><span class="p">(</span><span class="n">dataset</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;``open_mfdataset`` preprocess function.&quot;&quot;&quot;</span>
+        <span class="c1"># Convert the Dataset into a DataArray,</span>
+        <span class="c1"># rename the band coordinate,</span>
+        <span class="c1"># select the required VI bands,</span>
+        <span class="c1"># assign y/x coordinates from a reference,</span>
+        <span class="c1"># add the time coordiante, and</span>
+        <span class="c1"># get the sub-array slice</span>
+        <span class="n">darray</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">dataset</span><span class="o">.</span><span class="n">to_array</span><span class="p">()</span>
+            <span class="o">.</span><span class="n">rename</span><span class="p">({</span><span class="s2">&quot;variable&quot;</span><span class="p">:</span> <span class="s2">&quot;band&quot;</span><span class="p">})[:,</span> <span class="p">:</span><span class="n">nrows</span><span class="p">,</span> <span class="p">:</span><span class="n">ncols</span><span class="p">]</span>
+            <span class="o">.</span><span class="n">sel</span><span class="p">(</span><span class="n">band</span><span class="o">=</span><span class="n">band_names</span><span class="p">)</span>
+            <span class="o">.</span><span class="n">assign_coords</span><span class="p">(</span><span class="n">y</span><span class="o">=</span><span class="n">ycoords</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="n">xcoords</span><span class="p">)</span>
+            <span class="o">.</span><span class="n">expand_dims</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="s2">&quot;time&quot;</span><span class="p">)</span>
+            <span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">max</span><span class="p">(</span><span class="n">in_range</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">nodata</span><span class="p">))[</span><span class="n">data_slice</span><span class="p">]</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Scale from [0-10000] -&gt; [0,1]</span>
+        <span class="n">darray</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">darray</span> <span class="o">==</span> <span class="n">nodata</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">darray</span> <span class="o">*</span> <span class="n">scale_factor</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span>
+            <span class="s2">&quot;float64&quot;</span>
+        <span class="p">)</span>
+
+        <span class="k">return</span> <span class="p">(</span>
+            <span class="n">darray</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">darray</span><span class="p">))</span>
+            <span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+            <span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="nb">min</span><span class="o">=</span><span class="n">out_range</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="nb">max</span><span class="o">=</span><span class="n">out_range</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+        <span class="p">)</span>
+
+    <span class="n">ray</span><span class="o">.</span><span class="n">shutdown</span><span class="p">()</span>
+    <span class="n">ray</span><span class="o">.</span><span class="n">init</span><span class="p">(</span><span class="n">num_cpus</span><span class="o">=</span><span class="n">num_workers</span><span class="p">)</span>
+
+    <span class="k">with</span> <span class="n">dask</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">scheduler</span><span class="o">=</span><span class="n">ray_dask_get</span><span class="p">):</span>
+        <span class="c1"># Open all arrays</span>
+        <span class="n">ds</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">xr</span><span class="o">.</span><span class="n">open_mfdataset</span><span class="p">(</span>
+                <span class="n">image_list</span><span class="p">,</span>
+                <span class="n">concat_dim</span><span class="o">=</span><span class="s2">&quot;time&quot;</span><span class="p">,</span>
+                <span class="n">chunks</span><span class="o">=</span><span class="n">chunks</span><span class="p">,</span>
+                <span class="n">combine</span><span class="o">=</span><span class="s2">&quot;nested&quot;</span><span class="p">,</span>
+                <span class="n">engine</span><span class="o">=</span><span class="s2">&quot;h5netcdf&quot;</span><span class="p">,</span>
+                <span class="n">preprocess</span><span class="o">=</span><span class="n">expand_time</span><span class="p">,</span>
+                <span class="n">parallel</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="o">.</span><span class="n">assign_coords</span><span class="p">(</span><span class="n">time</span><span class="o">=</span><span class="n">time_names</span><span class="p">)</span>
+            <span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s2">&quot;time.date&quot;</span><span class="p">)</span>
+            <span class="o">.</span><span class="n">max</span><span class="p">()</span>
+            <span class="o">.</span><span class="n">rename</span><span class="p">({</span><span class="s2">&quot;date&quot;</span><span class="p">:</span> <span class="s2">&quot;time&quot;</span><span class="p">})</span>
+            <span class="o">.</span><span class="n">assign_attrs</span><span class="p">(</span><span class="o">**</span><span class="n">attrs</span><span class="p">)</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Get the time series dates after grouping</span>
+        <span class="n">real_proc_times</span> <span class="o">=</span> <span class="n">ds</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">pydatetime</span>
+
+        <span class="c1"># Convert the DataArray into a NumPy array</span>
+        <span class="c1"># ds.data.visualize(filename=&#39;graph.svg&#39;)</span>
+        <span class="c1"># with performance_report(filename=&#39;dask-report.html&#39;):</span>
+        <span class="k">with</span> <span class="n">ProgressBar</span><span class="p">():</span>
+            <span class="n">y</span> <span class="o">=</span> <span class="n">ds</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">compute</span><span class="p">()</span>
+        <span class="n">ds</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+    <span class="n">ray</span><span class="o">.</span><span class="n">shutdown</span><span class="p">()</span>
+
+    <span class="k">return</span> <span class="n">real_proc_times</span><span class="p">,</span> <span class="n">y</span></div>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">_ImportGPU</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="kn">import</span><span class="w"> </span><span class="nn">jax</span>
+        <span class="kn">import</span><span class="w"> </span><span class="nn">jax.numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">jnp</span>
+
+        <span class="n">JAX_INSTALLED</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+        <span class="n">JAX_INSTALLED</span> <span class="o">=</span> <span class="kc">False</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
+
+        <span class="n">PYTORCH_INSTALLED</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+        <span class="n">PYTORCH_INSTALLED</span> <span class="o">=</span> <span class="kc">False</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="kn">import</span><span class="w"> </span><span class="nn">tensorflow</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">tf</span>
+
+        <span class="n">TENSORFLOW_INSTALLED</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+        <span class="n">TENSORFLOW_INSTALLED</span> <span class="o">=</span> <span class="kc">False</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">tensorflow</span><span class="w"> </span><span class="kn">import</span> <span class="n">keras</span>
+
+        <span class="n">KERAS_INSTALLED</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+        <span class="n">KERAS_INSTALLED</span> <span class="o">=</span> <span class="kc">False</span>
+
+
+<div class="viewcode-block" id="series"><a class="viewcode-back" href="../../../api/geowombat.series.html#geowombat.series">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">series</span><span class="p">(</span><span class="n">BaseSeries</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;A class for time series concurrent processing on a GPU.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        filenames (list): The list of filenames to open.</span>
+<span class="sd">        band_names (Optional[list]): The band associated names.</span>
+<span class="sd">        transfer_lib (Optional[str]): The library to transfer data to.</span>
+<span class="sd">            Choices are [&#39;jax&#39;, &#39;keras&#39;, &#39;numpy&#39;, &#39;pytorch&#39;, &#39;tensorflow&#39;].</span>
+<span class="sd">        crs (Optional[str]): The coordinate reference system.</span>
+<span class="sd">        res (Optional[list | tuple]): The cell resolution.</span>
+<span class="sd">        bounds (Optional[object]): The coordinate bounds.</span>
+<span class="sd">        resampling (Optional[str]): The resampling method.</span>
+<span class="sd">        nodata (Optional[float | int]): The &#39;no data&#39; value.</span>
+<span class="sd">        warp_mem_limit (Optional[int]): The ``rasterio`` warping memory limit (in MB).</span>
+<span class="sd">        num_threads (Optional[int]): The number of ``rasterio`` warping threads.</span>
+<span class="sd">        window_size (Optional[int | list | tuple]): The concurrent processing window size (height, width)</span>
+<span class="sd">            or -1 (i.e., entire array).</span>
+<span class="sd">        padding (Optional[list | tuple]): Padding for each window. ``padding`` should be given as a tuple</span>
+<span class="sd">            of (left pad, bottom pad, right pad, top pad). If ``padding`` is given, the returned list will contain</span>
+<span class="sd">            a tuple of ``rasterio.windows.Window`` objects as (w1, w2), where w1 contains the normal window offsets</span>
+<span class="sd">            and w2 contains the padded window offsets.</span>
+
+<span class="sd">    Requirement:</span>
+<span class="sd">        ::</span>
+
+<span class="sd">            # CUDA 11.1</span>
+<span class="sd">            pip install --upgrade &quot;jax[cuda111]&quot; -f https://storage.googleapis.com/jax-releases/jax_releases.html</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">filenames</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span>
+        <span class="n">time_names</span><span class="p">:</span> <span class="nb">list</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">band_names</span><span class="p">:</span> <span class="nb">list</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">transfer_lib</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;jax&quot;</span><span class="p">,</span>
+        <span class="n">crs</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">res</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Union</span><span class="p">[</span><span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">bounds</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Union</span><span class="p">[</span><span class="n">BoundingBox</span><span class="p">,</span> <span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">resampling</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;nearest&quot;</span><span class="p">,</span>
+        <span class="n">nodata</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="n">warp_mem_limit</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">256</span><span class="p">,</span>
+        <span class="n">num_threads</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="n">window_size</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">padding</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Union</span><span class="p">[</span><span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="n">imports_</span> <span class="o">=</span> <span class="n">_ImportGPU</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">imports_</span><span class="o">.</span><span class="n">JAX_INSTALLED</span> <span class="ow">and</span> <span class="p">(</span><span class="n">transfer_lib</span> <span class="o">==</span> <span class="s2">&quot;jax&quot;</span><span class="p">):</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="s2">&quot;JAX must be installed.&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ImportError</span><span class="p">(</span><span class="s2">&quot;JAX must be installed.&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">imports_</span><span class="o">.</span><span class="n">PYTORCH_INSTALLED</span> <span class="ow">and</span> <span class="p">(</span><span class="n">transfer_lib</span> <span class="o">==</span> <span class="s2">&quot;pytorch&quot;</span><span class="p">):</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="s2">&quot;PyTorch must be installed.&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ImportError</span><span class="p">(</span><span class="s2">&quot;PyTorch must be installed.&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">imports_</span><span class="o">.</span><span class="n">TENSORFLOW_INSTALLED</span> <span class="ow">and</span> <span class="p">(</span>
+            <span class="n">transfer_lib</span> <span class="o">==</span> <span class="s2">&quot;tensorflow&quot;</span>
+        <span class="p">):</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="s2">&quot;Tensorflow must be installed.&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ImportError</span><span class="p">(</span><span class="s2">&quot;Tensorflow must be installed.&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">imports_</span><span class="o">.</span><span class="n">KERAS_INSTALLED</span> <span class="ow">and</span> <span class="p">(</span><span class="n">transfer_lib</span> <span class="o">==</span> <span class="s2">&quot;keras&quot;</span><span class="p">):</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="s2">&quot;Keras must be installed.&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ImportError</span><span class="p">(</span><span class="s2">&quot;Keras must be installed.&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">filenames</span> <span class="o">=</span> <span class="n">filenames</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">time_names</span> <span class="o">=</span> <span class="n">time_names</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">band_names</span> <span class="o">=</span> <span class="n">band_names</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">padding</span> <span class="o">=</span> <span class="n">padding</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">srcs_</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">vrts_</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">windows_</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="k">if</span> <span class="n">transfer_lib</span> <span class="o">==</span> <span class="s2">&quot;jax&quot;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">out_array_type</span> <span class="o">=</span> <span class="n">imports_</span><span class="o">.</span><span class="n">jax</span><span class="o">.</span><span class="n">Array</span>
+        <span class="k">elif</span> <span class="n">transfer_lib</span> <span class="o">==</span> <span class="s2">&quot;numpy&quot;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">out_array_type</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span>
+        <span class="k">elif</span> <span class="n">transfer_lib</span> <span class="o">==</span> <span class="s2">&quot;pytorch&quot;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">out_array_type</span> <span class="o">=</span> <span class="n">imports_</span><span class="o">.</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span>
+        <span class="k">elif</span> <span class="n">transfer_lib</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;keras&quot;</span><span class="p">,</span> <span class="s2">&quot;tensorflow&quot;</span><span class="p">]:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">out_array_type</span> <span class="o">=</span> <span class="n">imports_</span><span class="o">.</span><span class="n">tf</span><span class="o">.</span><span class="n">Tensor</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">put</span> <span class="o">=</span> <span class="n">TransferLib</span><span class="p">(</span><span class="n">transfer_lib</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">filenames</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">warp</span><span class="p">(</span>
+            <span class="n">dst_crs</span><span class="o">=</span><span class="n">crs</span><span class="p">,</span>
+            <span class="n">dst_res</span><span class="o">=</span><span class="n">res</span><span class="p">,</span>
+            <span class="n">dst_bounds</span><span class="o">=</span><span class="n">bounds</span><span class="p">,</span>
+            <span class="n">resampling</span><span class="o">=</span><span class="n">resampling</span><span class="p">,</span>
+            <span class="n">nodata</span><span class="o">=</span><span class="n">nodata</span><span class="p">,</span>
+            <span class="n">warp_mem_limit</span><span class="o">=</span><span class="n">warp_mem_limit</span><span class="p">,</span>
+            <span class="n">num_threads</span><span class="o">=</span><span class="n">num_threads</span><span class="p">,</span>
+            <span class="n">window_size</span><span class="o">=</span><span class="n">window_size</span><span class="p">,</span>
+            <span class="n">padding</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">padding</span><span class="p">,</span>
+        <span class="p">)</span>
+
+<div class="viewcode-block" id="series.read"><a class="viewcode-back" href="../../../api/geowombat.series.html#geowombat.series.read">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">read</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">bands</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">list</span><span class="p">],</span>
+        <span class="n">window</span><span class="p">:</span> <span class="n">Window</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">gain</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
+        <span class="n">offset</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
+        <span class="n">pool</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Any</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">num_workers</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">tqdm_obj</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Any</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">T</span><span class="o">.</span><span class="n">Any</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Reads a window.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">bands</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">bands</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+                <span class="n">band_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">count</span> <span class="o">+</span> <span class="mi">1</span><span class="p">))</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">band_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">bands</span><span class="p">]</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">band_list</span> <span class="o">=</span> <span class="n">bands</span>
+
+        <span class="k">def</span><span class="w"> </span><span class="nf">_read</span><span class="p">(</span><span class="n">vrt_ptr</span><span class="p">,</span> <span class="n">bd</span><span class="p">):</span>
+            <span class="n">array</span> <span class="o">=</span> <span class="n">vrt_ptr</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">bd</span><span class="p">,</span> <span class="n">window</span><span class="o">=</span><span class="n">window</span><span class="p">)</span>
+            <span class="n">mask</span> <span class="o">=</span> <span class="n">vrt_ptr</span><span class="o">.</span><span class="n">read_masks</span><span class="p">(</span><span class="n">bd</span><span class="p">,</span> <span class="n">window</span><span class="o">=</span><span class="n">window</span><span class="p">)</span>
+
+            <span class="n">array</span> <span class="o">=</span> <span class="n">array</span> <span class="o">*</span> <span class="n">gain</span> <span class="o">+</span> <span class="n">offset</span>
+            <span class="n">array</span><span class="p">[</span><span class="n">mask</span> <span class="o">==</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+
+            <span class="k">return</span> <span class="n">array</span>
+
+        <span class="k">if</span> <span class="n">pool</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+
+            <span class="k">def</span><span class="w"> </span><span class="nf">_read_bands</span><span class="p">(</span><span class="n">vrt_</span><span class="p">):</span>
+                <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">stack</span><span class="p">([</span><span class="n">_read</span><span class="p">(</span><span class="n">vrt_</span><span class="p">,</span> <span class="n">band</span><span class="p">)</span> <span class="k">for</span> <span class="n">band</span> <span class="ow">in</span> <span class="n">band_list</span><span class="p">])</span>
+
+            <span class="k">with</span> <span class="n">pool</span><span class="p">(</span><span class="n">num_workers</span><span class="p">)</span> <span class="k">as</span> <span class="n">executor</span><span class="p">:</span>
+                <span class="n">data_gen</span> <span class="o">=</span> <span class="p">(</span><span class="n">vrt</span> <span class="k">for</span> <span class="n">vrt</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">vrts_</span><span class="p">)</span>
+
+                <span class="n">results</span> <span class="o">=</span> <span class="p">[]</span>
+                <span class="k">for</span> <span class="n">res</span> <span class="ow">in</span> <span class="n">tqdm_obj</span><span class="p">(</span>
+                    <span class="n">executor</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">_read_bands</span><span class="p">,</span> <span class="n">data_gen</span><span class="p">),</span> <span class="n">total</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">vrts_</span><span class="p">)</span>
+                <span class="p">):</span>
+                    <span class="n">results</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">res</span><span class="p">)</span>
+
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">results</span><span class="p">))</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">put</span><span class="p">(</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+                    <span class="p">[</span>
+                        <span class="n">np</span><span class="o">.</span><span class="n">stack</span><span class="p">([</span><span class="n">_read</span><span class="p">(</span><span class="n">vrt</span><span class="p">,</span> <span class="n">band</span><span class="p">)</span> <span class="k">for</span> <span class="n">band</span> <span class="ow">in</span> <span class="n">band_list</span><span class="p">])</span>
+                        <span class="k">for</span> <span class="n">vrt</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">vrts_</span>
+                    <span class="p">]</span>
+                <span class="p">)</span>
+            <span class="p">)</span></div>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_create_file</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="o">**</span><span class="n">profile</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">Path</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span><span class="o">.</span><span class="n">is_file</span><span class="p">():</span>
+            <span class="n">Path</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span><span class="o">.</span><span class="n">unlink</span><span class="p">()</span>
+
+        <span class="k">with</span> <span class="n">rio</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;w&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">profile</span><span class="p">)</span> <span class="k">as</span> <span class="n">dst</span><span class="p">:</span>
+            <span class="k">pass</span>
+
+<div class="viewcode-block" id="series.apply"><a class="viewcode-back" href="../../../api/geowombat.series.html#geowombat.series.apply">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">apply</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">func</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Union</span><span class="p">[</span><span class="n">T</span><span class="o">.</span><span class="n">Callable</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">],</span>
+        <span class="n">bands</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Union</span><span class="p">[</span><span class="nb">list</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span>
+        <span class="n">gain</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
+        <span class="n">offset</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
+        <span class="n">processes</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">num_workers</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="n">monitor_progress</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">outfile</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Union</span><span class="p">[</span><span class="n">Path</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">bigtiff</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;NO&quot;</span><span class="p">,</span>
+        <span class="n">kwargs</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="p">{},</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Applies a function concurrently over windows.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            func (object | str | list | tuple): The function to apply. If ``func`` is a string,</span>
+<span class="sd">                choices are [&#39;cv&#39;, &#39;max&#39;, &#39;mean&#39;, &#39;min&#39;].</span>
+<span class="sd">            bands (list | int): The bands to read.</span>
+<span class="sd">            gain (Optional[float]): A gain factor to apply.</span>
+<span class="sd">            offset (Optional[float | int]): An offset factor to apply.</span>
+<span class="sd">            processes (Optional[bool]): Whether to use process workers, otherwise use threads.</span>
+<span class="sd">            num_workers (Optional[int]): The number of concurrent workers.</span>
+<span class="sd">            monitor_progress (Optional[bool]): Whether to monitor progress with a ``tqdm`` bar.</span>
+<span class="sd">            outfile (Optional[Path | str]): The output file.</span>
+<span class="sd">            bigtiff (Optional[str]): Whether to create a BigTIFF file. Choices are [&#39;YES&#39;, &#39;NO&#39;,&quot;IF_NEEDED&quot;, &quot;IF_SAFER&quot;]. Default is &#39;NO&#39;.</span>
+<span class="sd">            kwargs (Optional[dict]): Keyword arguments passed to rasterio open profile.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            If ``outfile`` is None, yields ``(Window, array, [datetime, ...])``.</span>
+<span class="sd">            If ``outfile`` is not None, returns None and writes to ``outfile``.</span>
+
+<span class="sd">        Example:</span>
+<span class="sd">            &gt;&gt;&gt; import itertools</span>
+<span class="sd">            &gt;&gt;&gt; import geowombat as gw</span>
+<span class="sd">            &gt;&gt;&gt; import rasterio as rio</span>
+<span class="sd">            &gt;&gt;&gt;</span>
+<span class="sd">            &gt;&gt;&gt; # Import an image with 3 bands</span>
+<span class="sd">            &gt;&gt;&gt; from geowombat.data import l8_224078_20200518</span>
+<span class="sd">            &gt;&gt;&gt;</span>
+<span class="sd">            &gt;&gt;&gt; # Create a custom class</span>
+<span class="sd">            &gt;&gt;&gt; class TemporalMean(gw.TimeModule):</span>
+<span class="sd">            &gt;&gt;&gt;</span>
+<span class="sd">            &gt;&gt;&gt;     def __init__(self):</span>
+<span class="sd">            &gt;&gt;&gt;         super(TemporalMean, self).__init__()</span>
+<span class="sd">            &gt;&gt;&gt;</span>
+<span class="sd">            &gt;&gt;&gt;     # The main function</span>
+<span class="sd">            &gt;&gt;&gt;     def calculate(self, array):</span>
+<span class="sd">            &gt;&gt;&gt;</span>
+<span class="sd">            &gt;&gt;&gt;         sl1 = (slice(0, None), slice(self.band_dict[&#39;red&#39;], self.band_dict[&#39;red&#39;]+1), slice(0, None), slice(0, None))</span>
+<span class="sd">            &gt;&gt;&gt;         sl2 = (slice(0, None), slice(self.band_dict[&#39;green&#39;], self.band_dict[&#39;green&#39;]+1), slice(0, None), slice(0, None))</span>
+<span class="sd">            &gt;&gt;&gt;</span>
+<span class="sd">            &gt;&gt;&gt;         vi = (array[sl1] - array[sl2]) / ((array[sl1] + array[sl2]) + 1e-9)</span>
+<span class="sd">            &gt;&gt;&gt;</span>
+<span class="sd">            &gt;&gt;&gt;         return vi.mean(axis=0).squeeze()</span>
+<span class="sd">            &gt;&gt;&gt;</span>
+<span class="sd">            &gt;&gt;&gt; with rio.open(l8_224078_20200518) as src:</span>
+<span class="sd">            &gt;&gt;&gt;     res = src.res</span>
+<span class="sd">            &gt;&gt;&gt;     bounds = src.bounds</span>
+<span class="sd">            &gt;&gt;&gt;     nodata = 0</span>
+<span class="sd">            &gt;&gt;&gt;</span>
+<span class="sd">            &gt;&gt;&gt; # Open many files, each with 3 bands</span>
+<span class="sd">            &gt;&gt;&gt; with gw.series([l8_224078_20200518]*100,</span>
+<span class="sd">            &gt;&gt;&gt;                band_names=[&#39;blue&#39;, &#39;green&#39;, &#39;red&#39;],</span>
+<span class="sd">            &gt;&gt;&gt;                crs=&#39;epsg:32621&#39;,</span>
+<span class="sd">            &gt;&gt;&gt;                res=res,</span>
+<span class="sd">            &gt;&gt;&gt;                bounds=bounds,</span>
+<span class="sd">            &gt;&gt;&gt;                nodata=nodata,</span>
+<span class="sd">            &gt;&gt;&gt;                num_threads=4,</span>
+<span class="sd">            &gt;&gt;&gt;                window_size=(1024, 1024)) as src:</span>
+<span class="sd">            &gt;&gt;&gt;</span>
+<span class="sd">            &gt;&gt;&gt;     src.apply(TemporalMean(),</span>
+<span class="sd">            &gt;&gt;&gt;               bands=-1,             # open all bands</span>
+<span class="sd">            &gt;&gt;&gt;               gain=0.0001,          # scale from [0,10000] -&gt; [0,1]</span>
+<span class="sd">            &gt;&gt;&gt;               processes=False,      # use threads</span>
+<span class="sd">            &gt;&gt;&gt;               num_workers=4,        # use 4 concurrent threads, one per window</span>
+<span class="sd">            &gt;&gt;&gt;               outfile=&#39;vi_mean.tif&#39;)</span>
+<span class="sd">            &gt;&gt;&gt;</span>
+<span class="sd">            &gt;&gt;&gt; # Import a single-band image</span>
+<span class="sd">            &gt;&gt;&gt; from geowombat.data import l8_224078_20200518_B4</span>
+<span class="sd">            &gt;&gt;&gt;</span>
+<span class="sd">            &gt;&gt;&gt; # Open many files, each with 1 band</span>
+<span class="sd">            &gt;&gt;&gt; with gw.series([l8_224078_20200518_B4]*100,</span>
+<span class="sd">            &gt;&gt;&gt;                band_names=[&#39;red&#39;],</span>
+<span class="sd">            &gt;&gt;&gt;                crs=&#39;epsg:32621&#39;,</span>
+<span class="sd">            &gt;&gt;&gt;                res=res,</span>
+<span class="sd">            &gt;&gt;&gt;                bounds=bounds,</span>
+<span class="sd">            &gt;&gt;&gt;                nodata=nodata,</span>
+<span class="sd">            &gt;&gt;&gt;                num_threads=4,</span>
+<span class="sd">            &gt;&gt;&gt;                window_size=(1024, 1024)) as src:</span>
+<span class="sd">            &gt;&gt;&gt;</span>
+<span class="sd">            &gt;&gt;&gt;     src.apply(&#39;mean&#39;,               # built-in function over single-band images</span>
+<span class="sd">            &gt;&gt;&gt;               bands=1,              # open all bands</span>
+<span class="sd">            &gt;&gt;&gt;               gain=0.0001,          # scale from [0,10000] -&gt; [0,1]</span>
+<span class="sd">            &gt;&gt;&gt;               num_workers=4,        # use 4 concurrent threads, one per window</span>
+<span class="sd">            &gt;&gt;&gt;               outfile=&#39;red_mean.tif&#39;)</span>
+<span class="sd">            &gt;&gt;&gt;</span>
+<span class="sd">            &gt;&gt;&gt; with gw.series([l8_224078_20200518_B4]*100,</span>
+<span class="sd">            &gt;&gt;&gt;                band_names=[&#39;red&#39;],</span>
+<span class="sd">            &gt;&gt;&gt;                crs=&#39;epsg:32621&#39;,</span>
+<span class="sd">            &gt;&gt;&gt;                res=res,</span>
+<span class="sd">            &gt;&gt;&gt;                bounds=bounds,</span>
+<span class="sd">            &gt;&gt;&gt;                nodata=nodata,</span>
+<span class="sd">            &gt;&gt;&gt;                num_threads=4,</span>
+<span class="sd">            &gt;&gt;&gt;                window_size=(1024, 1024)) as src:</span>
+<span class="sd">            &gt;&gt;&gt;</span>
+<span class="sd">            &gt;&gt;&gt;     src.apply([&#39;mean&#39;, &#39;max&#39;, &#39;cv&#39;],    # calculate multiple statistics</span>
+<span class="sd">            &gt;&gt;&gt;               bands=1,                  # open all bands</span>
+<span class="sd">            &gt;&gt;&gt;               gain=0.0001,              # scale from [0,10000] -&gt; [0,1]</span>
+<span class="sd">            &gt;&gt;&gt;               num_workers=4,            # use 4 concurrent threads, one per window</span>
+<span class="sd">            &gt;&gt;&gt;               outfile=&#39;stack_mean.tif&#39;)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">pool</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">concurrent</span><span class="o">.</span><span class="n">futures</span><span class="o">.</span><span class="n">ProcessPoolExecutor</span>
+            <span class="k">if</span> <span class="n">processes</span>
+            <span class="k">else</span> <span class="n">concurrent</span><span class="o">.</span><span class="n">futures</span><span class="o">.</span><span class="n">ThreadPoolExecutor</span>
+        <span class="p">)</span>
+
+        <span class="n">tqdm_obj</span> <span class="o">=</span> <span class="n">tqdm</span> <span class="k">if</span> <span class="n">monitor_progress</span> <span class="k">else</span> <span class="n">_tqdm</span>
+
+        <span class="k">if</span> <span class="p">(</span>
+            <span class="nb">isinstance</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span>
+            <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span>
+            <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">)</span>
+        <span class="p">):</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">bands</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">bands</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">):</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span>
+                    <span class="s2">&quot;Only single-band images can be used with built-in functions.&quot;</span>
+                <span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="s2">&quot;Only single-band images can be used with built-in functions.&quot;</span>
+                <span class="p">)</span>
+
+            <span class="n">apply_func_</span> <span class="o">=</span> <span class="n">SeriesStats</span><span class="p">(</span><span class="n">func</span><span class="p">)</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">apply_func_</span> <span class="o">=</span> <span class="n">func</span>
+
+        <span class="k">if</span> <span class="n">outfile</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">profile</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="s2">&quot;count&quot;</span><span class="p">:</span> <span class="n">apply_func_</span><span class="o">.</span><span class="n">count</span><span class="p">,</span>
+                <span class="s2">&quot;width&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">width</span><span class="p">,</span>
+                <span class="s2">&quot;height&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">height</span><span class="p">,</span>
+                <span class="s2">&quot;crs&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">crs</span><span class="p">,</span>
+                <span class="s2">&quot;transform&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">transform</span><span class="p">,</span>
+                <span class="s2">&quot;driver&quot;</span><span class="p">:</span> <span class="s2">&quot;GTiff&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;dtype&quot;</span><span class="p">:</span> <span class="n">apply_func_</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span>
+                <span class="s2">&quot;compress&quot;</span><span class="p">:</span> <span class="n">apply_func_</span><span class="o">.</span><span class="n">compress</span><span class="p">,</span>
+                <span class="s2">&quot;sharing&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+                <span class="s2">&quot;tiled&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+                <span class="s2">&quot;nodata&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">nodata</span><span class="p">,</span>
+                <span class="s2">&quot;blockxsize&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">blockxsize</span><span class="p">,</span>
+                <span class="s2">&quot;blockysize&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">blockysize</span><span class="p">,</span>
+                <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+            <span class="p">}</span>
+
+            <span class="c1"># check for bigtiff config</span>
+            <span class="k">if</span> <span class="n">config</span><span class="p">[</span><span class="s2">&quot;with_config&quot;</span><span class="p">]:</span>
+                <span class="n">bigtiff</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s2">&quot;bigtiff&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span>
+                <span class="k">if</span> <span class="n">bigtiff</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span>
+                    <span class="s2">&quot;YES&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;NO&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;IF_NEEDED&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;IF_SAFER&quot;</span><span class="p">,</span>
+                <span class="p">):</span>
+                    <span class="k">raise</span> <span class="ne">NameError</span><span class="p">(</span>
+                        <span class="s2">&quot;The GDAL BIGTIFF must be one of &#39;YES&#39;, &#39;NO&#39;, &#39;IF_NEEDED&#39;, or &#39;IF_SAFER&#39;. See https://gdal.org/drivers/raster/gtiff.html#creation-issues for more information.&quot;</span>
+                    <span class="p">)</span>
+                <span class="n">profile</span><span class="p">[</span><span class="s2">&quot;BIGTIFF&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">bigtiff</span>
+
+            <span class="c1"># Create the file</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_create_file</span><span class="p">(</span><span class="n">outfile</span><span class="p">,</span> <span class="o">**</span><span class="n">profile</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">outfile</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">with</span> <span class="n">rio</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">outfile</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;r+&quot;</span><span class="p">,</span> <span class="n">sharing</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="k">as</span> <span class="n">dst</span><span class="p">:</span>
+                <span class="k">with</span> <span class="n">pool</span><span class="p">(</span><span class="n">num_workers</span><span class="p">)</span> <span class="k">as</span> <span class="n">executor</span><span class="p">:</span>
+                    <span class="n">data_gen</span> <span class="o">=</span> <span class="p">(</span>
+                        <span class="p">(</span>
+                            <span class="n">w</span><span class="p">,</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">read</span><span class="p">(</span>
+                                <span class="n">bands</span><span class="p">,</span> <span class="n">window</span><span class="o">=</span><span class="n">w</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">gain</span><span class="o">=</span><span class="n">gain</span><span class="p">,</span> <span class="n">offset</span><span class="o">=</span><span class="n">offset</span>
+                            <span class="p">),</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">band_dict</span><span class="p">,</span>
+                        <span class="p">)</span>
+                        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">padding</span>
+                        <span class="k">else</span> <span class="p">(</span>
+                            <span class="n">w</span><span class="p">,</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">read</span><span class="p">(</span>
+                                <span class="n">bands</span><span class="p">,</span> <span class="n">window</span><span class="o">=</span><span class="n">w</span><span class="p">,</span> <span class="n">gain</span><span class="o">=</span><span class="n">gain</span><span class="p">,</span> <span class="n">offset</span><span class="o">=</span><span class="n">offset</span>
+                            <span class="p">),</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">band_dict</span><span class="p">,</span>
+                        <span class="p">)</span>
+                        <span class="k">for</span> <span class="n">w</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">windows_</span>
+                    <span class="p">)</span>
+
+                    <span class="k">for</span> <span class="n">w</span><span class="p">,</span> <span class="n">res</span> <span class="ow">in</span> <span class="n">tqdm_obj</span><span class="p">(</span>
+                        <span class="n">executor</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">f</span><span class="p">:</span> <span class="n">apply_func_</span><span class="p">(</span><span class="o">*</span><span class="n">f</span><span class="p">),</span> <span class="n">data_gen</span><span class="p">),</span>
+                        <span class="n">total</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">nchunks</span><span class="p">,</span>
+                    <span class="p">):</span>
+                        <span class="k">with</span> <span class="n">threading</span><span class="o">.</span><span class="n">Lock</span><span class="p">():</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">_write_window</span><span class="p">(</span><span class="n">dst</span><span class="p">,</span> <span class="n">res</span><span class="p">,</span> <span class="n">apply_func_</span><span class="o">.</span><span class="n">count</span><span class="p">,</span> <span class="n">w</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">padding</span><span class="p">:</span>
+                <span class="n">w</span><span class="p">,</span> <span class="n">res</span> <span class="o">=</span> <span class="n">apply_func_</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">windows_</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">read</span><span class="p">(</span>
+                        <span class="n">bands</span><span class="p">,</span>
+                        <span class="n">window</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">windows_</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">],</span>
+                        <span class="n">gain</span><span class="o">=</span><span class="n">gain</span><span class="p">,</span>
+                        <span class="n">offset</span><span class="o">=</span><span class="n">offset</span><span class="p">,</span>
+                        <span class="n">pool</span><span class="o">=</span><span class="n">pool</span><span class="p">,</span>
+                        <span class="n">num_workers</span><span class="o">=</span><span class="n">num_workers</span><span class="p">,</span>
+                        <span class="n">tqdm_obj</span><span class="o">=</span><span class="n">tqdm_obj</span><span class="p">,</span>
+                    <span class="p">),</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">band_dict</span><span class="p">,</span>
+                <span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">w</span><span class="p">,</span> <span class="n">res</span> <span class="o">=</span> <span class="n">apply_func_</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">windows_</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">read</span><span class="p">(</span>
+                        <span class="n">bands</span><span class="p">,</span>
+                        <span class="n">window</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">windows_</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+                        <span class="n">gain</span><span class="o">=</span><span class="n">gain</span><span class="p">,</span>
+                        <span class="n">offset</span><span class="o">=</span><span class="n">offset</span><span class="p">,</span>
+                        <span class="n">pool</span><span class="o">=</span><span class="n">pool</span><span class="p">,</span>
+                        <span class="n">num_workers</span><span class="o">=</span><span class="n">num_workers</span><span class="p">,</span>
+                        <span class="n">tqdm_obj</span><span class="o">=</span><span class="n">tqdm_obj</span><span class="p">,</span>
+                    <span class="p">),</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">band_dict</span><span class="p">,</span>
+                <span class="p">)</span>
+
+            <span class="c1"># Group duplicate dates</span>
+            <span class="n">res</span><span class="p">,</span> <span class="n">image_dates</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">group_dates</span><span class="p">(</span>
+                <span class="n">res</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_names</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">band_names</span>
+            <span class="p">)</span>
+
+            <span class="k">return</span> <span class="n">w</span><span class="p">,</span> <span class="n">res</span><span class="p">,</span> <span class="n">image_dates</span></div>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_write_window</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dst_</span><span class="p">,</span> <span class="n">out_data_</span><span class="p">,</span> <span class="n">count</span><span class="p">,</span> <span class="n">w</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">padding</span><span class="p">:</span>
+            <span class="n">window_</span> <span class="o">=</span> <span class="n">w</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">padded_window_</span> <span class="o">=</span> <span class="n">w</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+
+            <span class="c1"># Get the non-padded array slice</span>
+            <span class="n">row_diff</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">window_</span><span class="o">.</span><span class="n">row_off</span> <span class="o">-</span> <span class="n">padded_window_</span><span class="o">.</span><span class="n">row_off</span><span class="p">)</span>
+            <span class="n">col_diff</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">window_</span><span class="o">.</span><span class="n">col_off</span> <span class="o">-</span> <span class="n">padded_window_</span><span class="o">.</span><span class="n">col_off</span><span class="p">)</span>
+
+            <span class="n">out_data_</span> <span class="o">=</span> <span class="n">out_data_</span><span class="p">[</span>
+                <span class="p">:,</span>
+                <span class="n">row_diff</span> <span class="p">:</span> <span class="n">row_diff</span> <span class="o">+</span> <span class="n">window_</span><span class="o">.</span><span class="n">height</span><span class="p">,</span>
+                <span class="n">col_diff</span> <span class="p">:</span> <span class="n">col_diff</span> <span class="o">+</span> <span class="n">window_</span><span class="o">.</span><span class="n">width</span><span class="p">,</span>
+            <span class="p">]</span>
+
+        <span class="n">dst_</span><span class="o">.</span><span class="n">write</span><span class="p">(</span>
+            <span class="n">out_data_</span><span class="p">,</span>
+            <span class="n">indexes</span><span class="o">=</span><span class="mi">1</span> <span class="k">if</span> <span class="n">count</span> <span class="o">==</span> <span class="mi">1</span> <span class="k">else</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">count</span> <span class="o">+</span> <span class="mi">1</span><span class="p">),</span>
+            <span class="n">window</span><span class="o">=</span><span class="n">w</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">padding</span> <span class="k">else</span> <span class="n">w</span><span class="p">,</span>
+        <span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__enter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__exit__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">src</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">srcs_</span><span class="p">:</span>
+            <span class="n">src</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+        <span class="k">for</span> <span class="n">vrt</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">vrts_</span><span class="p">:</span>
+            <span class="n">vrt</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
+</pre></div>
+
+                </article>
+              
+
+              
+              
+                <footer class="bd-footer-article">
+                  <!-- Previous / next buttons -->
+<div class="prev-next-area">
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            <div class="bd-footer-content__inner">
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+  <p class="copyright">
+    
+      © Copyright 2020-2026, GeoWombat.
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+</div></div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../../../_static/scripts/bootstrap.js?digest=12da95d707ffb74b382d"></script>
+<script src="../../../_static/scripts/pydata-sphinx-theme.js?digest=12da95d707ffb74b382d"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>

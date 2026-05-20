@@ -69,6 +69,27 @@ def _min_rotated_rectangle(geom):
 def boxes_from_polygons(gdf, oriented=False):
     """Convert polygon geometries to bounding-box geometries.
 
+    Two flavors of bounding box are supported:
+
+    - **Axis-aligned (AABB)** — ``oriented=False`` (default). Sides
+      parallel to the image axes. Right for objects that line up with
+      the grid: buildings in a nadir aerial frame, cars in a parking
+      lot, parcels.
+    - **Oriented (OBB)** — ``oriented=True``. Minimum rotated rectangle
+      around each polygon. Right for objects that appear at arbitrary
+      angles in overhead imagery — ships, planes on a tarmac, vehicles
+      on diagonal roads, storage tanks viewed off-nadir.
+
+    For overhead / aerial work, OBB is almost always the better choice
+    and should be paired with weights pretrained on the **DOTA-v1**
+    benchmark (e.g. ``yolov8n-obb.pt``). Mixing OBB labels with
+    non-OBB weights will fail at training time.
+
+    Quality of OBB output depends on the *input* polygon. The minimum
+    rotated rectangle uses the polygon's extreme points, so loose
+    blob-shaped digitization yields a sloppy OBB. Trace tightly along
+    the object's long axis when labeling.
+
     Parameters
     ----------
     gdf : geopandas.GeoDataFrame
@@ -83,6 +104,10 @@ def boxes_from_polygons(gdf, oriented=False):
     geopandas.GeoDataFrame
         Same columns as input with geometries replaced by boxes. A new
         column ``_box_kind`` is added: ``'aabb'`` or ``'obb'``.
+
+    See Also
+    --------
+    build_yolo_dataset : Calls this internally when ``oriented=True``.
     """
     out = gdf.copy()
 

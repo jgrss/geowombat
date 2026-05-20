@@ -329,17 +329,12 @@ class TimeModule(object):
         """Calculates the user function.
 
         Args:
-            data (``numpy.ndarray`` |
-                  ``jax.Array`` |
-                  ``torch.Tensor`` |
-                  ``tensorflow.Tensor``): The input array, shaped [time x bands x rows x columns].
+            data (``numpy.ndarray`` | ``jax.Array`` | ``torch.Tensor`` | ``tensorflow.Tensor``):
+                The input array, shaped ``[time x bands x rows x columns]``.
 
         Returns:
-            ``numpy.ndarray`` |
-            ``jax.Array`` |
-            ``torch.Tensor`` |
-            ``tensorflow.Tensor``:
-                Shaped (time|bands x rows x columns)
+            ``numpy.ndarray`` | ``jax.Array`` | ``torch.Tensor`` | ``tensorflow.Tensor``,
+            shaped ``(time|bands x rows x columns)``.
         """
         raise NotImplementedError
 
