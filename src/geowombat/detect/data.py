@@ -9,9 +9,7 @@ Example
 -------
 >>> import geowombat as gw
 >>> import geopandas as gpd
->>> from geowombat.ml.detection_data import (
-...     boxes_from_polygons, build_yolo_dataset,
-... )
+>>> from geowombat.detect import boxes_from_polygons, build_yolo_dataset
 >>> labels = gpd.read_file('trees.gpkg')  # polygons
 >>> boxes = boxes_from_polygons(labels)
 >>> with gw.open('aerial.tif') as src:
@@ -34,6 +32,9 @@ from shapely.geometry import (
     Polygon,
     box as shapely_box,
 )
+
+from ..ml._labels import prepare_label_gdf, resolve_band_indices
+from ._tiling import overlapped_windows
 
 
 def _require_pillow():
@@ -111,26 +112,14 @@ def _normalize_class_column(labels, class_col):
 def _tile_grid(src, tile_size, overlap):
     """Generate (row, col, y0, x0, y1, x1) for image tiles.
 
-    Coordinates are in pixel space. The last tile in each direction is
-    shifted backwards so it never exceeds the image bounds — i.e. tiles
-    are always full size, never padded.
+    Thin wrapper around ``overlapped_windows`` kept for backwards
+    compatibility with code that destructures the tuple form. New code
+    should call ``overlapped_windows`` directly.
     """
-    h = src.gw.nrows
-    w = src.gw.ncols
-    step = max(1, int(round(tile_size * (1 - overlap))))
-
-    ys = list(range(0, max(1, h - tile_size + 1), step))
-    if not ys or ys[-1] + tile_size < h:
-        ys.append(max(0, h - tile_size))
-    xs = list(range(0, max(1, w - tile_size + 1), step))
-    if not xs or xs[-1] + tile_size < w:
-        xs.append(max(0, w - tile_size))
-
-    for r, y0 in enumerate(ys):
-        for c, x0 in enumerate(xs):
-            y1 = min(h, y0 + tile_size)
-            x1 = min(w, x0 + tile_size)
-            yield r, c, y0, x0, y1, x1
+    for r, c, win in overlapped_windows(src, tile_size, overlap):
+        y0 = win.row_off
+        x0 = win.col_off
+        yield r, c, y0, x0, y0 + win.height, x0 + win.width
 
 
 def _tile_bounds_crs(src, y0, x0, y1, x1):
@@ -344,45 +333,10 @@ def build_yolo_dataset(
     Image = _require_pillow()
     yaml = _require_yaml()
 
-    if isinstance(labels, (str, Path)):
-        labels = gpd.read_file(labels)
-    if not isinstance(labels, gpd.GeoDataFrame):
-        raise TypeError(
-            f"labels must be a GeoDataFrame, got {type(labels).__name__}"
-        )
-
-    src_crs = src.gw.crs_to_pyproj
-    if labels.crs is None:
-        raise ValueError("labels GeoDataFrame has no CRS set.")
-    if labels.crs.to_epsg() != src_crs.to_epsg():
-        labels = labels.to_crs(src_crs)
-
-    # Spatial filter: drop labels fully outside the raster footprint
-    raster_geom = shapely_box(
-        src.gw.left, src.gw.bottom, src.gw.right, src.gw.top,
+    labels, classes = prepare_label_gdf(
+        src, labels, class_col, class_names=class_names,
     )
-    labels = labels[labels.intersects(raster_geom)].copy()
-    if labels.empty:
-        raise ValueError(
-            "No labels intersect the raster footprint. "
-            "Check CRS or geometry coverage."
-        )
-
-    if class_names is None:
-        labels, classes = _normalize_class_column(labels, class_col)
-    else:
-        classes = list(class_names)
-        name_to_id = {n: i for i, n in enumerate(classes)}
-        labels = labels.copy()
-        labels['_class_id'] = labels[class_col].map(name_to_id)
-        missing = labels['_class_id'].isna().sum()
-        if missing:
-            warnings.warn(
-                f"{missing} label(s) had class values not in class_names; "
-                "they will be dropped."
-            )
-            labels = labels.dropna(subset=['_class_id'])
-        labels['_class_id'] = labels['_class_id'].astype(int)
+    band_indices = resolve_band_indices(src, band_indices)
 
     if oriented:
         labels = boxes_from_polygons(labels, oriented=True)

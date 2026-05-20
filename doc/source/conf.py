@@ -125,10 +125,12 @@ html_theme_options = {
     'extra_navbar': '',
     'navbar_footer_text': '',
     'extra_footer': '',
-    'anchor': '#d37a7a',
-    'anchor_hover_bg': '#d37a7a',
-    'anchor_hover_fg': '#d37a7a',
 }
+
+# Prefix `autosectionlabel` targets with the document name, so the same
+# section headings (e.g. "Bug fixes", "Classes") across changelog.rst /
+# api.rst don't collide and emit hundreds of duplicate-label warnings.
+autosectionlabel_prefix_document = True
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,

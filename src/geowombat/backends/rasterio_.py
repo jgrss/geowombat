@@ -997,10 +997,6 @@ def warp(
                 'width': dst_window.width,
                 'nodata': None,
                 'warp_mem_limit': warp_mem_limit,
-                'warp_extras': {
-                    'multi': True,
-                    'warp_option': f'NUM_THREADS={num_threads}',
-                },
             }
 
         else:
@@ -1038,10 +1034,6 @@ def warp(
                 'width': dst_window.width,
                 'nodata': nodata,
                 'warp_mem_limit': warp_mem_limit,
-                'warp_extras': {
-                    'multi': True,
-                    'warp_option': f'NUM_THREADS={num_threads}',
-                },
             }
 
         output = WarpedVRT(src, **vrt_options)

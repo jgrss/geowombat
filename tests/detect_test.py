@@ -20,11 +20,9 @@ from geowombat.data import (
     l8_224078_20200518,
     l8_224078_20200518_polygons,
 )
-from geowombat.ml.detection_data import (
+from geowombat.detect import (
     boxes_from_polygons,
     build_yolo_dataset,
-)
-from geowombat.ml.detection_metrics import (
     detection_accuracy,
     export_for_review,
     recompute_from_review,
@@ -330,7 +328,7 @@ class TestReviewRoundTrip(unittest.TestCase):
 class TestYOLODetectorSmoke(unittest.TestCase):
 
     def test_predict_returns_geodataframe(self):
-        from geowombat.ml.detectors import YOLODetector
+        from geowombat.detect import YOLODetector
 
         # yolov8n.pt is auto-downloaded by ultralytics on first use.
         det = YOLODetector(weights='yolov8n.pt')
@@ -349,6 +347,112 @@ class TestYOLODetectorSmoke(unittest.TestCase):
         self.assertIsInstance(gdf, gpd.GeoDataFrame)
         for col in ['geometry', 'class_id', 'class_name', 'score']:
             self.assertIn(col, gdf.columns)
+
+
+# ---------------------------------------------------------------------------
+# Band resolver + new gw.ml.* + .gw.* surface
+# ---------------------------------------------------------------------------
+
+class TestBandResolver(unittest.TestCase):
+
+    def test_explicit_override_wins(self):
+        from geowombat.ml._labels import resolve_band_indices
+        with gw.open(l8_224078_20200518, nodata=0) as src:
+            self.assertEqual(
+                resolve_band_indices(src, [2, 1, 0]), [2, 1, 0],
+            )
+
+    def test_sensor_bgr_picks_rgb_indices(self):
+        from geowombat.ml._labels import resolve_band_indices
+        with gw.config.update(sensor='bgr'):
+            with gw.open(l8_224078_20200518, nodata=0) as src:
+                self.assertEqual(
+                    resolve_band_indices(src), [2, 1, 0],
+                )
+
+    def test_unnamed_bands_default_first_three(self):
+        from geowombat.ml._labels import resolve_band_indices
+        with gw.open(l8_224078_20200518, nodata=0) as src:
+            self.assertEqual(resolve_band_indices(src), [0, 1, 2])
+
+
+@unittest.skipUnless(
+    PIL_AVAILABLE and YAML_AVAILABLE,
+    "Pillow + PyYAML required",
+)
+class TestAccessorAndModuleSurface(unittest.TestCase):
+    """The .gw.to_yolo_dataset / gw.ml.build_detection_dataset wrappers
+    should be drop-in equivalent to build_yolo_dataset(src, ...)."""
+
+    def _label_gdf(self, src):
+        polys = gpd.read_file(l8_224078_20200518_polygons)
+        if polys.crs.to_epsg() != src.gw.crs_to_pyproj.to_epsg():
+            polys = polys.to_crs(src.gw.crs_to_pyproj)
+        polys['class_name'] = polys['name']
+        return polys
+
+    def test_accessor_to_yolo_dataset_matches_function(self):
+        from geowombat.detect import build_dataset
+
+        with gw.config.update(ref_res=300):
+            with gw.open(l8_224078_20200518, nodata=0) as src:
+                labels = self._label_gdf(src)
+                kwargs = dict(
+                    class_col='class_name', tile_size=128, overlap=0.0,
+                    band_indices=[2, 1, 0], scale=(0, 10000),
+                    min_box_pixels=2, background_ratio=0.0,
+                )
+                with tempfile.TemporaryDirectory() as td1:
+                    info_fn = build_dataset(
+                        src, labels, out_dir=td1, **kwargs,
+                    )
+                with tempfile.TemporaryDirectory() as td2:
+                    info_acc = src.gw.to_yolo_dataset(
+                        labels, out_dir=td2, **kwargs,
+                    )
+
+        self.assertEqual(info_fn['classes'], info_acc['classes'])
+        self.assertEqual(info_fn['n_boxes'], info_acc['n_boxes'])
+
+    def test_sensor_config_drives_band_indices(self):
+        """to_yolo_dataset without band_indices uses sensor config."""
+        from geowombat.detect import build_dataset
+
+        with gw.config.update(ref_res=300, sensor='bgr'):
+            with gw.open(l8_224078_20200518, nodata=0) as src:
+                labels = self._label_gdf(src)
+                with tempfile.TemporaryDirectory() as td:
+                    info = build_dataset(
+                        src, labels, class_col='class_name',
+                        out_dir=td, tile_size=128, overlap=0.0,
+                        scale=(0, 10000), min_box_pixels=2,
+                    )
+        self.assertGreater(info['n_boxes'], 0)
+
+
+@unittest.skipUnless(
+    ULTRALYTICS_AVAILABLE,
+    "ultralytics not installed (pip install geowombat[detect])",
+)
+class TestDetectAccessor(unittest.TestCase):
+
+    def test_gw_detect_matches_predict(self):
+        from geowombat.detect import YOLODetector, predict
+
+        det = YOLODetector(weights='yolov8n.pt')
+        with gw.config.update(ref_res=300):
+            with gw.open(l8_224078_20200518, nodata=0) as src:
+                with warnings.catch_warnings():
+                    warnings.simplefilter("ignore")
+                    kwargs = dict(
+                        tile_size=320, overlap=0.0, conf=0.05,
+                        band_indices=[2, 1, 0], scale=(0, 10000),
+                    )
+                    a = det.predict(src, **kwargs)
+                    b = src.gw.detect(det, **kwargs)
+                    c = predict(src, det, **kwargs)
+        self.assertEqual(len(a), len(b))
+        self.assertEqual(len(a), len(c))
 
 
 if __name__ == '__main__':

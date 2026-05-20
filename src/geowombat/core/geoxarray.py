@@ -2006,3 +2006,91 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
             scale_factor=scale_factor,
             scale_angles=scale_angles,
         )
+
+    def detect(self, detector, **kwargs):
+        """Run tiled, georeferenced object detection over this raster.
+
+        Thin accessor over ``detector.predict(src, **kwargs)`` so that
+        detection follows the same ``src.gw.<method>(...)`` shape as
+        ``src.gw.ndvi()`` or ``src.gw.extract()``. The detector instance
+        is built once (loading model weights) and passed in.
+
+        Args:
+            detector: A ``YOLODetector`` or ``TorchGeoDetector`` instance
+                (see ``geowombat.ml``).
+            **kwargs: Forwarded to ``detector.predict`` — typical args
+                are ``tile_size``, ``overlap``, ``conf``, ``band_indices``,
+                ``scale``, ``nms_iou``, ``max_det``, ``progress``. If
+                ``band_indices`` is omitted it is resolved from the active
+                ``gw.config(sensor=...)`` band names.
+
+        Returns:
+            ``geopandas.GeoDataFrame`` — one row per detection with
+            ``geometry``, ``class_id``, ``class_name``, ``score`` and
+            ``tile_id`` columns, in the source CRS.
+
+        Examples:
+            >>> import geowombat as gw
+            >>> from geowombat.detect import YOLODetector
+            >>>
+            >>> det = YOLODetector(weights='yolov8n.pt')
+            >>> with gw.config.update(sensor='rgb'):
+            ...     with gw.open('aerial.tif', chunks=512) as src:
+            ...         preds = src.gw.detect(det, conf=0.25)
+        """
+        return detector.predict(self._obj, **kwargs)
+
+    def to_yolo_dataset(
+        self,
+        labels,
+        class_col,
+        out_dir,
+        tile_size=640,
+        overlap=0.1,
+        **kwargs,
+    ):
+        """Write a YOLO-format training dataset from this raster + labels.
+
+        Accessor wrapper around ``geowombat.detect.build_dataset`` so
+        users can stay inside the ``with gw.open(...) as src:`` flow.
+
+        Args:
+            labels: ``geopandas.GeoDataFrame``, path, or URL of vector
+                labels. Reprojected to the raster CRS automatically.
+            class_col (str): Column in ``labels`` holding class name/id.
+            out_dir (str | Path): Output directory. Ultralytics layout
+                (``images/{train,val}`` + ``labels/{train,val}`` + a
+                ``data.yaml``) is written under it.
+            tile_size (int): Tile edge in pixels. Default 640.
+            overlap (float): Fractional overlap between tiles. Default 0.1.
+            **kwargs: Forwarded to ``build_dataset`` — e.g.
+                ``val_split``, ``min_box_pixels``, ``background_ratio``,
+                ``band_indices``, ``scale``, ``oriented``,
+                ``image_format``, ``seed``, ``class_names``. If
+                ``band_indices`` is omitted it is resolved from the
+                active ``gw.config(sensor=...)``.
+
+        Returns:
+            ``dict`` summary with keys ``out_dir``, ``classes``,
+            ``n_train``, ``n_val``, ``n_boxes``.
+
+        Examples:
+            >>> import geopandas as gpd, geowombat as gw
+            >>> gdf = gpd.read_file('buildings.gpkg')
+            >>> with gw.open('naip.tif', chunks=512) as src:
+            ...     summary = src.gw.to_yolo_dataset(
+            ...         gdf, class_col='class_name',
+            ...         out_dir='./yolo', tile_size=640,
+            ...     )
+        """
+        from ..detect.api import build_dataset
+
+        return build_dataset(
+            self._obj,
+            labels=labels,
+            class_col=class_col,
+            out_dir=out_dir,
+            tile_size=tile_size,
+            overlap=overlap,
+            **kwargs,
+        )

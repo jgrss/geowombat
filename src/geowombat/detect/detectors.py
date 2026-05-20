@@ -10,7 +10,7 @@ Requires: ``pip install geowombat[detect]`` (YOLO/TorchGeo)
 Example
 -------
 >>> import geowombat as gw
->>> from geowombat.ml.detectors import YOLODetector
+>>> from geowombat.detect import YOLODetector
 >>> det = YOLODetector(weights='yolov8n.pt')
 >>> with gw.open('aerial.tif') as src:
 ...     boxes = det.predict(src, tile_size=640, conf=0.25,
@@ -25,7 +25,9 @@ import geopandas as gpd
 import numpy as np
 from shapely.geometry import Polygon, box as shapely_box
 
-from .detection_data import _prepare_rgb_tile, _tile_grid
+from ..ml._labels import resolve_band_indices
+from ._tiling import overlapped_windows
+from .data import _prepare_rgb_tile
 
 
 # ---------------------------------------------------------------------------
@@ -96,9 +98,36 @@ def _resolve_device(device):
             "Detectors require PyTorch. Install with "
             "`pip install geowombat[detect]`."
         ) from e
-    if device == 'auto':
-        return 'cuda' if torch.cuda.is_available() else 'cpu'
-    return device
+    if device != 'auto':
+        return device
+    if torch.cuda.is_available():
+        return 'cuda'
+    # CPU fallback — but check if there's an NVIDIA GPU on the system
+    # that this torch build just can't see. That's almost always a
+    # CPU-only torch install; tell the user how to fix it.
+    import shutil
+    import subprocess
+    if shutil.which('nvidia-smi') is not None:
+        try:
+            r = subprocess.run(
+                ['nvidia-smi', '--query-gpu=name', '--format=csv,noheader'],
+                capture_output=True, text=True, timeout=2,
+            )
+        except (subprocess.SubprocessError, OSError):
+            r = None
+        if r is not None and r.returncode == 0 and r.stdout.strip():
+            gpu_name = r.stdout.strip().splitlines()[0]
+            warnings.warn(
+                f"geowombat: NVIDIA GPU detected ({gpu_name}) but PyTorch "
+                f"can't use it — falling back to CPU. You likely have a "
+                f"CPU-only torch build. Install a CUDA build, e.g.:\n"
+                f"  pip install torch --index-url "
+                f"https://download.pytorch.org/whl/cu124\n"
+                f"(see https://pytorch.org/get-started/locally/ for your "
+                f"CUDA version).",
+                UserWarning, stacklevel=2,
+            )
+    return 'cpu'
 
 
 # ---------------------------------------------------------------------------
@@ -112,12 +141,24 @@ class GeoWombatDetector:
     list of ``(x1, y1, x2, y2, score, class_id)`` tuples (axis-aligned)
     or ``(quad_xy_array, score, class_id)`` for oriented boxes. They
     should also set ``class_names`` (list[str]) and ``oriented`` (bool).
+
+    Subclasses can optionally override ``_detect_batch`` to run a list
+    of tiles through the underlying model in one call (much faster on
+    GPU, modestly faster on CPU). The default falls back to a per-tile
+    loop.
     """
     class_names = None
     oriented = False
 
     def _detect_tile(self, rgb_array):
         raise NotImplementedError
+
+    def _detect_batch(self, rgb_list, conf=0.25, max_det=None):
+        """Default: per-tile loop. Override for true batched inference."""
+        return [
+            self._detect_tile(rgb, conf=conf, max_det=max_det)
+            for rgb in rgb_list
+        ]
 
     def predict(
         self,
@@ -129,6 +170,7 @@ class GeoWombatDetector:
         scale=None,
         nms_iou=0.5,
         max_det=None,
+        batch_size=4,
         progress=False,
     ):
         """Run tiled, georeferenced inference over a raster.
@@ -152,6 +194,10 @@ class GeoWombatDetector:
         max_det : int, optional
             Cap on detections per tile (passed to the underlying model
             when supported). Default unlimited.
+        batch_size : int
+            Number of tiles sent through the model per inference call.
+            Larger batches keep the GPU busy and reduce per-tile Python
+            overhead. On CPU, modest batching also helps. Default 4.
         progress : bool
             Show a tqdm progress bar. Default False.
 
@@ -163,8 +209,9 @@ class GeoWombatDetector:
         """
         affine = src.gw.affine
         crs = src.gw.crs_to_pyproj
+        band_indices = resolve_band_indices(src, band_indices)
 
-        tiles = list(_tile_grid(src, tile_size, overlap))
+        tiles = list(overlapped_windows(src, tile_size, overlap))
         iterator = tiles
         if progress:
             try:
@@ -174,7 +221,60 @@ class GeoWombatDetector:
                 pass
 
         records = []
-        for tile_id, (r, c, y0, x0, y1, x1) in enumerate(iterator):
+        # Per-tile metadata buffered alongside the RGB array, so a flushed
+        # batch knows where each tile's detections belong in the source CRS.
+        batch_rgbs = []
+        batch_meta = []  # list of (tile_id, x0, y0, w_block, h_block)
+
+        def _flush(rgbs, meta):
+            if not rgbs:
+                return
+            batch_dets = self._detect_batch(
+                rgbs, conf=conf, max_det=max_det,
+            )
+            for (tile_id, x0, y0, w_block, h_block), dets in zip(
+                meta, batch_dets,
+            ):
+                for det in dets:
+                    if self.oriented:
+                        quad, score, cls_id = det
+                        # Reject detections whose center falls in padded
+                        # region (outside the true image footprint).
+                        cx = float(np.mean(quad[:, 0]))
+                        cy = float(np.mean(quad[:, 1]))
+                        if cx > w_block or cy > h_block:
+                            continue
+                        geom = _pixel_quad_to_polygon(
+                            affine, x0, y0, quad,
+                        )
+                    else:
+                        bx1, by1, bx2, by2, score, cls_id = det
+                        cx = (bx1 + bx2) / 2.0
+                        cy = (by1 + by2) / 2.0
+                        if cx > w_block or cy > h_block:
+                            continue
+                        geom = _pixel_box_to_polygon(
+                            affine, x0, y0, bx1, by1, bx2, by2,
+                        )
+
+                    if self.class_names and cls_id < len(self.class_names):
+                        name = self.class_names[int(cls_id)]
+                    else:
+                        name = str(int(cls_id))
+
+                    records.append({
+                        'geometry': geom,
+                        'class_id': int(cls_id),
+                        'class_name': name,
+                        'score': float(score),
+                        'tile_id': int(tile_id),
+                    })
+
+        for tile_id, (r, c, win) in enumerate(iterator):
+            y0 = win.row_off
+            x0 = win.col_off
+            y1 = y0 + win.height
+            x1 = x0 + win.width
             block = src.isel(
                 y=slice(y0, y1), x=slice(x0, x1),
             ).values
@@ -194,45 +294,26 @@ class GeoWombatDetector:
 
             rgb = _prepare_rgb_tile(block, band_indices, scale)
 
-            detections = self._detect_tile(
-                rgb, conf=conf, max_det=max_det,
+            batch_rgbs.append(rgb)
+            batch_meta.append((tile_id, x0, y0, w_block, h_block))
+
+            if len(batch_rgbs) >= batch_size:
+                _flush(batch_rgbs, batch_meta)
+                batch_rgbs, batch_meta = [], []
+
+        _flush(batch_rgbs, batch_meta)
+
+        if not records:
+            return gpd.GeoDataFrame(
+                {
+                    'geometry': gpd.GeoSeries([], crs=crs),
+                    'class_id': [],
+                    'class_name': [],
+                    'score': [],
+                    'tile_id': [],
+                },
+                geometry='geometry', crs=crs,
             )
-
-            for det in detections:
-                if self.oriented:
-                    quad, score, cls_id = det
-                    # Reject detections whose center falls in padded
-                    # region (outside the true image footprint).
-                    cx = float(np.mean(quad[:, 0]))
-                    cy = float(np.mean(quad[:, 1]))
-                    if cx > w_block or cy > h_block:
-                        continue
-                    geom = _pixel_quad_to_polygon(
-                        affine, x0, y0, quad,
-                    )
-                else:
-                    bx1, by1, bx2, by2, score, cls_id = det
-                    cx = (bx1 + bx2) / 2.0
-                    cy = (by1 + by2) / 2.0
-                    if cx > w_block or cy > h_block:
-                        continue
-                    geom = _pixel_box_to_polygon(
-                        affine, x0, y0, bx1, by1, bx2, by2,
-                    )
-
-                if self.class_names and cls_id < len(self.class_names):
-                    name = self.class_names[int(cls_id)]
-                else:
-                    name = str(int(cls_id))
-
-                records.append({
-                    'geometry': geom,
-                    'class_id': int(cls_id),
-                    'class_name': name,
-                    'score': float(score),
-                    'tile_id': int(tile_id),
-                })
-
         gdf = gpd.GeoDataFrame(records, geometry='geometry', crs=crs)
         gdf = _nms_geodataframe(gdf, iou_threshold=nms_iou)
         return gdf
@@ -338,22 +419,8 @@ class YOLODetector(GeoWombatDetector):
             self.class_names = [v for _, v in ordered]
         return results
 
-    def _detect_tile(self, rgb_array, conf=0.25, max_det=None):
-        imgsz = self.imgsz or max(rgb_array.shape[0], rgb_array.shape[1])
-        predict_kwargs = dict(
-            source=rgb_array,
-            conf=conf,
-            imgsz=imgsz,
-            device=self.device,
-            verbose=False,
-        )
-        if max_det is not None:
-            predict_kwargs['max_det'] = int(max_det)
-        results = self._model.predict(**predict_kwargs)
-        if not results:
-            return []
-        r = results[0]
-
+    def _result_to_dets(self, r):
+        """Convert a single ultralytics ``Results`` object to our tuple list."""
         out = []
         if self.oriented and getattr(r, 'obb', None) is not None:
             obb = r.obb
@@ -382,6 +449,34 @@ class YOLODetector(GeoWombatDetector):
                  float(score), int(cls_id))
             )
         return out
+
+    def _detect_tile(self, rgb_array, conf=0.25, max_det=None):
+        # Single-image path for backwards compatibility. The batched
+        # path in `predict()` goes through `_detect_batch` instead.
+        return self._detect_batch(
+            [rgb_array], conf=conf, max_det=max_det,
+        )[0]
+
+    def _detect_batch(self, rgb_list, conf=0.25, max_det=None):
+        if not rgb_list:
+            return []
+        imgsz = self.imgsz or max(
+            rgb_list[0].shape[0], rgb_list[0].shape[1],
+        )
+        predict_kwargs = dict(
+            source=rgb_list,    # Ultralytics natively batches a list of arrays
+            conf=conf,
+            imgsz=imgsz,
+            device=self.device,
+            verbose=False,
+        )
+        if max_det is not None:
+            predict_kwargs['max_det'] = int(max_det)
+        results = self._model.predict(**predict_kwargs)
+        if not results:
+            return [[] for _ in rgb_list]
+        # Ultralytics returns one Results per input image when given a list.
+        return [self._result_to_dets(r) for r in results]
 
 
 # ---------------------------------------------------------------------------
@@ -507,14 +602,8 @@ class TorchGeoDetector(GeoWombatDetector):
             'elephant', 'bear', 'zebra', 'giraffe',
         ]
 
-    def _detect_tile(self, rgb_array, conf=0.25, max_det=None):
-        torch = self._torch
-        # (H, W, 3) uint8 → (3, H, W) float [0, 1]
-        tensor = torch.from_numpy(rgb_array).float().permute(2, 0, 1) / 255.0
-        tensor = tensor.to(self.device)
-        with torch.no_grad():
-            outputs = self._model([tensor])
-        out = outputs[0]
+    def _output_to_dets(self, out, conf=0.25, max_det=None):
+        """Convert a single torchvision detection output to tuple list."""
         boxes = out['boxes'].cpu().numpy()
         scores = out['scores'].cpu().numpy()
         labels = out['labels'].cpu().numpy().astype(int)
@@ -534,6 +623,29 @@ class TorchGeoDetector(GeoWombatDetector):
             (float(b[0]), float(b[1]), float(b[2]), float(b[3]),
              float(s), int(c))
             for b, s, c in zip(boxes, scores, labels)
+        ]
+
+    def _detect_tile(self, rgb_array, conf=0.25, max_det=None):
+        return self._detect_batch(
+            [rgb_array], conf=conf, max_det=max_det,
+        )[0]
+
+    def _detect_batch(self, rgb_list, conf=0.25, max_det=None):
+        if not rgb_list:
+            return []
+        torch = self._torch
+        # (H, W, 3) uint8 → (3, H, W) float [0, 1], moved to device
+        tensors = [
+            (torch.from_numpy(rgb).float().permute(2, 0, 1) / 255.0).to(
+                self.device,
+            )
+            for rgb in rgb_list
+        ]
+        with torch.no_grad():
+            outputs = self._model(tensors)
+        return [
+            self._output_to_dets(o, conf=conf, max_det=max_det)
+            for o in outputs
         ]
 
 
@@ -621,6 +733,7 @@ class SAMRefiner:
                 boxes_gdf.crs.to_epsg():
             boxes_gdf = boxes_gdf.to_crs(src.gw.crs_to_pyproj)
 
+        band_indices = resolve_band_indices(src, band_indices)
         affine = src.gw.affine
         inv = ~affine
 

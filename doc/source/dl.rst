@@ -493,29 +493,87 @@ Object detection
 
 In addition to pixel/patch classification, geowombat ships object
 detectors (axis-aligned and oriented bounding boxes) that return
-georeferenced ``GeoDataFrame`` outputs:
+georeferenced ``GeoDataFrame`` outputs. They live in a dedicated
+``geowombat.detect`` module and follow the same
+``with gw.open(...) as src:`` / ``src.gw.<method>(...)`` shape as the
+rest of geowombat, with module-level wrappers in ``gw.detect`` that
+mirror ``gw.ml.fit / predict / fit_predict``.
 
-- ``geowombat.ml.YOLODetector`` — Ultralytics YOLO (AGPL-3.0). Requires
-  ``pip install geowombat[detect]``.
-- ``geowombat.ml.TorchGeoDetector`` — Faster R-CNN / RetinaNet via
+See :ref:`object-detection` for the full walkthrough.
+
+**Detector classes**
+
+- ``geowombat.detect.YOLODetector`` — Ultralytics YOLO (AGPL-3.0).
+  Requires ``pip install geowombat[detect]``.
+- ``geowombat.detect.TorchGeoDetector`` — Faster R-CNN / RetinaNet via
   TorchVision + optional TorchGeo weights. Already covered by
   ``geowombat[dl]``.
-- ``geowombat.ml.SAMRefiner`` — refine boxes to polygon masks with
+- ``geowombat.detect.SAMRefiner`` — refine boxes to polygon masks with
   Segment Anything. Requires ``pip install geowombat[sam]``.
 
-Training-data builders and accuracy assessment:
+**``.gw`` accessor and module-level entry points**
 
-- ``geowombat.ml.boxes_from_polygons`` — convert polygon labels to
+- ``src.gw.detect(detector, ...)`` — run tiled inference; returns a
+  ``GeoDataFrame`` in the source CRS.
+- ``src.gw.to_yolo_dataset(labels, class_col=..., out_dir=...)`` —
+  tile the raster + labels into an Ultralytics-layout dataset on disk.
+- ``gw.detect.predict(src, detector, ...)`` — module-level form of the
+  accessor (parallels ``gw.ml.predict``).
+- ``gw.detect.fit(detector, dataset_yaml, ...)`` — fine-tune a detector
+  on a YOLO dataset.
+- ``gw.detect.fit_predict(src, detector, labels, class_col, out_dir,
+  ...)`` — build → fine-tune → predict in one call.
+- ``gw.detect.build_dataset(...)`` — function form of
+  ``.gw.to_yolo_dataset`` (alias for ``build_yolo_dataset``).
+
+**Accuracy and review**
+
+- ``gw.detect.boxes_from_polygons`` — convert polygon labels to
   axis-aligned or oriented boxes.
-- ``geowombat.ml.build_yolo_dataset`` — tile a ``gw.open()``'d raster
-  + label GeoDataFrame into a YOLO-format dataset on disk.
-- ``geowombat.ml.detection_accuracy`` — per-class precision / recall /
+- ``gw.detect.detection_accuracy`` — per-class precision / recall /
   F1 / AP at one or more IoU thresholds, with a review-ready
   ``GeoDataFrame``.
-- ``geowombat.ml.export_for_review`` / ``recompute_from_review`` —
+- ``gw.detect.export_for_review`` / ``recompute_from_review`` —
   write a GeoPackage you can step through in QGIS (e.g. with the
   GoToNextFeature3+ plugin), and recompute metrics after a human has
   filled in the ``reviewer_label`` field.
+
+Quick example
+~~~~~~~~~~~~~
+
+.. code-block:: python
+
+    import geopandas as gpd
+    import geowombat as gw
+    from geowombat.detect import YOLODetector, detection_accuracy
+
+    buildings = gpd.read_file('buildings.gpkg')
+
+    with gw.config.update(sensor='rgb'):
+        with gw.open('naip.tif', chunks=512) as src:
+
+            # 1. Tile the raster + labels into a YOLO dataset
+            src.gw.to_yolo_dataset(
+                buildings, class_col='class_name',
+                out_dir='./yolo', tile_size=640,
+            )
+
+            # 2. Run inference with a pre-built detector
+            det = YOLODetector(weights='yolov8n.pt')
+            preds = src.gw.detect(det, conf=0.1)
+
+    # 3. Score the predictions
+    results = detection_accuracy(
+        preds, buildings, class_col='class_name',
+        iou_thresholds=(0.3, 0.5),
+    )
+    print(results['summary'])
+
+When ``gw.config.update(sensor=...)`` sets named bands (e.g.
+``sensor='rgb'`` or ``sensor='bgr'``), ``src.gw.detect`` and
+``src.gw.to_yolo_dataset`` derive the RGB band indices from the active
+config; you don't need to pass ``band_indices`` per call. Explicit
+``band_indices=[...]`` still wins.
 
 See the ``notebooks/object_detection.ipynb`` notebook for an end-to-end
 walkthrough using NAIP aerial imagery plus OpenStreetMap building

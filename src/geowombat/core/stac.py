@@ -182,6 +182,7 @@ STAC_COLLECTIONS = {
         STACCollectionURLNames.USDA_CDL,
         STACCollectionURLNames.IO_LULC,
         STACCollectionURLNames.ESA_WORLDCOVER,
+        STACCollectionURLNames.NAIP,
     ),
     STACNames.NASA_LP_CLOUD: (
         STACCollectionURLNames.HLS_L30,
@@ -199,6 +200,88 @@ _SENTINEL_S2_COLLECTIONS = {
     STACCollections.SENTINEL_S2_L2A,
     STACCollections.SENTINEL_S2_L2A_COGS,
 }
+
+
+def _open_stac_multiband_asset(
+    items,
+    bounds,
+    epsg,
+    resolution,
+    bands,
+    compute,
+):
+    """Bypass stackstac for collections whose ``image`` asset is multi-band.
+
+    NAIP and other COG products that pack RGB(N) into a single asset
+    don't fit stackstac's one-band-per-asset model. We instead use
+    geowombat's own ``gw.open()`` (which now accepts signed cloud URLs
+    with query strings) plus ``gw.config.update(ref_bounds=...)`` to
+    clip to the search bounds.
+
+    Returns
+    -------
+    (xarray.DataArray, geopandas.GeoDataFrame)
+        DataArray of clipped pixels and a GeoDataFrame carrying the
+        true scene polygons from the STAC items (not just bbox).
+    """
+    # Import here to avoid a circular import at module load time.
+    import rasterio
+    from rasterio.warp import transform_bounds
+
+    from ..config import update as _config_update
+    from .api import open as _gw_open
+
+    asset_key = bands[0] if bands else 'image'
+    urls = [item.assets[asset_key].href for item in items]
+
+    # Build a GeoDataFrame from item geometries so callers see the
+    # actual scene footprint, not just the requested bbox.
+    df = gpd.GeoDataFrame.from_features(
+        [
+            {
+                'type': 'Feature',
+                'geometry': item.geometry,
+                'properties': {**item.properties, 'id': item.id},
+            }
+            for item in items
+        ],
+        crs='EPSG:4326',
+    )
+
+    # Determine the target CRS. If the caller didn't supply one, use
+    # the source raster's CRS (single header read).
+    if epsg is None:
+        with rasterio.open(urls[0]) as ds:
+            epsg = ds.crs.to_epsg()
+
+    bounds_in_crs = transform_bounds(
+        'EPSG:4326', f'EPSG:{epsg}', *bounds,
+    )
+
+    config_kwargs = {'ref_bounds': bounds_in_crs, 'ref_crs': epsg}
+    if resolution is not None:
+        config_kwargs['ref_res'] = resolution
+
+    with _config_update(**config_kwargs):
+        if len(urls) == 1:
+            src_ctx = _gw_open(urls[0])
+        else:
+            src_ctx = _gw_open(urls, mosaic=True)
+        with src_ctx as src:
+            if compute:
+                data = src.compute()
+            else:
+                # Eagerly materialize to a numpy-backed DataArray so the
+                # caller doesn't have to keep the rasterio handle open.
+                # Lazy reads from signed URLs would expire on token rollover anyway.
+                data = src.compute()
+                warnings.warn(
+                    "NAIP/multi-band STAC path always materializes data "
+                    "(compute=False is ignored) because signed URLs "
+                    "expire and Dask can't safely re-fetch them later."
+                )
+
+    return data, df
 
 
 def _is_landsat(collection: str) -> bool:
@@ -394,6 +477,7 @@ def open_stac(
                     io_lulc
                     usda_cdl
                     esa_worldcover
+                    naip
                 nasa_lp_cloud:
                     hls_l30 (HLS Landsat 30m)
                     hls_s30 (HLS Sentinel-2 30m)
@@ -592,6 +676,19 @@ def open_stac(
             console.print(table)
 
             return None, None
+
+        # Fast-path for collections whose imagery is a single multi-band
+        # asset (e.g. NAIP packs RGBN into one TIFF). stackstac requires
+        # one band per asset; we fall back to geowombat's own reader.
+        if STACCollections(collection) == STACCollections.NAIP:
+            return _open_stac_multiband_asset(
+                items=items,
+                bounds=bounds,
+                epsg=epsg,
+                resolution=resolution,
+                bands=bands,
+                compute=compute,
+            )
 
         # Download metadata and coefficient files
         if extra_assets is not None:

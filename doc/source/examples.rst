@@ -13,6 +13,7 @@ Examples
    apply
    ml
    dl
+   object-detection
    moving
    radiometry
    coreg

@@ -142,6 +142,9 @@ detect = [
     "pycocotools",
     "pyyaml",
     "pillow",
+    # opencv-python>=4.12 requires numpy>=2, but the rest of geowombat
+    # pins numpy<2. Keep the older opencv build compatible with that.
+    "opencv-python<4.12",
 ]
 
 sam = [

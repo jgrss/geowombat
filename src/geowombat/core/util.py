@@ -307,7 +307,11 @@ def get_file_extension(filename: str) -> namedtuple:
 
     FileNames = namedtuple('FileNames', 'd_name f_name f_base f_ext')
 
-    d_name, f_name = os.path.splitext(filename)
+    # Strip URL query string / fragment so cloud-storage URLs like
+    # `.../scene.tif?st=...&sig=...` are recognized by extension.
+    clean = str(filename).split('?', 1)[0].split('#', 1)[0]
+
+    d_name, f_name = os.path.splitext(clean)
     f_base, f_ext = os.path.split(f_name)
 
     return FileNames(d_name=d_name, f_name=f_name, f_base=f_base, f_ext=f_ext)

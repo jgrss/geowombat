@@ -7,7 +7,7 @@ TP / FP / FN judgments manually before reporting final metrics.
 
 Example
 -------
->>> from geowombat.ml.detection_metrics import (
+>>> from geowombat.detect import (
 ...     detection_accuracy, export_for_review, recompute_from_review,
 ... )
 >>> results = detection_accuracy(pred_gdf, truth_gdf, class_col='species')
@@ -499,18 +499,23 @@ def plot_detections(src, predictions=None, truth=None, ax=None,
     matplotlib.axes.Axes
     """
     import matplotlib.pyplot as plt
-    from .detection_data import _prepare_rgb_tile
+
+    from ..ml._labels import resolve_band_indices
 
     if ax is None:
         _, ax = plt.subplots(figsize=(10, 10))
 
-    block = src.values
-    if block.ndim == 4:
-        block = block[0]
-    rgb = _prepare_rgb_tile(block, band_indices, scale)
-
-    extent = (src.gw.left, src.gw.right, src.gw.bottom, src.gw.top)
-    ax.imshow(rgb, extent=extent, origin='upper')
+    # Use geowombat's native imshow so band/y/x → y/x/band reorder and
+    # the geographic extent on the axes happen automatically.
+    indices = resolve_band_indices(src, band_indices)
+    rgb_src = src.isel(band=indices)
+    imshow_kwargs = {'ax': ax}
+    if scale is not None:
+        lo, hi = scale
+        imshow_kwargs.update(vmin=lo, vmax=hi)
+    else:
+        imshow_kwargs['robust'] = True
+    rgb_src.gw.imshow(**imshow_kwargs)
 
     def _maybe_sample(gdf):
         if gdf is not None and len(gdf) > max_features:
