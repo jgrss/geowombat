@@ -1291,7 +1291,7 @@ class SpatialOperations(_PropertyMixin):
             rows (Optional[int]): The number of output rows.
             cols (Optional[int]): The number of output rows.
             center (Optional[bool]): Whether to center the subset on ``left`` and ``top``.
-            mask_corners (Optional[bool]): Whether to mask corners (*requires ``pymorph``).
+            mask_corners (Optional[bool]): Whether to mask corners (requires ``pymorph``).
 
         Returns:
             ``xarray.DataArray``

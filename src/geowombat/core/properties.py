@@ -399,6 +399,7 @@ def get_sensor_info(key=None, sensor=None):
             swir2=2.1857,
         ),
         ps=WavelengthsBGRN(blue=0.485, green=0.545, red=0.63, nir=0.82),
+        naip=WavelengthsRGBN(red=0.658, green=0.560, blue=0.457, nir=0.840),
     )
 
     name = dict(
@@ -434,6 +435,7 @@ def get_sensor_info(key=None, sensor=None):
         ps='PlanetScope with 4 (visible + NIR) bands',
         qb='Quickbird with 4 (visible + NIR) bands',
         ik='IKONOS with 4 (visible + NIR) bands',
+        naip='National Agriculture Imagery Program (USDA): RGB + NIR, ~0.6-1 m GSD',
         mcd43a4='MODIS Nadir BRDF-Adjusted Reflectance Daily 500m with 7 bands',
     )
 
@@ -643,6 +645,7 @@ def get_sensor_info(key=None, sensor=None):
         ps=WavelengthsBGRN(blue=1, green=2, red=3, nir=4),
         qb=WavelengthsBGRN(blue=1, green=2, red=3, nir=4),
         ik=WavelengthsBGRN(blue=1, green=2, red=3, nir=4),
+        naip=WavelengthsRGBN(red=1, green=2, blue=3, nir=4),
         mcd43a4=WavelengthsMODSR(
             red=1, nir=2, blue=3, green=4, nir2=5, swir1=6, swir2=7
         ),
