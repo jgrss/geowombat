@@ -231,7 +231,12 @@ def _open_stac_multiband_asset(
     from ..config import update as _config_update
     from .api import open as _gw_open
 
-    asset_key = bands[0] if bands else 'image'
+    # NAIP packs RGB+NIR into a single multi-band COG under the
+    # 'image' asset key. Band selection by name happens after opening
+    # via gw.config(sensor='naip') / channel indexing, never via the
+    # asset key — so a caller passing bands=['red','green','blue']
+    # must not be interpreted as asset-key lookups.
+    asset_key = 'image'
     urls = [item.assets[asset_key].href for item in items]
 
     # Build a GeoDataFrame from item geometries so callers see the

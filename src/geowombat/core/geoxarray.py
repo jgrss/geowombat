@@ -2017,7 +2017,7 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
 
         Args:
             detector: A ``YOLODetector`` or ``TorchGeoDetector`` instance
-                (see ``geowombat.ml``).
+                (see ``geowombat.detect``).
             **kwargs: Forwarded to ``detector.predict`` — typical args
                 are ``tile_size``, ``overlap``, ``conf``, ``band_indices``,
                 ``scale``, ``nms_iou``, ``max_det``, ``progress``. If

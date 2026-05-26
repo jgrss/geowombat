@@ -7,14 +7,22 @@ tiles must overlap so that objects on tile seams can still be matched;
 layer here rather than changing the accessor.
 """
 
+import typing as T
+
 from rasterio.windows import Window
 
 
-def overlapped_windows(src, tile_size, overlap=0.0):
+def overlapped_windows(
+    src,
+    tile_size: int,
+    overlap: float = 0.0,
+) -> T.Generator[T.Tuple[int, int, Window], None, None]:
     """Yield ``rasterio.windows.Window`` tiles with fractional overlap.
 
-    The last tile in each direction is shifted backwards so it never
-    exceeds the image bounds — tiles are always full size.
+    The last tile in each direction is shifted backwards when possible so
+    it does not exceed the image bounds. The returned windows may still
+    be smaller than ``tile_size`` at image edges, or when the image is
+    smaller than ``tile_size`` in either dimension.
 
     Parameters
     ----------

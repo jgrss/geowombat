@@ -24,6 +24,11 @@
 ### Bug Fixes
 
 * Improved block usage and nodata handling ([#348](https://github.com/jgrss/geowombat/pull/348)).
+* Restored multi-threaded warp via the existing `num_threads` parameter without GDAL warning spam. Threading is now routed through `rio.Env(GDAL_NUM_THREADS=str(num_threads))` (opened only when `num_threads > 1`) instead of the rasterio `warp_extras` / `multi` `WarpedVRT` kwargs, which produce `Warning 6: warp options does not support option WARP_EXTRAS / MULTI` per `WarpedVRT` construction on rasterio>=1.4 / GDAL>=3.12. Default (`num_threads=1`) leaves the GDAL env untouched, so a user's outer `rio.Env(GDAL_NUM_THREADS=...)` flows through unmodified.
+* Fixed NAIP STAC fast path (`_open_stac_multiband_asset`) to always use the `'image'` asset key. The previous logic derived `asset_key` from `bands[0]`, which raised `KeyError` whenever callers passed band names like `bands=['red', 'green', 'blue']` — NAIP exposes a single multi-band COG under `'image'`, not per-band assets. Band selection by name now happens after opening (via `gw.config(sensor='naip')`), not via STAC asset-key lookup.
+* Fixed `prepare_label_gdf` (`geowombat.ml._labels`) crash on null `class_col` values. The pre-fix code mapped the full column then cast to `int`, raising `IntCastingNaNError`; now null-class rows are dropped with a warning before integer encoding, matching the symmetric behavior of the `class_names`-supplied branch.
+* Hardened `prepare_label_gdf` against malformed input geometries: null and empty geometries are dropped with a warning before any spatial operation, and invalid geometries (e.g. self-intersecting / bowtie polygons) are first repaired via `shapely.validation.make_valid` — only geometries that remain unusable after repair are dropped, and the warning surfaces both the repaired count and the dropped count.
+* Fixed `TorchGeoDetector._coco_names()` truncation. The class-name list was only 27 entries, so any `cls_id >= 26` from torchvision DEFAULT weights fell through to `str(class_id)` in `predict()`. Expanded to the full 91-entry torchvision COCO label list (with N/A gaps at unused ids 12, 26, 29, 30, 45, 66, 68, 69, 71, 83) so `cls_id` indexes correctly.
 
 ### Build
 
@@ -33,6 +38,9 @@
 ### Testing
 
 * Added 29 new tests for the detect module covering: tiled-inference window math (`overlapped_windows`), polygon → YOLO label math for AABB and OBB, `_scale_to_uint8` edge cases, cross-tile NMS, IoU/COCO/class-agnostic accuracy modes, CRS reprojection in accuracy assessment, QGIS review round-trip, smoke tests for `YOLODetector` / `TorchGeoDetector` / `SAMRefiner` / `plot_detections`, and an end-to-end `fit_predict` smoke test.
+* Added `tests/test_threading.py` (4 tests) pinning the `rio.Env(GDAL_NUM_THREADS=...)` wiring: no GDAL warning spam at default or `num_threads=4`, and verified `rio.Env` composition so a user's outer env merges with geowombat's inner env without overriding.
+* Added regression tests for the NAIP `asset_key` fix (3, in `tests/test_stac_mocked.py`), `prepare_label_gdf` null-class + null/invalid-geometry handling (5, in `tests/detect_test.py`), and `TorchGeoDetector._coco_names()` length / canonical-indices / N/A-gap layout (3). All new regression tests have been verified to fail under the pre-fix code.
+* Gated the YOLO and torchvision smoke tests behind a `GEOWOMBAT_RUN_DETECTOR_DOWNLOADS=1` environment variable so the default suite stays deterministic and offline-safe; opt-in only when local weight downloads (~5–160 MB) are acceptable.
 
 ## v2.1.23 (2026-01-12)
 

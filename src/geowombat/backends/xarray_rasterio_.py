@@ -36,17 +36,26 @@ _ERROR_MSG = (
 )
 
 
+def _gdal_threads_env(num_threads):
+    # See geowombat.backends.rasterio_._gdal_threads_env for rationale.
+    if num_threads and int(num_threads) > 1:
+        return rasterio.Env(GDAL_NUM_THREADS=str(num_threads))
+    return rasterio.Env()
+
+
 class RasterioArrayWrapper(BackendArray):
     """A wrapper around rasterio dataset objects."""
 
-    def __init__(self, manager, lock, vrt_params=None):
+    def __init__(self, manager, lock, vrt_params=None, num_threads=1):
         self.manager = manager
         self.lock = lock
+        self._num_threads = num_threads
 
         # cannot save riods as an attribute: this would break pickleability
         riods = manager.acquire()
         if vrt_params is not None:
-            riods = WarpedVRT(riods, **vrt_params)
+            with _gdal_threads_env(num_threads):
+                riods = WarpedVRT(riods, **vrt_params)
         self.vrt_params = vrt_params
         self._shape = (riods.count, riods.height, riods.width)
 
@@ -131,10 +140,11 @@ class RasterioArrayWrapper(BackendArray):
             out = np.zeros(shape, dtype=self.dtype)
         else:
             with self.lock:
-                riods = self.manager.acquire(needs_lock=False)
-                if self.vrt_params is not None:
-                    riods = WarpedVRT(riods, **self.vrt_params)
-                out = riods.read(band_key, window=window)
+                with _gdal_threads_env(self._num_threads):
+                    riods = self.manager.acquire(needs_lock=False)
+                    if self.vrt_params is not None:
+                        riods = WarpedVRT(riods, **self.vrt_params)
+                    out = riods.read(band_key, window=window)
 
         if squeeze_axis:
             out = np.squeeze(out, axis=squeeze_axis)
@@ -201,6 +211,7 @@ def open_rasterio(
     chunks: T.Optional[T.Union[int, tuple, dict]] = None,
     cache: T.Optional[bool] = None,
     lock: T.Optional[T.Union[bool, SerializableLock]] = None,
+    num_threads: int = 1,
     **kwargs,
 ) -> DataArray:
     """Opens a file with ``rasterio``.
@@ -314,7 +325,8 @@ def open_rasterio(
     )
     riods = manager.acquire()
     if vrt_params is not None:
-        riods = WarpedVRT(riods, **vrt_params)
+        with _gdal_threads_env(num_threads):
+            riods = WarpedVRT(riods, **vrt_params)
 
     if cache is None:
         cache = chunks is None
@@ -425,7 +437,9 @@ def open_rasterio(
                 attrs[k] = v
 
     data = indexing.LazilyIndexedArray(
-        RasterioArrayWrapper(manager, lock, vrt_params)
+        RasterioArrayWrapper(
+            manager, lock, vrt_params, num_threads=num_threads
+        )
     )
     # this lets you write arrays loaded with rasterio
     data = indexing.CopyOnWriteArray(data)

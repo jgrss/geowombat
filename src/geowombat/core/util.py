@@ -295,11 +295,13 @@ def get_geometry_info(geometry: object, res: tuple) -> namedtuple:
     )
 
 
-def get_file_extension(filename: str) -> namedtuple:
+def get_file_extension(
+    filename: T.Union[str, os.PathLike],
+) -> namedtuple:
     """Gets file and directory name information.
 
     Args:
-        filename (str): The file name.
+        filename (str or os.PathLike): The file name.
 
     Returns:
         Name information as ``namedtuple``.

@@ -19,14 +19,12 @@ Example
 ...     )
 """
 
-import math
 import random
 import warnings
 from pathlib import Path
 
 import geopandas as gpd
 import numpy as np
-from shapely.affinity import rotate
 from shapely.geometry import (
     MultiPolygon,
     Polygon,

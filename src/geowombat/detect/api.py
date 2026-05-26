@@ -10,10 +10,14 @@ feels at home next to classification:
 ...     preds = predict(src, det, conf=0.25)
 """
 
+import typing as T
+
+import geopandas as gpd
+
 from .data import build_yolo_dataset
 
 
-def predict(src, detector, **kwargs):
+def predict(src, detector, **kwargs) -> gpd.GeoDataFrame:
     """Run tiled, georeferenced inference over a raster.
 
     Thin wrapper around ``detector.predict(src, **kwargs)`` so detection
@@ -38,7 +42,7 @@ def predict(src, detector, **kwargs):
     return detector.predict(src, **kwargs)
 
 
-def fit(detector, dataset_yaml, **kwargs):
+def fit(detector, dataset_yaml, **kwargs) -> T.Any:
     """Fine-tune a detector on a YOLO-format dataset.
 
     Parameters
@@ -73,7 +77,7 @@ def fit_predict(
     epochs=50,
     predict_kwargs=None,
     **dataset_kwargs,
-):
+) -> T.Tuple[gpd.GeoDataFrame, dict]:
     """Build a training dataset, fine-tune, and predict in one call.
 
     Mirrors ``gw.ml.fit_predict`` for classification: end-to-end from

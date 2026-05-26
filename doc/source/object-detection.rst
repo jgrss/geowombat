@@ -6,8 +6,8 @@ Object detection
 GeoWombat ships object detectors that operate on georeferenced rasters
 and return ``GeoDataFrame`` outputs in the source CRS. Everything stays
 inside the familiar ``with gw.open(...) as src:`` / ``src.gw.<method>``
-pattern, with module-level wrappers in ``gw.ml`` that mirror
-``fit`` / ``predict`` / ``fit_predict`` for classification.
+pattern, with module-level wrappers in ``gw.detect`` that mirror
+``fit`` / ``predict`` / ``fit_predict`` from ``gw.ml`` for classification.
 
 .. seealso::
 

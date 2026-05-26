@@ -71,6 +71,14 @@ except ImportError:
 # because the constructor needs to load a real ~375 MB weights file.
 SAM_CHECKPOINT = os.environ.get('GEOWOMBAT_SAM_CHECKPOINT')
 
+# Smoke tests that load real YOLO / torchvision weights trigger
+# automatic network downloads (~5-160 MB) on first run. They're skipped
+# by default and opt-in via this env var so the suite stays
+# deterministic and CI-safe.
+RUN_DETECTOR_DOWNLOADS = bool(
+    os.environ.get('GEOWOMBAT_RUN_DETECTOR_DOWNLOADS')
+)
+
 
 # ---------------------------------------------------------------------------
 # boxes_from_polygons
@@ -452,6 +460,10 @@ class TestReviewRoundTrip(unittest.TestCase):
 )
 class TestYOLODetectorSmoke(unittest.TestCase):
 
+    @unittest.skipUnless(
+        RUN_DETECTOR_DOWNLOADS,
+        "set GEOWOMBAT_RUN_DETECTOR_DOWNLOADS=1 to allow yolov8n.pt download",
+    )
     def test_predict_returns_geodataframe(self):
         from geowombat.detect import YOLODetector
 
@@ -841,8 +853,9 @@ class TestPlotDetections(unittest.TestCase):
 # ---------------------------------------------------------------------------
 
 @unittest.skipUnless(
-    TORCHVISION_AVAILABLE,
-    "torchvision not installed (pip install geowombat[detect,dl])",
+    TORCHVISION_AVAILABLE and RUN_DETECTOR_DOWNLOADS,
+    "torchvision required + GEOWOMBAT_RUN_DETECTOR_DOWNLOADS=1 "
+    "to allow torchvision COCO weight download",
 )
 class TestTorchGeoDetectorSmoke(unittest.TestCase):
 
@@ -897,8 +910,14 @@ class TestSAMRefiner(unittest.TestCase):
 # ---------------------------------------------------------------------------
 
 @unittest.skipUnless(
-    ULTRALYTICS_AVAILABLE and PIL_AVAILABLE and YAML_AVAILABLE,
-    "ultralytics + Pillow + PyYAML required",
+    (
+        ULTRALYTICS_AVAILABLE
+        and PIL_AVAILABLE
+        and YAML_AVAILABLE
+        and RUN_DETECTOR_DOWNLOADS
+    ),
+    "ultralytics + Pillow + PyYAML required + "
+    "GEOWOMBAT_RUN_DETECTOR_DOWNLOADS=1 to allow yolov8n.pt download",
 )
 class TestFitPredict(unittest.TestCase):
 
@@ -937,6 +956,303 @@ class TestFitPredict(unittest.TestCase):
         self.assertIn('n_boxes', summary)
         # preds is a GeoDataFrame (may be empty — that's OK for a 1-epoch run).
         self.assertIsInstance(preds, gpd.GeoDataFrame)
+
+
+# ---------------------------------------------------------------------------
+# prepare_label_gdf — regression tests for null-class handling
+# ---------------------------------------------------------------------------
+
+class TestPrepareLabelGdfNullClass(unittest.TestCase):
+    """Pin behavior when ``labels[class_col]`` contains null values.
+
+    The pre-fix code did::
+
+        classes = sorted(labels[class_col].dropna().unique().tolist())
+        labels['_class_id'] = labels[class_col].map(name_to_id).astype(int)
+
+    which mapped the full (un-dropped) column, producing NaN for null
+    rows, then crashed at ``.astype(int)`` with
+    ``ValueError: cannot convert float NaN to integer``.
+    """
+
+    def _build_labels_in_src_crs(self, src, class_values):
+        """Build a GeoDataFrame with one polygon per class value,
+        all inside the raster footprint, in the raster's CRS.
+        """
+        bounds = src.gw.bounds  # (left, bottom, right, top)
+        # tile the polygons across a row near the bottom of the raster
+        n = len(class_values)
+        width = (bounds[2] - bounds[0]) / (n + 2)
+        height = (bounds[3] - bounds[1]) / 20
+        geoms = [
+            shapely_box(
+                bounds[0] + (i + 1) * width,
+                bounds[1] + height,
+                bounds[0] + (i + 1.5) * width,
+                bounds[1] + 2 * height,
+            )
+            for i in range(n)
+        ]
+        return gpd.GeoDataFrame(
+            {'cls': class_values},
+            geometry=geoms,
+            crs=src.gw.crs_to_pyproj,
+        )
+
+    def test_nulls_dropped_with_warning_when_class_names_none(self):
+        """Null class_col values are dropped (warning) instead of crashing.
+
+        Pre-fix this would raise ``ValueError: cannot convert float NaN
+        to integer`` at the ``.astype(int)`` step.
+        """
+        from geowombat.ml._labels import prepare_label_gdf
+
+        with gw.open(l8_224078_20200518, nodata=0) as src:
+            labels = self._build_labels_in_src_crs(
+                src, class_values=['tree', None, 'building', None, 'road'],
+            )
+            with warnings.catch_warnings(record=True) as caught:
+                warnings.simplefilter('always')
+                prepared, classes = prepare_label_gdf(
+                    src, labels, class_col='cls',
+                )
+
+        # 3 non-null rows survived; 2 nulls dropped with a warning.
+        self.assertEqual(len(prepared), 3)
+        # _class_id is integer-typed, no NaN survivors.
+        self.assertTrue(
+            np.issubdtype(prepared['_class_id'].dtype, np.integer),
+            f"_class_id dtype={prepared['_class_id'].dtype}",
+        )
+        self.assertFalse(prepared['_class_id'].isna().any())
+        # classes derived from the surviving rows only, sorted.
+        self.assertEqual(classes, ['building', 'road', 'tree'])
+        # One warning mentioning the null count.
+        null_warnings = [
+            w for w in caught if 'null' in str(w.message).lower()
+        ]
+        self.assertEqual(len(null_warnings), 1, [str(w.message) for w in caught])
+        self.assertIn('2', str(null_warnings[0].message))
+
+    def test_no_nulls_no_warning(self):
+        """Clean input: no null-class warning, full set passes through."""
+        from geowombat.ml._labels import prepare_label_gdf
+
+        with gw.open(l8_224078_20200518, nodata=0) as src:
+            labels = self._build_labels_in_src_crs(
+                src, class_values=['tree', 'building', 'road'],
+            )
+            with warnings.catch_warnings(record=True) as caught:
+                warnings.simplefilter('always')
+                prepared, classes = prepare_label_gdf(
+                    src, labels, class_col='cls',
+                )
+
+        self.assertEqual(len(prepared), 3)
+        self.assertEqual(classes, ['building', 'road', 'tree'])
+        null_warnings = [
+            w for w in caught if 'null' in str(w.message).lower()
+        ]
+        self.assertEqual(null_warnings, [])
+
+    def test_null_and_empty_geometries_dropped(self):
+        """Rows with None or empty geometry are dropped (with a warning)
+        before any spatial op runs — otherwise reprojection / intersects
+        would crash later."""
+        from geowombat.ml._labels import prepare_label_gdf
+        from shapely.geometry import Polygon
+
+        with gw.open(l8_224078_20200518, nodata=0) as src:
+            labels = self._build_labels_in_src_crs(
+                src, class_values=['tree', 'building', 'road'],
+            )
+            # Mutate one to None and one to an empty Polygon.
+            labels.loc[0, labels.geometry.name] = None
+            labels.loc[1, labels.geometry.name] = Polygon()
+            with warnings.catch_warnings(record=True) as caught:
+                warnings.simplefilter('always')
+                prepared, classes = prepare_label_gdf(
+                    src, labels, class_col='cls',
+                )
+
+        # Only the third (real) row survives.
+        self.assertEqual(len(prepared), 1)
+        self.assertEqual(classes, ['road'])
+        geom_warnings = [
+            w for w in caught
+            if 'null or empty geometry' in str(w.message)
+        ]
+        self.assertEqual(len(geom_warnings), 1, [str(w.message) for w in caught])
+        # Message reports the count.
+        self.assertIn('2', str(geom_warnings[0].message))
+
+    def test_invalid_geometries_repaired_via_make_valid(self):
+        """Self-intersecting (bowtie) polygons are repaired in place,
+        not silently passed downstream where they'd break .intersects()."""
+        from geowombat.ml._labels import prepare_label_gdf
+        from shapely.geometry import Polygon
+
+        with gw.open(l8_224078_20200518, nodata=0) as src:
+            labels = self._build_labels_in_src_crs(
+                src, class_values=['tree', 'building'],
+            )
+            # Replace the first geometry with a classic self-intersecting
+            # bowtie, in the raster's CRS and inside its footprint.
+            bounds = src.gw.bounds
+            cx = (bounds[0] + bounds[2]) / 2
+            cy = (bounds[1] + bounds[3]) / 2
+            half = 50.0
+            bowtie = Polygon([
+                (cx - half, cy - half),
+                (cx + half, cy + half),
+                (cx + half, cy - half),
+                (cx - half, cy + half),
+                (cx - half, cy - half),
+            ])
+            self.assertFalse(bowtie.is_valid)
+            labels.loc[0, labels.geometry.name] = bowtie
+
+            with warnings.catch_warnings(record=True) as caught:
+                warnings.simplefilter('always')
+                prepared, classes = prepare_label_gdf(
+                    src, labels, class_col='cls',
+                )
+
+        # Both rows survive — the bowtie was repaired, not dropped.
+        self.assertEqual(len(prepared), 2)
+        # And every surviving geometry is now valid.
+        self.assertTrue(prepared.geometry.is_valid.all())
+        invalid_warnings = [
+            w for w in caught
+            if 'invalid geometry' in str(w.message)
+        ]
+        self.assertEqual(len(invalid_warnings), 1, [str(w.message) for w in caught])
+        # Message records the repair count.
+        self.assertIn('repaired', str(invalid_warnings[0].message).lower())
+        self.assertIn('1 repaired', str(invalid_warnings[0].message))
+        # No 'unrepairable' or 'dropped' wording for a fully-repaired case.
+        self.assertNotIn('unrepairable', str(invalid_warnings[0].message).lower())
+
+    def test_unrepairable_geometry_dropped(self):
+        """A geometry that make_valid can't salvage is dropped, surviving
+        rows continue, and the warning reports both repaired and dropped
+        counts.
+
+        shapely 2.x's ``make_valid`` is robust enough that almost any
+        real-world input repairs to something usable, so we
+        monkey-patch the import inside ``_labels`` to return an empty
+        geometry for one specific input — this exercises the
+        ``n_lost > 0`` branch we actually want to test.
+        """
+        from unittest.mock import patch
+        from geowombat.ml import _labels as labels_mod
+        from geowombat.ml._labels import prepare_label_gdf
+        from shapely.geometry import Polygon
+
+        with gw.open(l8_224078_20200518, nodata=0) as src:
+            labels = self._build_labels_in_src_crs(
+                src, class_values=['tree', 'building', 'road'],
+            )
+            bounds = src.gw.bounds
+            cx = (bounds[0] + bounds[2]) / 2
+            cy = (bounds[1] + bounds[3]) / 2
+            half = 50.0
+            bowtie_a = Polygon([
+                (cx - half, cy - half),
+                (cx + half, cy + half),
+                (cx + half, cy - half),
+                (cx - half, cy + half),
+                (cx - half, cy - half),
+            ])
+            bowtie_b = Polygon([
+                (cx + 2 * half, cy - half),
+                (cx + 4 * half, cy + half),
+                (cx + 4 * half, cy - half),
+                (cx + 2 * half, cy + half),
+                (cx + 2 * half, cy - half),
+            ])
+            self.assertFalse(bowtie_a.is_valid)
+            self.assertFalse(bowtie_b.is_valid)
+            # Row 0 and 1 both start invalid. We force ``make_valid`` to
+            # repair the first but return an empty Polygon for the second.
+            labels.loc[0, labels.geometry.name] = bowtie_a
+            labels.loc[1, labels.geometry.name] = bowtie_b
+
+            real_make_valid = labels_mod.make_valid
+
+            def fake_make_valid(geom):
+                if geom.equals(bowtie_b):
+                    return Polygon()  # unrepairable -> empty
+                return real_make_valid(geom)
+
+            with patch.object(labels_mod, 'make_valid', new=fake_make_valid):
+                with warnings.catch_warnings(record=True) as caught:
+                    warnings.simplefilter('always')
+                    prepared, classes = prepare_label_gdf(
+                        src, labels, class_col='cls',
+                    )
+
+        # tree (bowtie_a, repaired) + road (clean) survive; building drops.
+        self.assertEqual(len(prepared), 2)
+        self.assertEqual(sorted(classes), ['road', 'tree'])
+        self.assertTrue(prepared.geometry.is_valid.all())
+        self.assertFalse(prepared.geometry.is_empty.any())
+        invalid_warnings = [
+            w for w in caught
+            if 'invalid geometry' in str(w.message)
+        ]
+        self.assertEqual(len(invalid_warnings), 1)
+        msg = str(invalid_warnings[0].message)
+        # Both counts are surfaced.
+        self.assertIn('1 repaired', msg)
+        self.assertIn('1 unrepairable', msg)
+
+
+# ---------------------------------------------------------------------------
+# TorchGeoDetector._coco_names — full 91-entry torchvision COCO list
+# ---------------------------------------------------------------------------
+
+@unittest.skipUnless(
+    TORCHVISION_AVAILABLE,
+    "torchvision not installed (pip install geowombat[detect,dl])",
+)
+class TestCocoNamesFullList(unittest.TestCase):
+    """Pin the canonical torchvision COCO label list.
+
+    torchvision's COCO label index uses the original 91-id space
+    (with N/A gaps for unused ids: 12, 26, 29, 30, 45, 66, 68, 69,
+    71, 83). Pre-fix the list only had 27 entries, so any cls_id
+    above 25 fell through to ``str(class_id)`` in
+    ``GeoWombatDetector.predict``.
+    """
+
+    def test_length_is_91(self):
+        from geowombat.detect.detectors import TorchGeoDetector
+        self.assertEqual(len(TorchGeoDetector._coco_names()), 91)
+
+    def test_canonical_indices(self):
+        """A handful of well-known COCO ids resolve to the right names."""
+        from geowombat.detect.detectors import TorchGeoDetector
+        names = TorchGeoDetector._coco_names()
+        # Background + a sample drawn from across the full range
+        # (early, mid, late) so a future truncation regression is caught.
+        self.assertEqual(names[0], '__background__')
+        self.assertEqual(names[1], 'person')
+        self.assertEqual(names[16], 'bird')
+        self.assertEqual(names[44], 'bottle')
+        self.assertEqual(names[64], 'potted plant')
+        self.assertEqual(names[88], 'teddy bear')
+        self.assertEqual(names[90], 'toothbrush')
+
+    def test_na_gaps_in_canonical_positions(self):
+        """Unused COCO ids are 'N/A' so cls_id indexing stays aligned."""
+        from geowombat.detect.detectors import TorchGeoDetector
+        names = TorchGeoDetector._coco_names()
+        for gap in (12, 26, 29, 30, 45, 66, 68, 69, 71, 83):
+            self.assertEqual(
+                names[gap], 'N/A',
+                f"id {gap} should be 'N/A' (got {names[gap]!r})",
+            )
 
 
 if __name__ == '__main__':

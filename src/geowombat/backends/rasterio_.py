@@ -46,6 +46,18 @@ except ImportError:
 logger = logging.getLogger(__name__)
 
 
+def _gdal_threads_env(num_threads: T.Optional[int]) -> rio.Env:
+    # Only sets GDAL_NUM_THREADS when the caller explicitly asked for >1
+    # threads, so the default path stays a no-op and a user's outer
+    # rio.Env(GDAL_NUM_THREADS=...) flows through. Avoids the
+    # rasterio>=1.4 / GDAL>=3.12 "Warning 6: warp options does not
+    # support option WARP_EXTRAS/MULTI" spam that the old
+    # warp_extras={'multi': True, ...} path produced per WarpedVRT.
+    if num_threads and int(num_threads) > 1:
+        return rio.Env(GDAL_NUM_THREADS=str(num_threads))
+    return rio.Env()
+
+
 def transform_from_corner(
     bounds: BoundingBox, res: T.Sequence[float]
 ) -> Affine:
@@ -1036,7 +1048,8 @@ def warp(
                 'warp_mem_limit': warp_mem_limit,
             }
 
-        output = WarpedVRT(src, **vrt_options)
+        with _gdal_threads_env(num_threads):
+            output = WarpedVRT(src, **vrt_options)
 
     return output
 
