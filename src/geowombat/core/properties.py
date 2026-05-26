@@ -399,7 +399,7 @@ def get_sensor_info(key=None, sensor=None):
             swir2=2.1857,
         ),
         ps=WavelengthsBGRN(blue=0.485, green=0.545, red=0.63, nir=0.82),
-        naip=WavelengthsRGBN(red=0.658, green=0.560, blue=0.450, nir=0.840),
+        naip=WavelengthsRGBN(red=0.658, green=0.560, blue=0.457, nir=0.840),
     )
 
     name = dict(
