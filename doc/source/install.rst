@@ -262,6 +262,16 @@ for the full recipe.
 
     - ``time`` (dateparser) is included in the **base** Conda package
       automatically; with pip it is an optional extra.
+    - ``geowombat-dl``: the Conda sub-package ships ``pytorch``, ``torchgeo``,
+      and ``segmentation-models-pytorch`` but **omits** ``pytorch-tabnet``.
+      The current ``pytorch-tabnet`` build on conda-forge pins
+      ``pytorch <2.0``, which conflicts with ``torchgeo`` and
+      ``segmentation-models-pytorch``. If you need TabNet, install it with
+      pip into the same env after the Conda install::
+
+          conda install geowombat-dl
+          pip install pytorch-tabnet
+
     - ``geowombat-detect``: ``opencv-python`` is shipped as ``py-opencv <4.12``
       on conda-forge to stay compatible with the ``numpy<2`` pin.
     - ``geowombat-sam``: ``segment-anything`` (the upstream PyPI package) is
@@ -272,11 +282,12 @@ for the full recipe.
           conda install geowombat-sam
           pip install segment-anything
 
-    - A few packages are unavailable on conda-forge and are omitted from the
-      Conda sub-packages: ``wrapt-timeout-decorator`` (stac), ``sphinx_tabs``
-      (docs), ``pygeos`` (perf; deprecated — its functionality is now in
-      shapely 2.0+), and ``segment-anything`` (sam; install via pip as
-      described above).
+    - A few packages are unavailable on conda-forge (or unavailable in a
+      compatible build) and must be installed via pip when using Conda:
+      ``wrapt-timeout-decorator`` (stac), ``sphinx_tabs`` (docs), ``pygeos``
+      (perf; deprecated — its functionality is now in shapely 2.0+),
+      ``segment-anything`` (sam; install via pip as described above), and
+      ``pytorch-tabnet`` (dl, conda only — works fine on pip).
 
 
 Test the installation
