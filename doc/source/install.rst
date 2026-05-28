@@ -207,6 +207,10 @@ GeoWombat provides optional dependency groups for specific functionality.
      - Machine learning and classification (dask-ml, lightgbm, sklearn-xarray, numba)
    * - ``dl``
      - Deep learning (PyTorch, pytorch-tabnet, torchgeo, segmentation-models-pytorch)
+   * - ``detect``
+     - Object detection (ultralytics/YOLO, torchmetrics, pycocotools, pillow, opencv-python<4.12)
+   * - ``sam``
+     - Segment Anything Model (Meta's segment-anything)
    * - ``stac``
      - STAC catalog data access (pystac, stackstac, planetary-computer)
    * - ``coreg``
@@ -233,6 +237,7 @@ Append ``[extra_name]`` to your pip install command. Multiple extras can be
 combined::
 
     pip install "geowombat[ml,stac]@git+https://github.com/jgrss/geowombat.git"
+    pip install "geowombat[ml,detect]@git+https://github.com/jgrss/geowombat.git"
 
 Installing extras with Conda
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -245,7 +250,8 @@ name, e.g.::
 
 The available Conda sub-packages are: ``geowombat-ml``, ``geowombat-stac``,
 ``geowombat-coreg``, ``geowombat-perf``, ``geowombat-view``, ``geowombat-web``,
-``geowombat-zarr``, ``geowombat-docs``, and ``geowombat-tests``.
+``geowombat-zarr``, ``geowombat-docs``, ``geowombat-tests``, ``geowombat-dl``,
+``geowombat-detect``, and ``geowombat-sam``.
 
 See the `conda-forge feedstock <https://github.com/conda-forge/geowombat-feedstock>`_
 for the full recipe.
@@ -256,15 +262,32 @@ for the full recipe.
 
     - ``time`` (dateparser) is included in the **base** Conda package
       automatically; with pip it is an optional extra.
-    - ``dl`` (deep learning) is **not available** as a Conda sub-package.
-      Install deep learning dependencies with pip::
+    - ``geowombat-dl``: the Conda sub-package ships ``pytorch``, ``torchgeo``,
+      and ``segmentation-models-pytorch`` but **omits** ``pytorch-tabnet``.
+      The current ``pytorch-tabnet`` build on conda-forge pins
+      ``pytorch <2.0``, which conflicts with ``torchgeo`` and
+      ``segmentation-models-pytorch``. If you need TabNet, install it with
+      pip into the same env after the Conda install::
 
-          pip install torch pytorch-tabnet torchgeo segmentation-models-pytorch
+          conda install geowombat-dl
+          pip install pytorch-tabnet
 
-    - A few packages are unavailable on conda-forge and are omitted from the
-      Conda sub-packages: ``wrapt-timeout-decorator`` (stac), ``sphinx_tabs``
-      (docs), and ``pygeos`` (perf; deprecated — its functionality is now in
-      shapely 2.0+).
+    - ``geowombat-detect``: ``opencv-python`` is shipped as ``py-opencv <4.12``
+      on conda-forge to stay compatible with the ``numpy<2`` pin.
+    - ``geowombat-sam``: ``segment-anything`` (the upstream PyPI package) is
+      not available on conda-forge. The ``geowombat-sam`` sub-package is a
+      placeholder that only pins the base ``geowombat``; install
+      ``segment-anything`` with pip after the Conda install::
+
+          conda install geowombat-sam
+          pip install segment-anything
+
+    - A few packages are unavailable on conda-forge (or unavailable in a
+      compatible build) and must be installed via pip when using Conda:
+      ``wrapt-timeout-decorator`` (stac), ``sphinx_tabs`` (docs), ``pygeos``
+      (perf; deprecated — its functionality is now in shapely 2.0+),
+      ``segment-anything`` (sam; install via pip as described above), and
+      ``pytorch-tabnet`` (dl, conda only — works fine on pip).
 
 
 Test the installation
