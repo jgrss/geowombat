@@ -173,9 +173,18 @@ version_toml = []
 version_variables = []
 tag_format = "v{version}"
 commit_message = "chore(release): v{version}"
-changelog_file = "CHANGELOG.md"
 build_command = ""
 major_on_zero = false
+
+[tool.semantic_release.changelog]
+# "update" inserts new release sections at the insertion_flag and leaves
+# the rest of CHANGELOG.md untouched. The default ("init") would rebuild
+# the whole file from git history and clobber any curated content.
+mode = "update"
+insertion_flag = "<!-- version list -->"
+
+[tool.semantic_release.changelog.default_templates]
+changelog_file = "CHANGELOG.md"
 
 [tool.semantic_release.branches.main]
 match = "main"
