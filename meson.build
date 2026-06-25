@@ -99,6 +99,7 @@ py3.install_sources(
         'src/geowombat/data/rgbn_subb.tif',
         'src/geowombat/data/rgbn.tif',
         'src/geowombat/data/srtm30m_bounding_boxes.gpkg',
+        'src/geowombat/data/stac_training.geojson',
         'src/geowombat/data/wrs2.tar.gz',
     ],
     subdir: 'geowombat/data',

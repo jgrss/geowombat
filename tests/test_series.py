@@ -14,7 +14,9 @@ try:
     import jax.numpy as jnp
 
     JAX_INSTALLED = True
-except ImportError:
+# Broad catch: a jax built for a different NumPy raises AttributeError (not
+# ImportError) on import, e.g. under NumPy 1.x with a NumPy-2-only jax.
+except Exception:
     JAX_INSTALLED = False
 
 
@@ -193,6 +195,10 @@ class TestSeries(unittest.TestCase):
             with gw.open(out_path) as dst:
                 self.assertEqual(dst.gw.nbands, 1)
 
+    @unittest.skipUnless(
+        JAX_INSTALLED,
+        "gw.series default backend (transfer_lib='jax') needs jax",
+    )
     def test_series_multiple(self):
         with rio.open(l8_224077_20200518_B2) as src:
             res = src.res

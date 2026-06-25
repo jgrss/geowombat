@@ -871,33 +871,36 @@ def load(
 
 
 class _ImportGPU(object):
+    # Optional GPU-transfer backends. Catch broadly: a broken or
+    # version-mismatched install (e.g. a jax built for a different NumPy)
+    # must degrade to "not available" rather than break ``import geowombat``.
     try:
         import jax
         import jax.numpy as jnp
 
         JAX_INSTALLED = True
-    except ImportError:
+    except Exception:
         JAX_INSTALLED = False
 
     try:
         import torch
 
         PYTORCH_INSTALLED = True
-    except ImportError:
+    except Exception:
         PYTORCH_INSTALLED = False
 
     try:
         import tensorflow as tf
 
         TENSORFLOW_INSTALLED = True
-    except ImportError:
+    except Exception:
         TENSORFLOW_INSTALLED = False
 
     try:
         from tensorflow import keras
 
         KERAS_INSTALLED = True
-    except ImportError:
+    except Exception:
         KERAS_INSTALLED = False
 
 
