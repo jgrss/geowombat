@@ -36,7 +36,10 @@ jobs:
             numpy-spec: '>=2,<3'
     steps:
       - name: Install system requirements
-        run: apt update -y && apt install -y nodejs g++ git python3-dev
+        # libgl1/libglib2.0-0 are runtime libs that opencv-python (pulled in
+        # by the detect extra) loads at import time; the gdal:ubuntu-small
+        # image does not ship them.
+        run: apt update -y && apt install -y nodejs g++ git python3-dev libgl1 libglib2.0-0
 
       - uses: actions/checkout@v4
         with:
@@ -55,15 +58,26 @@ jobs:
       - name: Create venv
         run: rm -rf .venv && uv venv
 
+      - name: Constrain NumPy for this leg
+        # Pin NumPy at *resolution* time, not after the fact. A post-hoc
+        # ``uv pip install "numpy<2"`` only swaps NumPy and leaves dependencies
+        # such as SciPy on a NumPy-2-only build (which then fails importing
+        # ``np.long``/``np.ulong``). Feeding the pin to uv as a constraint
+        # makes the resolver pick a mutually compatible SciPy/OpenCV/etc.
+        run: |
+          echo "numpy${{ matrix.numpy-spec }}" > "${{ runner.temp }}/numpy-constraint.txt"
+          echo "UV_CONSTRAINT=${{ runner.temp }}/numpy-constraint.txt" >> "$GITHUB_ENV"
+
       - name: Install Python packages
         run: |
           uv pip install gdal[numpy]==$(gdal-config --version)
           uv pip install .[stac,web,tests]
 
-      - name: Pin NumPy for this leg
+      - name: Confirm NumPy major version for this leg
+        # Fail loudly if the constraint did not take effect rather than
+        # silently testing the wrong NumPy major version.
         run: |
-          uv pip install "numpy${{ matrix.numpy-spec }}"
-          python -c "import numpy; print('Testing against NumPy', numpy.__version__)"
+          python -c "import numpy, sys; got = numpy.__version__.split('.')[0]; want = '${{ matrix.numpy }}'; print('Testing against NumPy', numpy.__version__); sys.exit(0 if got == want else 'expected NumPy %s.x, got %s' % (want, numpy.__version__))"
 
       - name: Run Unittests
         run: |
@@ -73,14 +87,12 @@ jobs:
         if: matrix.numpy == '2'
         run: |
           uv pip install ".[detect,ml]"
-          uv pip install "numpy${{ matrix.numpy-spec }}"
           python -c "import cv2, numba, numpy; print('cv2', cv2.__version__, '| numba', numba.__version__, '| numpy', numpy.__version__)"
 
       - name: Run ml Unittests
         run: |
           uv pip install testfixtures
           uv pip install --reinstall-package geowombat ".[ml,dl]"
-          uv pip install "numpy${{ matrix.numpy-spec }}"
           cd tests && python -m unittest discover -p 'ml_*.py'
 
   # Mirror the real user install path: build the sdist (the only artifact
@@ -116,8 +128,19 @@ jobs:
       - name: Create venv
         run: rm -rf .venv && uv venv
 
+      - name: Constrain NumPy for this leg
+        # See the Tests job: pin at resolution time so SciPy/etc. match the
+        # target NumPy major version instead of being left on a mismatched build.
+        run: |
+          echo "numpy${{ matrix.numpy-spec }}" > "${{ runner.temp }}/numpy-constraint.txt"
+          echo "UV_CONSTRAINT=${{ runner.temp }}/numpy-constraint.txt" >> "$GITHUB_ENV"
+
       - name: Build sdist
         run: |
+          # ``meson dist`` shells out to git; without this the container's
+          # root-owned checkout trips git's "dubious ownership" guard and the
+          # build aborts with "Dist currently only works with Git ... repos".
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
           uv pip install build
           python -m build --sdist
 
@@ -125,8 +148,7 @@ jobs:
         run: |
           uv pip install gdal[numpy]==$(gdal-config --version)
           uv pip install dist/geowombat-*.tar.gz
-          uv pip install "numpy${{ matrix.numpy-spec }}"
-          python -c "import numpy; print('Smoke testing against NumPy', numpy.__version__)"
+          python -c "import numpy, sys; got = numpy.__version__.split('.')[0]; want = '${{ matrix.numpy }}'; print('Smoke testing against NumPy', numpy.__version__); sys.exit(0 if got == want else 'expected NumPy %s.x, got %s' % (want, numpy.__version__))"
 
       - name: Smoke import compiled extensions
         run: |
