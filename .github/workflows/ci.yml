@@ -65,8 +65,8 @@ jobs:
         # ``np.long``/``np.ulong``). Feeding the pin to uv as a constraint
         # makes the resolver pick a mutually compatible SciPy/OpenCV/etc.
         run: |
-          echo "numpy${{ matrix.numpy-spec }}" > "${{ runner.temp }}/numpy-constraint.txt"
-          echo "UV_CONSTRAINT=${{ runner.temp }}/numpy-constraint.txt" >> "$GITHUB_ENV"
+          echo "numpy${{ matrix.numpy-spec }}" > "$RUNNER_TEMP/numpy-constraint.txt"
+          echo "UV_CONSTRAINT=$RUNNER_TEMP/numpy-constraint.txt" >> "$GITHUB_ENV"
 
       - name: Install Python packages
         run: |
@@ -132,8 +132,8 @@ jobs:
         # See the Tests job: pin at resolution time so SciPy/etc. match the
         # target NumPy major version instead of being left on a mismatched build.
         run: |
-          echo "numpy${{ matrix.numpy-spec }}" > "${{ runner.temp }}/numpy-constraint.txt"
-          echo "UV_CONSTRAINT=${{ runner.temp }}/numpy-constraint.txt" >> "$GITHUB_ENV"
+          echo "numpy${{ matrix.numpy-spec }}" > "$RUNNER_TEMP/numpy-constraint.txt"
+          echo "UV_CONSTRAINT=$RUNNER_TEMP/numpy-constraint.txt" >> "$GITHUB_ENV"
 
       - name: Build sdist
         run: |
