@@ -38,13 +38,13 @@ bibliography: paper.bib
 
 # Summary
 
-GeoWombat is an open-source Python library that provides an end-to-end platform for geospatial raster data processing and remote sensing analysis at scale. Built on xarray [@xarray], Dask [@dask], and rasterio [@rasterio_software], GeoWombat simplifies common but complex operations - such as mosaicking multi-tile imagery, reprojecting across coordinate reference systems, aligning rasters of varying resolutions, and performing radiometric corrections - into concise, intuitive commands. The library includes built-in sensor profiles for Landsat 1--8, Sentinel-1 and Sentinel-2, MODIS, and NAIP that automate band naming, scaling, and metadata handling. It supports workflows spanning cloud-based data access via SpatioTemporal Asset Catalogs (STAC) from multiple providers, a full radiometric processing chain (DN-to-reflectance conversion, atmospheric correction, BRDF normalization, and topographic correction), vegetation index computation, raster-vector interoperability, Cython-accelerated moving window statistics, scikit-learn-based [@scikit-learn] machine learning classification, and deep learning with PyTorch [@pytorch]. By leveraging Dask's lazy evaluation and task graphs, GeoWombat enables out-of-core processing of raster datasets of any size on commodity hardware, with optional distributed computing via Ray.
+GeoWombat is an open-source Python library that provides an end-to-end platform for geospatial raster data processing and remote sensing analysis at scale. Built on xarray [@xarray], Dask [@dask], and rasterio [@rasterio_software], GeoWombat simplifies common but complex operations - such as mosaicking multi-tile imagery, reprojecting across coordinate reference systems, aligning rasters of varying resolutions, and performing radiometric corrections - into concise, intuitive commands. The library includes built-in sensor profiles for Landsat 1--8, Sentinel-1 and Sentinel-2, MODIS, and NAIP that automate band naming, scaling, and metadata handling. It supports workflows spanning cloud-based data access via SpatioTemporal Asset Catalogs (STAC) from multiple providers, a full radiometric processing chain (DN-to-reflectance conversion, atmospheric correction, BRDF normalization, and topographic correction), vegetation index computation, raster-vector interoperability, Cython-accelerated moving window statistics, scikit-learn-based [@scikit-learn] machine learning classification, and deep learning with PyTorch [@pytorch]. By leveraging Dask's lazy evaluation and task graphs, GeoWombat enables out-of-core processing of raster datasets of any size on commodity hardware, with optional distributed computing via Ray.<!-- What is Ray? Reference needed.-->
 
 # Statement of need
 
 Satellite remote sensing has become essential for environmental monitoring, agriculture, disaster management, and land use analysis. Modern sensor constellations such as Sentinel-2, Landsat, and PlanetScope produce petabytes of freely available imagery, yet the Python ecosystem for processing this data remains fragmented. A typical analysis workflow requires stitching together multiple libraries, rasterio for I/O, GDAL [@GDAL] for warping, NumPy [@harris2020array] for array math, xarray for labeled dimensions, geopandas [@geopandas] for vector operations, and scikit-learn for modeling, each with its own conventions for handling coordinate reference systems, nodata values, affine transforms, and chunked computation.
 
-Even straightforward tasks such as mosaicking two adjacent Landsat tiles require the analyst to understand affine transformations, coordinate reference system alignment, and resampling strategies. More complex workflows, multi-temporal classification, BRDF-adjusted surface reflectance, or continental-scale time series analysis, demand substantial boilerplate code and deep expertise in the underlying data structures. This complexity creates a barrier for domain scientists (ecologists, agronomists, urban planners) who need to work with satellite imagery but are not geospatial software engineers.
+Even straightforward tasks such as mosaicking two adjacent Landsat tiles require the analyst to understand affine transformations, coordinate reference system alignment, and resampling strategies. More complex workflows, multi-temporal classification, BRDF-adjusted<!-- Expand acronym? --> surface reflectance, or continental-scale time series analysis, demand substantial boilerplate code and deep expertise in the underlying data structures. This complexity creates a barrier for domain scientists (ecologists, agronomists, urban planners) who need to work with satellite imagery but are not geospatial software engineers.
 
 GeoWombat addresses this gap by providing a unified, high-level API that orchestrates these lower-level libraries behind a consistent interface. Its target audience includes GIS professionals, remote sensing scientists, and machine learning practitioners who need to process, analyze, and model large-scale raster data without writing low-level geospatial code.
 
@@ -58,10 +58,13 @@ GeoWombat differentiates itself by offering a comprehensive, local-first toolkit
 
 GeoWombat's architecture centers on three design principles: (1) lazy evaluation for scalability, (2) configuration-driven defaults for usability, and (3) xarray accessor extensibility.
 
-**Lazy evaluation.** All raster operations return Dask-backed xarray DataArrays. Computation is deferred until the user explicitly calls `.compute()` or `.gw.save()`, allowing GeoWombat to build optimized task graphs over arbitrarily large datasets. Chunk sizes are configurable and default to 512 x 512 pixels.
+1. **Lazy evaluation** 
 
-**Configuration context manager.** The `gw.config.update()` context manager sets global parameters, sensor type, reference CRS, spatial resolution, bounding box, and nodata handling, that propagate to all downstream operations:
+All raster operations return Dask-backed xarray DataArrays. Computation is deferred until the user explicitly calls `.compute()` or `.gw.save()`, allowing GeoWombat to build optimized task graphs over arbitrarily large datasets. Chunk sizes are configurable and default to 512 x 512 pixels.
 
+2. **Configuration context manager**
+
+The `gw.config.update()` context manager sets global parameters, sensor type, reference CRS, spatial resolution, bounding box, and nodata handling, that propagate to all downstream operations:
 ```python
 import geowombat as gw
 
@@ -72,28 +75,29 @@ with gw.config.update(sensor='s2', ref_crs=4326):
         ndvi.gw.save('ndvi_mosaic.tif')
 ```
 
-**Accessor pattern.** Geospatial methods are attached to xarray DataArrays via the `.gw` accessor (`src.gw.ndvi()`, `src.gw.save()`, `src.gw.extract()`), keeping the namespace clean while providing discoverability.
+3. **Accessor pattern** 
+
+Geospatial methods are attached to xarray DataArrays via the `.gw` accessor (`src.gw.ndvi()`, `src.gw.save()`, `src.gw.extract()`), keeping the namespace clean while providing discoverability.
 
 The library is organized into the following modules:
 
-- **I/O and backends** (`backends/`): Rasterio and GDAL-backed reading and writing with on-the-fly warping and mosaicking. Output is supported in GeoTIFF, NetCDF, VRT, and Zarr formats via `.gw.to_raster()`, `.gw.to_netcdf()`, `.gw.to_vrt()`, and `.gw.to_zarr()`.
+- **I/O and backends** (`backends/`) : Rasterio and GDAL-backed reading and writing with on-the-fly warping and mosaicking. Output is supported in GeoTIFF, NetCDF, VRT, and Zarr formats via `.gw.to_raster()`, `.gw.to_netcdf()`, `.gw.to_vrt()`, and `.gw.to_zarr()`.
 
-- **STAC and cloud data access** (`core/stac.py`): Functions for searching, opening, compositing, and merging imagery from STAC catalogs. Multiple providers are supported including Element84, Microsoft Planetary Computer, and NASA LP CLOUD, with built-in collection definitions for Landsat Collection 2, Sentinel-1 GRD, Sentinel-2 L2A, HLS, NAIP, USDA Cropland Data Layer, and Copernicus DEM.
+- **STAC and cloud data access** (`core/stac.py`) : Functions for searching, opening, compositing, and merging imagery from STAC catalogs. Multiple providers are supported including Element84, Microsoft Planetary Computer, and NASA LP CLOUD, with built-in collection definitions for Landsat Collection 2, Sentinel-1 GRD, Sentinel-2 L2A, HLS, NAIP, USDA Cropland Data Layer, and Copernicus DEM.
 
-- **Radiometry** (`radiometry/`): A full radiometric processing chain including digital number to top-of-atmosphere reflectance and surface reflectance conversions, Dark Object Subtraction atmospheric correction, BRDF normalization via the global c-factor method [@ROY2016255], topographic corrections (slope, aspect, and illumination normalization from DEMs), 6S radiative transfer modeling, and Landsat/Sentinel pixel angle extraction. Quality assurance masking decodes sensor-specific bit-packed flags for Landsat, Sentinel-2 Scene Classification, and HLS Fmask.
+- **Radiometry** (`radiometry/`) : A full radiometric processing chain including digital number to top-of-atmosphere reflectance and surface reflectance conversions, Dark Object Subtraction atmospheric correction, BRDF normalization via the global c-factor method [@ROY2016255], topographic corrections (slope, aspect, and illumination normalization from DEMs), 6S radiative transfer modeling, and Landsat/Sentinel pixel angle extraction. Quality assurance masking decodes sensor-specific bit-packed flags for Landsat, Sentinel-2 Scene Classification, and HLS Fmask.
 
-- **Vegetation indices and band math** (`core/vi.py`): NDVI, EVI, EVI2, AVI, NBR, KNDVI, GCVI, a water index, generic normalized differences, and tasseled cap transformations (brightness, greenness, wetness) with sensor-specific coefficients.
+- **Vegetation indices and band math** (`core/vi.py`) : Algorithms for NDVI, EVI, EVI2, AVI, NBR, KNDVI, GCVI, a water index, generic normalized differences, and tasseled cap transformations (brightness, greenness, wetness) with sensor-specific coefficients.
 
-- **Spatial operations** (`core/sops.py`): Point and polygon extraction, random and stratified sampling, subsetting, clipping, masking, value replacement, reclassification (`recode`), area calculation, and sub-pixel co-registration via AROSICS. Coordinate conversion utilities transform between pixel indices, map coordinates, and longitude/latitude. Raster-to-vector and vector-to-raster conversions enable interoperability with geopandas [@geopandas].
+- **Spatial operations** (`core/sops.py`) : Point and polygon extraction, random and stratified sampling, subsetting, clipping, masking, value replacement, reclassification (`recode`), area calculation, and sub-pixel co-registration via AROSICS. Coordinate conversion utilities transform between pixel indices, map coordinates, and longitude/latitude. Raster-to-vector and vector-to-raster conversions enable interoperability with geopandas [@geopandas].
 
-- **Moving window statistics** (`moving/`): Cython/OpenMP-accelerated focal operations including mean, standard deviation, and percentile calculations over configurable window sizes.
+- **Moving window statistics** (`moving/`) : Cython/OpenMP-accelerated focal operations including mean, standard deviation, and percentile calculations over configurable window sizes.
 
-- **Machine learning** (`ml/`): Integration with scikit-learn pipelines for supervised and unsupervised classification and regression, including `fit()`, `predict()`, and `fit_predict()` workflows with built-in support for spatial cross-validation (\autoref{fig:classification}). Deep learning is supported via PyTorch [@pytorch] with TorchGeo [@torchgeo] integration for architectures including TabNet, Lightweight Temporal Attention Encoder (L-TAE), and segmentation models (UNet, DeepLabV3).
+- **Machine learning** (`ml/`) : Integration with scikit-learn pipelines for supervised and unsupervised classification and regression, including `fit()`, `predict()`, and `fit_predict()` workflows with built-in support for spatial cross-validation (\autoref{fig:classification}). Deep learning is supported via PyTorch [@pytorch] with TorchGeo [@torchgeo] integration for architectures including TabNet, Lightweight Temporal Attention Encoder (L-TAE), and segmentation models (UNet, DeepLabV3).
 
+- **Time series analysis** (`core/series.py`) : The `gw.series()` interface processes multi-date image stacks with GPU acceleration via JAX [@jax2018github], computing per-pixel temporal statistics including mean, median, amplitude, coefficient of variation, linear slope, percentiles, and quarterly decompositions.
 
-- **Time series analysis** (`core/series.py`): The `gw.series()` interface processes multi-date image stacks with GPU acceleration via JAX [@jax2018github], computing per-pixel temporal statistics including mean, median, amplitude, coefficient of variation, linear slope, percentiles, and quarterly decompositions.
-
-- **Task workflows** (`tasks/`): A directed acyclic graph builder for defining and executing multi-step processing pipelines, with optional distributed execution via Ray.
+- **Task workflows** (`tasks/`) : A directed acyclic graph builder for defining and executing multi-step processing pipelines, with optional distributed execution via Ray.
 
 ``` python
 labels_poly = gpd.read_file(training_labels.geojson)
@@ -109,12 +113,13 @@ with gw.config.update(ref_res=150):
         y = fit_predict(data=src, clf=pipe, labels=labels_poly, col='lc')
         y.plot(robust=True)
 ```
+<!-- Add missing imports. -->
 
 ![Multi-band land cover classification using GeoWombat's scikit-learn pipeline integration. The `fit_predict` method demonstrate the library's ability to train and predict ML piplines with minimal code.\label{fig:classification}](fit_predict.png){ width=90% }
 
 # Research impact
 
-GeoWombat has been used in peer-reviewed research spanning land cover mapping, agricultural monitoring, and environmental change detection [@michael_mann_2023_8215141; @10.1371/journal.pone.0254723;@agronomy14112575;@dorman2025; @Hersh03042021; @huang2025dust]. It is actively used in graduate courses at The George Washington University for teaching remote sensing and geospatial machine learning through [pygis.io](https://pygis.io) [@Mann2025]. The library's documentation includes tutorials covering all major features, and it is installable via pip and conda-forge, with over 540,000 downloads. The project maintains continuous integration testing across Python 3.10--3.12 on Linux, and welcomes contributions via its GitHub repository at [https://github.com/jgrss/geowombat](https://github.com/jgrss/geowombat).
+GeoWombat has been used in peer-reviewed research spanning land cover mapping, agricultural monitoring, and environmental change detection [@michael_mann_2023_8215141; @10.1371/journal.pone.0254723;@agronomy14112575;@dorman2025; @Hersh03042021; @huang2025dust]. It is actively used in graduate courses at The George Washington University for teaching remote sensing and geospatial machine learning through [pygis.io](https://pygis.io) [@Mann2025]. The library's documentation includes tutorials covering all major features, and it is installable via pip and conda-forge, with over 540,000 downloads <!-- as of _date-here_ -->. The project maintains continuous integration testing across Python 3.10--3.12 on Linux, and welcomes contributions via its GitHub repository at [https://github.com/jgrss/geowombat](https://github.com/jgrss/geowombat).
 
 
 # AI usage disclosure
