@@ -3,6 +3,13 @@
 Data extraction
 ===============
 
+Extraction pulls values out of a raster, either by narrowing the array to a
+region of interest (subsetting and clipping) or by sampling pixel values at
+vector locations (coordinates, points, and polygons). GeoWombat handles the
+bookkeeping that these tasks usually require, such as translating map
+coordinates to array indices and reprojecting vector geometries to the raster
+CRS on-the-fly. The sections below work through each case in turn.
+
 .. code:: python
 
     import geowombat as gw

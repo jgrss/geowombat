@@ -3,6 +3,14 @@
 User functions
 ==============
 
+Beyond the built-in operations, GeoWombat lets you apply your own functions block
+by block so that custom processing scales to rasters larger than memory. There
+are two entry points: :func:`geowombat.apply`, which writes results concurrently
+and is best for functions that release the GIL, and the ``apply`` DataArray
+attribute, which runs a function within GeoWombat's aligned, lazy write pipeline.
+The sections below cover both, then show how to reuse in-memory GeoWombat
+functions at the block level.
+
 User apply
 ----------
 
