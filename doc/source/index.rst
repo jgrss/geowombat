@@ -22,7 +22,7 @@ GeoWombat: Utilities for geospatial data
 .. raw:: html
 
     <div class="banner-header">
-        Like a wombat, <b>geowombat</b> has a simple interface (for raster I/O) with a strong backend (for data processing at scale).
+        Like a wombat, <b>GeoWombat</b> has a simple interface (for raster I/O) with a strong backend (for data processing at scale).
     </div>
 
 
@@ -66,7 +66,7 @@ GeoWombat provides utilities to process geospatial and time series of raster dat
     <div class="banner-install">
         <span>
 
-:ref:`Get started with geowombat <install>`
+:ref:`Get started with GeoWombat <install>`
 
 .. raw:: html
 
