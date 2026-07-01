@@ -19,6 +19,7 @@ from geowombat.core.stac import (
     composite_stac,
     _Client,
     _is_hls,
+    _open_stac_multiband_asset,
     _translate_hls_bands,
 )
 
@@ -1135,6 +1136,116 @@ class TestSTACHLS(unittest.TestCase):
         # Should still return a valid composite from L30 only
         self.assertIsNotNone(result)
         self.assertIn('red', result.band.values)
+
+
+class TestNAIPMultibandAssetKey(unittest.TestCase):
+    """Regression tests for the NAIP fast path.
+
+    NAIP packs RGB+NIR into a single multi-band COG under the
+    ``'image'`` asset key — there are no per-band assets. A previous
+    bug derived the asset key from ``bands[0]`` (e.g. ``'red'``),
+    which raised ``KeyError`` against any real NAIP item.
+    """
+
+    @staticmethod
+    def _make_naip_item(href='https://example.test/naip/scene.tif'):
+        """Build a mock STAC item whose .assets matches real NAIP layout."""
+        asset = MagicMock()
+        asset.href = href
+        item = MagicMock()
+        # Use a real dict so unknown keys raise KeyError (the bug we're
+        # guarding against). A MagicMock dict would silently invent keys.
+        item.assets = {'image': asset}
+        item.id = 'naip-test'
+        item.geometry = {
+            'type': 'Polygon',
+            'coordinates': [[
+                [-86.6, 40.8], [-86.5, 40.8],
+                [-86.5, 40.9], [-86.6, 40.9],
+                [-86.6, 40.8],
+            ]],
+        }
+        item.properties = {'datetime': '2022-07-01T00:00:00Z'}
+        return item
+
+    def _run_with_bands(self, bands):
+        """Invoke the NAIP fast path with the given bands list.
+
+        Returns the URLs the function attempted to open so the test
+        can assert which asset key was used.
+        """
+        item = self._make_naip_item()
+        captured_urls = []
+
+        # rasterio.open(urls[0]) is only used to discover the CRS.
+        ds_mock = MagicMock()
+        ds_mock.crs.to_epsg.return_value = 26917
+        ds_mock.__enter__.return_value = ds_mock
+        ds_mock.__exit__.return_value = False
+
+        def fake_rio_open(url, *a, **kw):
+            captured_urls.append(url)
+            return ds_mock
+
+        # gw.open(urls, mosaic=True) returns a context manager yielding
+        # an xarray-like that .compute()s to numpy.
+        src_mock = MagicMock()
+        src_mock.compute.return_value = np.zeros((4, 1, 1))
+        gw_open_ctx = MagicMock()
+        gw_open_ctx.__enter__.return_value = src_mock
+        gw_open_ctx.__exit__.return_value = False
+
+        def fake_gw_open(urls, *a, **kw):
+            if isinstance(urls, list):
+                captured_urls.extend(urls)
+            else:
+                captured_urls.append(urls)
+            return gw_open_ctx
+
+        with patch('rasterio.open', side_effect=fake_rio_open), \
+             patch(
+                 'geowombat.core.api.open',
+                 side_effect=fake_gw_open,
+             ):
+            data, df = _open_stac_multiband_asset(
+                items=[item],
+                bounds=(-86.6, 40.8, -86.5, 40.9),
+                epsg=None,
+                resolution=None,
+                bands=bands,
+                compute=True,
+            )
+        return captured_urls, df
+
+    def test_band_names_do_not_become_asset_keys(self):
+        """bands=['red','green','blue'] must NOT KeyError on NAIP.
+
+        Pre-fix code did `item.assets[bands[0]]` -> KeyError('red').
+        """
+        urls, df = self._run_with_bands(['red', 'green', 'blue'])
+        # Every captured URL must be the NAIP 'image' asset href,
+        # never a band-name lookup attempt.
+        self.assertTrue(urls, "expected at least one URL to be opened")
+        for url in urls:
+            self.assertEqual(url, 'https://example.test/naip/scene.tif')
+        # And the returned GeoDataFrame should carry the item geometry.
+        self.assertEqual(len(df), 1)
+
+    def test_no_bands_uses_image_asset(self):
+        """Default (bands=None) still uses the 'image' asset key."""
+        urls, _ = self._run_with_bands(None)
+        for url in urls:
+            self.assertEqual(url, 'https://example.test/naip/scene.tif')
+
+    def test_empty_bands_list_uses_image_asset(self):
+        """bands=[] previously fell through to 'image'; keep that.
+
+        This pins the behavior so future refactors don't regress to
+        ``asset_key = bands[0]`` against an empty list (IndexError).
+        """
+        urls, _ = self._run_with_bands([])
+        for url in urls:
+            self.assertEqual(url, 'https://example.test/naip/scene.tif')
 
 
 if __name__ == '__main__':

@@ -44,17 +44,26 @@ dependencies = [
 [project.optional-dependencies]
 docs = [
     "numpydoc",
-    "sphinx>=6.0",
+    # Sphinx 7+ breaks `autosectionlabel` against MyST-rendered content
+    # and conflicts with sphinx-book-theme 1.x. Keep on the 6.x line.
+    "sphinx>=6.0,<7",
     "sphinx-automodapi",
     "sphinxcontrib-bibtex>=2.5.0",
     "sphinx_tabs",
     "pydata-sphinx-theme==0.13.1",
-    "sphinx-book-theme>=1.0.0",
+    "sphinx-book-theme>=1.0.0,<2",
     "sphinx-copybutton>=0.5.0",
     "sphinx-autodoc-typehints",
     "ipython",
     "graphviz",
     "sklearn-xarray-ext",
+    # Notebook chapter renderer (object_detection.ipynb, etc.).
+    # nbsphinx 0.9.x is the last line tested against sphinx 6.
+    "nbsphinx>=0.9,<1",
+    "ipykernel",
+    # myst-parser is registered for future Markdown content in the
+    # docs tree. 1.x is the Sphinx 6-compatible line.
+    "myst-parser>=1.0,<2",
 ]
 
 tests = [
@@ -136,6 +145,21 @@ dl = [
     "segmentation-models-pytorch>=0.3.0",
 ]
 
+detect = [
+    "ultralytics>=8.2",
+    "torchmetrics>=1.0",
+    "pycocotools",
+    "pyyaml",
+    "pillow",
+    # opencv-python>=4.12 requires numpy>=2, but the rest of geowombat
+    # pins numpy<2. Keep the older opencv build compatible with that.
+    "opencv-python<4.12",
+]
+
+sam = [
+    "segment-anything>=1.0",
+]
+
 [project.urls]
 Homepage = "https://github.com/jgrss/geowombat"
 Documentation = "https://geowombat.readthedocs.io"
@@ -149,9 +173,18 @@ version_toml = []
 version_variables = []
 tag_format = "v{version}"
 commit_message = "chore(release): v{version}"
-changelog_file = "CHANGELOG.md"
 build_command = ""
 major_on_zero = false
+
+[tool.semantic_release.changelog]
+# "update" inserts new release sections at the insertion_flag and leaves
+# the rest of CHANGELOG.md untouched. The default ("init") would rebuild
+# the whole file from git history and clobber any curated content.
+mode = "update"
+insertion_flag = "<!-- version list -->"
+
+[tool.semantic_release.changelog.default_templates]
+changelog_file = "CHANGELOG.md"
 
 [tool.semantic_release.branches.main]
 match = "main"

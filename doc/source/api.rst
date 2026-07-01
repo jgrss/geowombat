@@ -21,6 +21,10 @@ API reference
     :no-inheritance-diagram:
     :no-inherited-members:
 
+.. automodapi:: geowombat.detect
+    :no-inheritance-diagram:
+    :no-inherited-members:
+
 .. automodapi:: geowombat.radiometry
     :no-inheritance-diagram:
     :no-inherited-members:

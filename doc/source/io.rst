@@ -366,3 +366,30 @@ needed to transform and display data (e.g., in a GIS).
             src.gw.to_vrt('lat_lon_file.vrt')
 
 See :ref:`io-distributed` for more examples describing concurrent file writing with GeoWombat.
+
+Passing GDAL configuration options
+==================================
+
+GeoWombat respects rasterio's :class:`rasterio.Env` context manager: any GDAL
+configuration option can be set by wrapping a GeoWombat call inside ``rio.Env``.
+
+.. code:: python
+
+    import rasterio as rio
+    import geowombat as gw
+
+    with rio.Env(GDAL_CACHEMAX=512, CPL_VSIL_CURL_USE_HEAD="NO"):
+        with gw.open('image.tif') as src:
+            src.gw.save('out.tif')
+
+Multi-threaded warping is enabled by passing ``num_threads=N`` to ``gw.open``,
+``gw.save``, ``mosaic``, ``concat``, ``warp_open``, or ``transform_crs``.
+Internally GeoWombat opens an inner ``rio.Env(GDAL_NUM_THREADS=str(N))`` only
+when ``num_threads > 1``, which composes with any outer ``rio.Env``. The
+default ``num_threads=1`` leaves the GDAL env untouched, so a user's outer
+``rio.Env(GDAL_NUM_THREADS=...)`` flows through unmodified.
+
+The threading sweet spot is workload-dependent. With dask-chunked reads
+(``chunks=...``) the dask scheduler is already parallel across chunks, so
+``num_threads=2`` is typically optimal and ``ALL_CPUS`` can over-subscribe the
+machine. For eager or single-chunk reads, larger thread counts scale well.

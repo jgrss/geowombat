@@ -295,11 +295,13 @@ def get_geometry_info(geometry: object, res: tuple) -> namedtuple:
     )
 
 
-def get_file_extension(filename: str) -> namedtuple:
+def get_file_extension(
+    filename: T.Union[str, os.PathLike],
+) -> namedtuple:
     """Gets file and directory name information.
 
     Args:
-        filename (str): The file name.
+        filename (str or os.PathLike): The file name.
 
     Returns:
         Name information as ``namedtuple``.
@@ -307,7 +309,11 @@ def get_file_extension(filename: str) -> namedtuple:
 
     FileNames = namedtuple('FileNames', 'd_name f_name f_base f_ext')
 
-    d_name, f_name = os.path.splitext(filename)
+    # Strip URL query string / fragment so cloud-storage URLs like
+    # `.../scene.tif?st=...&sig=...` are recognized by extension.
+    clean = str(filename).split('?', 1)[0].split('#', 1)[0]
+
+    d_name, f_name = os.path.splitext(clean)
     f_base, f_ext = os.path.split(f_name)
 
     return FileNames(d_name=d_name, f_name=f_name, f_base=f_base, f_ext=f_ext)

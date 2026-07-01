@@ -21,42 +21,27 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 0
+          fetch-depth: 0  # semantic-release needs full history + tags
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      # python-semantic-release owns the whole flow: determine the next
+      # version from commit messages, update CHANGELOG.md, commit it,
+      # create + push the tag, and create the GitHub release (which
+      # triggers publish.yml). This is idempotent — if no feat/fix/perf
+      # commit has landed since the last tag it is a no-op, and it never
+      # re-tags an already-released version (the bug that broke the
+      # previous --print + manual-tag approach when v2.4.0 existed).
+      #
+      # The changelog is generated from commit messages (and bodies), so
+      # write descriptive Conventional-Commit messages / PR squash bodies
+      # — those become the release notes. PSR inserts new version
+      # sections at the `<!-- version list -->` marker in CHANGELOG.md
+      # and pushes a `chore(release): vX.Y.Z` commit back to main.
+      - name: Python Semantic Release
+        uses: python-semantic-release/python-semantic-release@v9
         with:
-          python-version: '3.12'
-
-      - name: Install python-semantic-release
-        run: pip install python-semantic-release
-
-      - name: Determine next version
-        id: version
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          NEXT=$(semantic-release version --print 2>/dev/null || echo "")
-          echo "next=$NEXT" >> "$GITHUB_OUTPUT"
-          if [ -z "$NEXT" ]; then
-            echo "No release needed"
-          else
-            echo "Next version: $NEXT"
-          fi
-
-      - name: Create tag and GitHub release
-        if: steps.version.outputs.next != ''
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          VERSION="${{ steps.version.outputs.next }}"
-          TAG="v${VERSION}"
-
-          # Create and push the tag
-          git tag "$TAG"
-          git push origin "$TAG"
-
-          # Create GitHub release (triggers publish.yml)
-          gh release create "$TAG" \
-            --title "$TAG" \
-            --generate-notes
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          changelog: "true"
+          commit: "true"
+          tag: "true"
+          push: "true"
+          vcs_release: "true"

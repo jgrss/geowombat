@@ -13,6 +13,7 @@ from rasterio.enums import Resampling
 from rasterio.vrt import WarpedVRT
 from rasterio.windows import Window
 
+from ..backends.rasterio_ import _gdal_threads_env
 from .windows import get_window_offsets
 
 try:
@@ -140,12 +141,13 @@ class _Warp(object):
         }
 
         def _warp_window(src_):
-            return WarpedVRT(
-                src_,
-                src_crs=src_.crs,
-                src_transform=src_.transform,
-                **vrt_options,
-            )
+            with _gdal_threads_env(num_threads):
+                return WarpedVRT(
+                    src_,
+                    src_crs=src_.crs,
+                    src_transform=src_.transform,
+                    **vrt_options,
+                )
 
         # Warp all inputs into virtual in-memory objects
         with concurrent.futures.ThreadPoolExecutor(num_threads) as executor:
@@ -329,17 +331,12 @@ class TimeModule(object):
         """Calculates the user function.
 
         Args:
-            data (``numpy.ndarray`` |
-                  ``jax.Array`` |
-                  ``torch.Tensor`` |
-                  ``tensorflow.Tensor``): The input array, shaped [time x bands x rows x columns].
+            data (``numpy.ndarray`` | ``jax.Array`` | ``torch.Tensor`` | ``tensorflow.Tensor``):
+                The input array, shaped ``[time x bands x rows x columns]``.
 
         Returns:
-            ``numpy.ndarray`` |
-            ``jax.Array`` |
-            ``torch.Tensor`` |
-            ``tensorflow.Tensor``:
-                Shaped (time|bands x rows x columns)
+            ``numpy.ndarray`` | ``jax.Array`` | ``torch.Tensor`` | ``tensorflow.Tensor``,
+            shaped ``(time|bands x rows x columns)``.
         """
         raise NotImplementedError
 

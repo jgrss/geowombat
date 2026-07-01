@@ -109,11 +109,26 @@ py3.install_sources(
 py3.install_sources(
     [
         'src/geowombat/ml/__init__.py',
+        'src/geowombat/ml/_labels.py',
         'src/geowombat/ml/classifiers.py',
         'src/geowombat/ml/dl_classifiers.py',
         'src/geowombat/ml/transformers.py',
     ],
     subdir: 'geowombat/ml',
+    pure: false
+)
+
+# detect (object detection)
+py3.install_sources(
+    [
+        'src/geowombat/detect/__init__.py',
+        'src/geowombat/detect/_tiling.py',
+        'src/geowombat/detect/api.py',
+        'src/geowombat/detect/data.py',
+        'src/geowombat/detect/detectors.py',
+        'src/geowombat/detect/metrics.py',
+    ],
+    subdir: 'geowombat/detect',
     pure: false
 )
 

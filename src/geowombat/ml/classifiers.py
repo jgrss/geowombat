@@ -315,17 +315,19 @@ class Classifiers(ClassifiersMixin):
             targ_name (Optional[str]): The target name.
             targ_dim_name (Optional[str]): The target coordinate name.
             temporal_mode (Optional[str]): How to handle time-dimensioned data.
-                'panel' — each pixel-time is an independent sample (B features).
-                    Output has time dimension with per-time predictions.
-                'flatten' — flatten time into band (T*B features per pixel).
-                    Output has no time dimension, one prediction per pixel.
+                ``'panel'`` — each pixel-time is an independent sample (B features);
+                output has time dimension with per-time predictions.
+                ``'flatten'`` — flatten time into band (T*B features per pixel);
+                output has no time dimension, one prediction per pixel.
                 Ignored when data has no time dimension.
 
         Returns:
-            X (xarray.DataArray): Original DataArray augmented to accept prediction dimension
-            Xna if unsupervised classifier: tuple(xarray.DataArray, sklearn_xarray.Target): X:Reshaped feature data without NAs removed, y:None
-            Xna if supervised classifier: tuple(xarray.DataArray, sklearn_xarray.Target): X:Reshaped feature data with NAs removed, y:Array holding target data
-            clf, (sklearn pipeline): Fitted pipeline object
+            Tuple of ``(X, Xna, clf)``, where ``X`` is the original ``xarray.DataArray``
+            augmented to accept a prediction dimension; ``Xna`` is a tuple
+            ``(xarray.DataArray, sklearn_xarray.Target)`` of the reshaped feature data
+            (with NAs removed for supervised classifiers, retained for unsupervised) and
+            the target array (None for unsupervised); and ``clf`` is the fitted sklearn
+            pipeline.
 
         Example:
             >>> import geowombat as gw
