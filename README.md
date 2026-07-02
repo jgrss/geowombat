@@ -123,10 +123,6 @@ mamba install geowombat
 ### Pip Install
 GeoWombat is not on PyPi, but it can be installed with `pip`. We provide detailed instructions in our [documentation](https://geowombat.readthedocs.io/en/latest/install.html).
 
-### Universal Install Via Docker
-If you are having trouble installing geowombat, the surest way to get it up and running is with Docker containers.
-See the `Dockerfile`, or for more details instructions, see the guide on [pygis.io](https://mmann1123.github.io/pyGIS/docs/b_conda_started.html).
-
 ## Learning
 
 If you are new to geospatial programming in Python please refer to [pygis.io](https://pygis.io)
