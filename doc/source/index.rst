@@ -137,3 +137,10 @@ One of the key features of GeoWombat is the on-the-fly handling of multiple file
    :caption: Reference
 
    api
+
+.. toctree::
+   :maxdepth: 1
+   :hidden:
+   :caption: About
+
+   authors
