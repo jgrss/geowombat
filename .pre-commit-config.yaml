@@ -1,12 +1,20 @@
+# https://pre-commit.ci configuration. Requires enabling the pre-commit.ci
+# GitHub App on the repository (https://pre-commit.ci) for these to take effect.
+ci:
+  autofix_prs: true  # auto-commit hook fixes back to the PR
+  autofix_commit_msg: "style: auto fixes from pre-commit hooks"
+  autoupdate_schedule: weekly  # open a PR bumping hook versions weekly
+  autoupdate_commit_msg: "chore: pre-commit autoupdate"
+
 repos:
-  - repo: https://github.com/ambv/black
-    rev: 22.3.0
+  - repo: https://github.com/psf/black
+    rev: 26.5.1
     hooks:
     - id: black
       language_version: python3
       args: [--skip-string-normalization]
-  - repo: https://github.com/myint/docformatter
-    rev: v1.4
+  - repo: https://github.com/PyCQA/docformatter
+    rev: v1.7.8
     hooks:
     - id: docformatter
       args: [
@@ -17,11 +25,11 @@ repos:
         '79',
       ]
   - repo: https://github.com/pycqa/flake8
-    rev: 6.0.0
+    rev: 7.3.0
     hooks:
     - id: flake8
   - repo: https://github.com/pycqa/isort
-    rev: 5.11.5
+    rev: 8.0.1
     hooks:
       - id: isort
         name: isort (python)
