@@ -31,6 +31,8 @@ Raster & Remotely Sensed Data Made Easy
 
 GeoWombat provides utilities to process geospatial and time series of raster data at scale. Easily process Landsat, Sentinel, Planetscope or RGB data and others.
 
+Modern satellites like Sentinel-2, Landsat, and PlanetScope give you petabytes of free imagery, but the Python tools for working with it are scattered across many libraries. A typical workflow makes you stitch together rasterio, GDAL, NumPy, xarray, geopandas, and scikit-learn, each with its own rules for coordinate systems, nodata, affine transforms, and chunked computation. GeoWombat gives you a single, high-level API that ties these libraries together behind one consistent interface, so you can process large raster datasets without writing low-level geospatial code, whether you are a GIS professional, a remote sensing scientist, or a machine learning practitioner.
+
 **Common Remote Sensing Uses**
 
 * Simple read/write for a variety of sensors (Landsat, Sentinel etc)
