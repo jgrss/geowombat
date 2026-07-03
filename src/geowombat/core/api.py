@@ -301,12 +301,10 @@ class open:
         bounds (Optional[1d array-like]): A bounding box to subset to, given as [minx, maxy, miny, maxx].
             Default is None.
         bounds_by (Optional[str]): How to concatenate the output extent if ``filename`` is a ``list`` and
-            ``mosaic`` = ``False``. Choices are ['intersection', 'union', 'reference'].
-            * reference: Use the bounds of the reference image. If a ``ref_image`` is not given, the first image in
-                the ``filename`` list is used.
-            * intersection: Use the intersection (i.e., minimum extent) of all the image bounds
-            * union: Use the union (i.e., maximum extent) of all the image bounds
-
+            ``mosaic`` = ``False``. Choices are ``'intersection'`` (use the minimum extent of all image
+            bounds), ``'union'`` (use the maximum extent of all image bounds), or ``'reference'``
+            (use the bounds of the reference image; if a ``ref_image`` is not given, the first image
+            in the ``filename`` list is used).
         resampling (Optional[str]): The resampling method if ``filename`` is a ``list``. Choices are
             ['average', 'bilinear', 'cubic', 'cubic_spline', 'gauss',
             'lanczos', 'max', 'med', 'min', 'mode', 'nearest'].
@@ -322,29 +320,33 @@ class open:
 
             .. note:: The ``geowombat.config.update`` overrides this argument. Thus, preference is always given
                 in the following order:
-                    1. ``geowombat.config.update(nodata not None)``
-                    2. ``open(nodata not None)``
-                    3. file 'no data' value from metadata '_FillValue' or 'nodatavals'
+
+                1. ``geowombat.config.update(nodata not None)``
+                2. ``open(nodata not None)``
+                3. file 'no data' value from metadata '_FillValue' or 'nodatavals'
         scale_factor (Optional[float | int]): A scale value to apply to the opened data. The same rules used in
             ``nodata`` apply. I.e.,
 
             .. note:: The ``geowombat.config.update`` overrides this argument. Thus, preference is always given
                 in the following order:
-                    1. ``geowombat.config.update(scale_factor not None)``
-                    2. ``open(scale_factor not None)``
-                    3. file scale value from metadata 'scales'
+
+                1. ``geowombat.config.update(scale_factor not None)``
+                2. ``open(scale_factor not None)``
+                3. file scale value from metadata 'scales'
         offset (Optional[float | int]): An offset value to apply to the opened data. The same rules used in
             ``nodata`` apply. I.e.,
 
             .. note:: The ``geowombat.config.update`` overrides this argument. Thus, preference is always given
                 in the following order:
-                    1. ``geowombat.config.update(offset not None)``
-                    2. ``open(offset not None)``
-                    3. file offset value from metadata 'offsets'
+
+                1. ``geowombat.config.update(offset not None)``
+                2. ``open(offset not None)``
+                3. file offset value from metadata 'offsets'
         dtype (Optional[str]): A data type to force the output to. If not given, the data type is extracted
             from the file.
         scale_data (Optional[bool]): Whether to apply scaling to the opened data. Default is ``False``. Scaled
-            data are returned as:
+            data are returned as::
+
                 scaled = data * gain + offset
 
             See the arguments ``nodata``, ``scale_factor``, and ``offset`` for rules regarding how scaling is applied.
@@ -922,8 +924,10 @@ class series(BaseSeries):
             and w2 contains the padded window offsets.
 
     Requirement:
-        > # CUDA 11.1
-        > pip install --upgrade "jax[cuda111]" -f https://storage.googleapis.com/jax-releases/jax_releases.html
+        ::
+
+            # CUDA 11.1
+            pip install --upgrade "jax[cuda111]" -f https://storage.googleapis.com/jax-releases/jax_releases.html
     """
 
     def __init__(
@@ -1088,10 +1092,8 @@ class series(BaseSeries):
             kwargs (Optional[dict]): Keyword arguments passed to rasterio open profile.
 
         Returns:
-            If outfile is None:
-                Window, array, [datetime, ...]
-            If outfile is not None:
-                None, writes to ``outfile``
+            If ``outfile`` is None, yields ``(Window, array, [datetime, ...])``.
+            If ``outfile`` is not None, returns None and writes to ``outfile``.
 
         Example:
             >>> import itertools

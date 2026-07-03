@@ -1,0 +1,47 @@
+name: Docs Build
+
+# Non-required PR check: verifies the Sphinx documentation builds.
+# ReadTheDocs does not report its build status to pull requests, so this
+# surfaces documentation build breakages before merge. It is intentionally
+# left out of the required status checks (branch protection) so a doc-only
+# hiccup never blocks a merge.
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build-docs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # For setuptools-scm
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libgdal-dev gdal-bin python3-gdal ninja-build
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install meson-python ninja numpy cython
+          pip install ".[docs]"
+
+      - name: Build documentation
+        run: |
+          cd doc
+          make html
+
+      - name: Upload documentation artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: documentation-pr
+          path: doc/_build/html/
+          retention-days: 7

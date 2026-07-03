@@ -3,7 +3,15 @@
 GeoWombat DataArray accessor
 ============================
 
-The ``geowombat`` class has a number of attributes that define the properties of the image.
+GeoWombat extends :class:`xarray.DataArray` through a registered ``.gw`` accessor.
+Once an array is opened with :func:`geowombat.open`, every GeoWombat method and
+property is reached through this accessor (for example ``src.gw.transform`` or
+``src.gw.ndvi()``), which keeps the DataArray namespace clean while making the
+functionality discoverable via tab-completion.
+
+The properties below describe the geospatial attributes of the image. For the
+complete list of accessor methods and properties, see the
+:class:`~geowombat.core.geoxarray.GeoWombatAccessor` entry in the :ref:`api`.
 
 DataArray GeoWombat attributes
 ------------------------------

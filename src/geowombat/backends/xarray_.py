@@ -332,7 +332,10 @@ def warp_open(
         yield xr.concat(
             (
                 open_rasterio(
-                    wobj, nodata=ref_kwargs['nodata'], **kwargs
+                    wobj,
+                    nodata=ref_kwargs['nodata'],
+                    num_threads=num_threads,
+                    **kwargs,
                 ).assign_coords(
                     band=[band_names[wi]] if band_names else [netcdf_vars[wi]]
                 )
@@ -344,6 +347,7 @@ def warp_open(
     with open_rasterio(
         warp(filename, resampling=resampling, **ref_kwargs),
         nodata=ref_kwargs['nodata'],
+        num_threads=num_threads,
         **kwargs,
     ) if not filenames else warp_netcdf_vars() as src:
         if band_names:
@@ -489,13 +493,21 @@ def mosaic(
 
     # Get the original bounds, unsampled
     with open_rasterio(
-        filenames[0], nodata=ref_kwargs['nodata'], **kwargs
+        filenames[0],
+        nodata=ref_kwargs['nodata'],
+        num_threads=num_threads,
+        **kwargs,
     ) as src_:
         attrs = src_.attrs.copy()
 
     geometries = []
     for fn in filenames:
-        with open_rasterio(fn, nodata=ref_kwargs['nodata'], **kwargs) as src_:
+        with open_rasterio(
+            fn,
+            nodata=ref_kwargs['nodata'],
+            num_threads=num_threads,
+            **kwargs,
+        ) as src_:
             geometries.append(src_.gw.geometry)
 
     if overlap == 'min':
@@ -508,6 +520,7 @@ def mosaic(
         open_rasterio(
             wo,
             nodata=ref_kwargs['nodata'],
+            num_threads=num_threads,
             **kwargs,
         )
         .gw.set_nodata(

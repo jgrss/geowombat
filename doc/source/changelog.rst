@@ -1,10 +1,109 @@
 .. _changelog:
 
-.. note::
-    This page is deprecated. Please refer to `CHANGELOG.md <https://github.com/jgrss/geowombat/blob/main/CHANGELOG.md>`_ at https://github.com/jgrss/geowombat/ for changes >=1.8.0.
-
 Changelog
 =========
+
+The authoritative changelog lives at `CHANGELOG.md
+<https://github.com/jgrss/geowombat/blob/main/CHANGELOG.md>`_ in the
+repository root. The most recent entries are mirrored here for
+in-docs visibility; pre-1.8 history follows below for historical
+reference.
+
+Unreleased
+----------
+
+**Features**
+
+* Added ``geowombat.detect`` submodule for tiled, georeferenced object
+  detection on overhead imagery, mirroring the
+  ``fit / predict / fit_predict`` shape of ``geowombat.ml``:
+
+  * ``YOLODetector`` (Ultralytics YOLO) supporting axis-aligned
+    (AABB) and DOTA-v1 oriented (OBB) boxes.
+  * ``TorchGeoDetector`` wrapping TorchVision Faster R-CNN / RetinaNet
+    with optional TorchGeo pretrained weights (e.g.
+    ``FASTERRCNN_RESNET50_FPN_XVIEW``).
+  * ``SAMRefiner`` for refining bounding-box detections into polygon
+    masks via Meta's Segment Anything Model.
+
+* Added GeoWombat-native accessors ``src.gw.detect(detector, ...)``
+  (tiled inference with cross-tile NMS) and
+  ``src.gw.to_yolo_dataset(...)`` (Ultralytics-layout training-dataset
+  builder).
+* Added module-level wrappers: ``predict``, ``fit``, ``fit_predict``,
+  ``build_dataset``, ``boxes_from_polygons`` (AABB ↔ OBB),
+  ``detection_accuracy`` (per-class precision/recall/F1/AP at one or
+  more IoU thresholds, plus ``iou_thresholds='coco'`` for
+  mAP@[.5:.95] and ``class_agnostic=True``), ``plot_detections``, and
+  ``export_for_review`` / ``recompute_from_review`` for QGIS
+  GeoPackage round-trip review.
+* Sensor-aware band selection: when ``gw.config.update(sensor=...)``
+  is active, detection accessors auto-resolve RGB band indices from
+  ``src.band.values``.
+* Added deep-learning classifiers ``TabNet``, ``L-TAE``, and
+  ``TorchGeo`` (`#347 <https://github.com/jgrss/geowombat/pull/347>`_).
+
+**Documentation**
+
+* New :ref:`object-detection` walkthrough with a recommended
+  DOTA-v1 + OBB setup callout, AABB-vs-OBB explainer, and
+  polygon-digitization guidance.
+* Added a :doc:`notebooks` chapter rendering all 7 Jupyter notebooks
+  inline via ``nbsphinx``.
+* Updated install guide with conda extras, GDAL instructions, and
+  the ``dl`` extra
+  (`#349 <https://github.com/jgrss/geowombat/pull/349>`_).
+
+**Bug Fixes**
+
+* Improved block usage and nodata handling
+  (`#348 <https://github.com/jgrss/geowombat/pull/348>`_).
+
+**Build**
+
+* Added ``nbsphinx``, ``ipykernel``, and ``myst-parser`` to the
+  ``[docs]`` extras.
+* Added ``[detect]`` (ultralytics, torchmetrics, pycocotools, pillow,
+  pyyaml, opencv-python) and ``[sam]`` (segment-anything) extras.
+
+**Testing**
+
+* Added 29 new tests for the detect module covering tile windowing,
+  polygon → YOLO label math (AABB + OBB), ``_scale_to_uint8`` edge
+  cases, cross-tile NMS, IoU/COCO/class-agnostic accuracy modes, CRS
+  reprojection in accuracy assessment, the QGIS review round-trip,
+  smoke tests for ``YOLODetector`` / ``TorchGeoDetector`` /
+  ``SAMRefiner`` / ``plot_detections``, and an end-to-end
+  ``fit_predict`` smoke test.
+
+v2.1.23 (2026-01-12)
+--------------------
+
+**Features**
+
+* Migrated to Meson build backend
+  (`#334 <https://github.com/jgrss/geowombat/pull/334>`_).
+* Added HLS and ESA WorldCover STAC collections
+  (`#333 <https://github.com/jgrss/geowombat/pull/333>`_).
+* Added mocked STAC tests to reduce flaky CI failures.
+
+**Bug Fixes**
+
+* Fixed NaN values in mosaic overlap regions
+  (`#322 <https://github.com/jgrss/geowombat/issues/322>`_).
+* Fixed ``bounds_by='union'`` functionality
+  (`#328 <https://github.com/jgrss/geowombat/issues/328>`_).
+* Fixed sklearn 1.6+ clusterer detection
+  (`#331 <https://github.com/jgrss/geowombat/issues/331>`_).
+* Fixed non-unique band names in ``stack_dim='band'`` mode
+  (`#316 <https://github.com/jgrss/geowombat/issues/316>`_).
+* Fixed ``RasterBlockError`` for non-multiple-of-16 chunk sizes
+  (`#237 <https://github.com/jgrss/geowombat/issues/237>`_).
+* Pinned ``rasterio<1.5.0`` and ``h5py<3.10.0``.
+
+Older 2.x releases — see `CHANGELOG.md
+<https://github.com/jgrss/geowombat/blob/main/CHANGELOG.md>`_ for the
+full history. Pre-1.8 release notes follow.
 
 1.7.5 (20 May 2022)
 ----------------------
@@ -58,7 +157,7 @@ New
 Bug fixes
 ~~~~~~~~~
 
-- Added geowombat attribute lookup in :func:`geowombat.open` to support bounds as data slice objects.
+- Added GeoWombat attribute lookup in :func:`geowombat.open` to support bounds as data slice objects.
 
 1.6.6 (11 May 2021)
 -------------------
@@ -66,7 +165,7 @@ Bug fixes
 Bug fixes
 ~~~~~~~~~
 
-- Added geowombat attribute lookup in :func:`geowombat.open` to support windows as data slice objects.
+- Added GeoWombat attribute lookup in :func:`geowombat.open` to support windows as data slice objects.
 
 1.6.5 (6 May 2021)
 ------------------

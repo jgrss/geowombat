@@ -22,7 +22,7 @@ GeoWombat: Utilities for geospatial data
 .. raw:: html
 
     <div class="banner-header">
-        Like a wombat, <b>geowombat</b> has a simple interface (for raster I/O) with a strong backend (for data processing at scale).
+        Like a wombat, <b>GeoWombat</b> has a simple interface (for raster I/O) with a strong backend (for data processing at scale).
     </div>
 
 
@@ -30,6 +30,8 @@ Raster & Remotely Sensed Data Made Easy
 #######################################
 
 GeoWombat provides utilities to process geospatial and time series of raster data at scale. Easily process Landsat, Sentinel, Planetscope or RGB data and others.
+
+Modern satellites like Sentinel-2, Landsat, and PlanetScope give you petabytes of free imagery, but the Python tools for working with it are scattered across many libraries. A typical workflow makes you stitch together rasterio, GDAL, NumPy, xarray, geopandas, and scikit-learn, each with its own rules for coordinate systems, nodata, affine transforms, and chunked computation. GeoWombat gives you a single, high-level API that ties these libraries together behind one consistent interface, so you can process large raster datasets without writing low-level geospatial code, whether you are a GIS professional, a remote sensing scientist, or a machine learning practitioner.
 
 **Common Remote Sensing Uses**
 
@@ -66,7 +68,7 @@ GeoWombat provides utilities to process geospatial and time series of raster dat
     <div class="banner-install">
         <span>
 
-:ref:`Get started with geowombat <install>`
+:ref:`Get started with GeoWombat <install>`
 
 .. raw:: html
 
@@ -113,6 +115,19 @@ One of the key features of GeoWombat is the on-the-fly handling of multiple file
 .. toctree::
    :maxdepth: 1
    :hidden:
+   :caption: Examples
+
+   open_plot
+   mosaic_ndvi_mask
+   moving_windows
+   stac
+   ml_classifiers
+   dl_classifiers
+   object_detection
+
+.. toctree::
+   :maxdepth: 1
+   :hidden:
    :caption: Changes
 
    changelog
@@ -124,3 +139,10 @@ One of the key features of GeoWombat is the on-the-fly handling of multiple file
    :caption: Reference
 
    api
+
+.. toctree::
+   :maxdepth: 1
+   :hidden:
+   :caption: About
+
+   authors

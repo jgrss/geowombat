@@ -1,7 +1,7 @@
 .. _examples:
 
-Examples
-########
+Details
+#######
 
 .. toctree::
    :maxdepth: 2
@@ -13,6 +13,7 @@ Examples
    apply
    ml
    dl
+   object-detection
    moving
    radiometry
    coreg
