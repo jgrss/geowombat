@@ -87,13 +87,13 @@ The library is organized into the following modules:
 
 - **STAC and cloud data access** (`core/stac.py`) : Functions for searching, opening, compositing, and merging imagery from STAC catalogs. Multiple providers are supported including Element84, Microsoft Planetary Computer, and NASA LP CLOUD, with built-in collection definitions for Landsat Collection 2, Sentinel-1 GRD, Sentinel-2 L2A, HLS, NAIP, USDA Cropland Data Layer, and Copernicus DEM.
 
-- **Radiometry** (`radiometry/`) : A full radiometric processing chain including digital number to top-of-atmosphere reflectance and surface reflectance conversions, Dark Object Subtraction atmospheric correction, BRDF normalization via the global c-factor method [@ROY2016255], topographic corrections (slope, aspect, and illumination normalization from DEMs), 6S radiative transfer modeling, and Landsat/Sentinel pixel angle extraction. Quality assurance masking decodes sensor-specific bit-packed flags for Landsat, Sentinel-2 Scene Classification, and HLS Fmask.
+- **Radiometry** (`radiometry/`): A full radiometric processing chain including digital number to top-of-atmosphere reflectance and surface reflectance conversions, Dark Object Subtraction atmospheric correction, BRDF normalization via the global c-factor method [@ROY2016255], topographic corrections (slope, aspect, and illumination normalization from DEMs), 6S radiative transfer modeling [@vermote1997], and Landsat/Sentinel pixel angle extraction. Quality assurance masking decodes sensor-specific bit-packed flags for Landsat, Sentinel-2 Scene Classification, and HLS Fmask.
 
 - **Vegetation indices and band math** (`core/vi.py`) : Algorithms for NDVI, EVI, EVI2, AVI, NBR, KNDVI, GCVI, a water index, generic normalized differences, and tasseled cap transformations (brightness, greenness, wetness) with sensor-specific coefficients.
 
-- **Spatial operations** (`core/sops.py`) : Point and polygon extraction, random and stratified sampling, subsetting, clipping, masking, value replacement, reclassification (`recode`), area calculation, and sub-pixel co-registration via AROSICS. Coordinate conversion utilities transform between pixel indices, map coordinates, and longitude/latitude. Raster-to-vector and vector-to-raster conversions enable interoperability with geopandas [@geopandas].
+- **Spatial operations** (`core/sops.py`): Point and polygon extraction, random and stratified sampling, subsetting, clipping, masking, value replacement, reclassification (`recode`), area calculation, and sub-pixel co-registration via AROSICS [@scheffler2017]. Coordinate conversion utilities transform between pixel indices, map coordinates, and longitude/latitude. Raster-to-vector and vector-to-raster conversions enable interoperability with geopandas [@geopandas].
 
-- **Moving window statistics** (`moving/`) : Cython/OpenMP-accelerated focal operations including mean, standard deviation, and percentile calculations over configurable window sizes.
+- **Moving window statistics** (`moving/`): Cython/OpenMP-accelerated [@behnel2011] focal operations including mean, standard deviation, and percentile calculations over configurable window sizes.
 
 - **Machine learning** (`ml/`) : Integration with scikit-learn pipelines for supervised and unsupervised classification and regression, including `fit()`, `predict()`, and `fit_predict()` workflows with built-in support for spatial cross-validation (\autoref{fig:classification}). Deep learning is supported via PyTorch [@pytorch] with TorchGeo [@torchgeo] integration for architectures including TabNet, Lightweight Temporal Attention Encoder (L-TAE), and segmentation models (UNet, DeepLabV3).
 
@@ -101,7 +101,9 @@ The library is organized into the following modules:
 
 - **Time series analysis** (`core/series.py`) : The `gw.series()` interface processes multi-date image stacks with GPU acceleration via JAX [@jax2018github], computing per-pixel temporal statistics including mean, median, amplitude, coefficient of variation, linear slope, percentiles, and quarterly decompositions.
 
-- **Task workflows** (`tasks/`) : A directed acyclic graph builder for defining and executing multi-step processing pipelines, with optional distributed execution via Ray.
+- **Time series analysis** (`core/series.py`): The `gw.series()` interface processes multi-date image stacks with GPU acceleration via JAX [@jax2018github], computing per-pixel temporal statistics including mean, median, amplitude, coefficient of variation, linear slope, percentiles, and quarterly decompositions.
+
+- **Task workflows** (`tasks/`): A directed acyclic graph builder for defining and executing multi-step processing pipelines, with optional distributed execution via Ray [@moritz2018].
 
 ``` python
 import geopandas as gpd
@@ -132,7 +134,7 @@ with gw.config.update(ref_res=150):
 
 # Research impact
 
-GeoWombat has been used in peer-reviewed research spanning land cover mapping, agricultural monitoring, and environmental change detection [@michael_mann_2023_8215141; @10.1371/journal.pone.0254723;@agronomy14112575;@dorman2025; @Hersh03042021; @huang2025dust]. It is actively used in graduate courses at The George Washington University for teaching remote sensing and geospatial machine learning through [pygis.io](https://pygis.io) [@Mann2025]. The library's documentation includes tutorials covering all major features, and it is installable via pip and conda-forge, with over 540,000 downloads <!-- as of _date-here_ -->. The project maintains continuous integration testing across Python 3.10--3.12 on Linux, and welcomes contributions via its GitHub repository at [https://github.com/jgrss/geowombat](https://github.com/jgrss/geowombat).
+GeoWombat has been used in peer-reviewed research spanning land cover mapping, agricultural monitoring, and environmental change detection [@michael_mann_2023_8215141; @10.1371/journal.pone.0254723;@agronomy14112575;@dorman2025; @Hersh03042021; @huang2025dust]. It is actively used in graduate courses at The George Washington University for teaching remote sensing and geospatial machine learning through [pygis.io](https://pygis.io) [@Mann2025]. The library's documentation includes tutorials covering all major features, and it is installable via pip and conda-forge, with over 578,000 downloads as of July 2026. The project maintains continuous integration testing across Python 3.10--3.12 on Linux, and welcomes contributions via its GitHub repository at [https://github.com/jgrss/geowombat](https://github.com/jgrss/geowombat).
 
 
 # AI usage disclosure
