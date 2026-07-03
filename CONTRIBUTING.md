@@ -15,6 +15,23 @@ environment, running the tests, and opening a pull request.
 - **Code** — bug fixes and features via pull requests (see below). For large
   changes, please open an issue first.
 
+## AI-Assisted Contributions
+
+AI tools (e.g. GitHub Copilot, Claude, ChatGPT) are welcome, but the same bar
+applies as to any other contribution:
+
+- **You are responsible for your contribution.** Review, understand, and test
+  any AI-generated code before submitting it — please do not open pull requests
+  containing code you cannot explain.
+- **Follow the project conventions** below (formatting, tests, Conventional
+  Commits). AI-generated output must pass the same pre-commit hooks and CI.
+- **Disclose significant AI assistance**, e.g. with an `Assisted-by:` or
+  `Co-authored-by:` commit trailer, so review and attribution stay transparent.
+- **Only contribute code you have the right to submit** under the project's MIT
+  license.
+
+For a fuller policy template, see <https://aipolicy.1mb.dev/>.
+
 ## Local Install
 
 ### Install GeoWombat
