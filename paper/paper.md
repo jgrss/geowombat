@@ -23,10 +23,10 @@ authors:
   - name: Sharon Xu
     affiliation: 2
 affiliations:
-  - name: Indigo Agriculture, Boston, MA, USA
+  - name: Independent Researcher
     index: 1
     ror: ""
-  - name: Department of Geography, The George Washington University, USA
+  - name: Department of Geography & Environment, The George Washington University, USA
     index: 2
     ror: 00y4zzh67
   - name: Independent Researcher
