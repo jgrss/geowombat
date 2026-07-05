@@ -1,11 +1,38 @@
-# Contibuting to Geowombat
+# Contributing to GeoWombat
 
-We have two methods for contribution:
+Contributions are welcome! The steps below cover setting up a local development
+environment, running the tests, and opening a pull request.
 
-1. Local install
-2. Docker-based debugging
+## How to Contribute
 
-## 1. Local Install
+- **Bug reports** — open an [issue](https://github.com/jgrss/geowombat/issues)
+  with a minimal reproducible example, the traceback, and your GeoWombat,
+  Python, and OS versions.
+- **Feature requests** — open an issue describing the use case before starting
+  work, so the approach can be discussed.
+- **Documentation** — fixes and additions to the docs (`doc/`) and docstrings
+  are always welcome and follow the same pull-request flow as code.
+- **Code** — bug fixes and features via pull requests (see below). For large
+  changes, please open an issue first.
+
+## AI-Assisted Contributions
+
+AI tools (e.g. GitHub Copilot, Claude, ChatGPT) are welcome, but the same bar
+applies as to any other contribution:
+
+- **You are responsible for your contribution.** Review, understand, and test
+  any AI-generated code before submitting it — please do not open pull requests
+  containing code you cannot explain.
+- **Follow the project conventions** below (formatting, tests, Conventional
+  Commits). AI-generated output must pass the same pre-commit hooks and CI.
+- **Disclose significant AI assistance**, e.g. with an `Assisted-by:` or
+  `Co-authored-by:` commit trailer, so review and attribution stay transparent.
+- **Only contribute code you have the right to submit** under the project's MIT
+  license.
+
+For a fuller policy template, see <https://aipolicy.1mb.dev/>.
+
+## Local Install
 
 ### Install GeoWombat
 
@@ -17,10 +44,11 @@ git clone https://github.com/jgrss/geowombat.git
 
 #### Create a virtual environment
 
-Modify the Python version (i.e., 3.8.15) as needed
+Modify the Python version (i.e., 3.11) as needed. GeoWombat is tested on
+Python 3.10–3.12.
 
 ```commandline
-pyenv virtualenv 3.8.15 venv.gw
+pyenv virtualenv 3.11 venv.gw
 ```
 
 #### Activate the virtual environment
@@ -38,7 +66,7 @@ pyenv activate venv.gw
 
 #### Install GeoWombat
 
-Install other extras from `setup.cfg` as needed.
+Install other extras from `pyproject.toml` as needed.
 
 ```commandline
 (venv.gw) cd geowombat/
@@ -58,39 +86,64 @@ Install other extras from `setup.cfg` as needed.
 (venv.gw) python -m unittest
 ```
 
-## 2. Docker debugging
+## Coding Conventions
 
-### Prerequisites
+Formatting and linting are enforced by [pre-commit](https://pre-commit.com/)
+(installed above). The hooks run automatically on `git commit`, or manually
+with `pre-commit run --all-files`:
 
-- [Visual Studio Code](https://code.visualstudio.com/download)
-- [Docker VSCode Extension](https://code.visualstudio.com/docs/containers/overview)
-- [Docker Desktop](https://docs.docker.com/desktop/)
+- **[black](https://black.readthedocs.io/)** — code formatting (with
+  `--skip-string-normalization`).
+- **[isort](https://pycqa.github.io/isort/)** — import sorting.
+- **[flake8](https://flake8.pycqa.org/)** — linting.
+- **[docformatter](https://github.com/PyCQA/docformatter)** — docstring
+  formatting, wrapped at 79 characters.
 
-1. Build `geowombat/dockerfiles/gw_docker_debug` by right clicking and hit `Build Image...`
-    - This will take a long time the first time only
-    - Give the image a name like `gw_debug`, hit Enter
-2. Click on dock extension tab on left panel of vscode
-3. Under Images click on `gw_debug` right click on `latest`, hit `Run Interactive`
-4. Under Individual Containers, right click on your running `gw_debug` instance, hit `Attach Visual Studio Code`
-5. Once opened make sure the `python` and `ipython` vscode extensions are installed in your attached vscode server
-6. Go to `geowombat/src/debug_script.py` run top cell.
-7. Add code and run `debug cell`
+Additional conventions:
 
-View Example Video here: [![Debug Docker](https://github.com/jgrss/geowombat/blob/jgrss/features_precommit/data/resume.png?raw=true)](https://youtu.be/hBIE4qmOsgA "Debug Docker")
+- **Docstrings** — Google style (rendered by Sphinx napoleon).
+- **Commit messages** — [Conventional Commits](https://www.conventionalcommits.org/)
+  (`feat:`, `fix:`, `perf:`, `refactor:`, `docs:`, `style:`, `test:`, `chore:`).
+  These drive automated versioning and the changelog, so write descriptive
+  messages — `feat:` and `fix:`/`perf:` trigger minor and patch releases.
+- **Tests** — add or update tests under `tests/` for any behavior change.
 
-### Create a Pull Request
+## Create a Pull Request
 
 #### Commit and push changes
 
 ```commandline
 git add .
-git commit -m 'your commit message'
+git commit -m 'fix: short description of the change'
 git push origin new_branch_name
 ```
 
 #### GitHub Pull Request
 
-1. Go to 'Pull Requests' tab
-2. Go to 'New Pull Request'
+1. Go to the 'Pull Requests' tab
+2. Click 'New Pull Request'
 3. Choose 'base:main' and 'compare:new_branch_name'
-4. 'Create pull request'
+4. Click 'Create pull request'
+
+CI (tests across Python 3.10–3.12) and a non-required documentation build run
+on every pull request; please make sure they pass.
+
+## Releases (for maintainers)
+
+Releases are automated by
+[python-semantic-release](https://python-semantic-release.readthedocs.io/) via
+the `Release` workflow, which runs after CI succeeds on `main`:
+
+1. The next version is derived from the Conventional Commit messages since the
+   last tag; `CHANGELOG.md` is updated and a `chore(release): vX.Y.Z` commit and
+   tag are pushed.
+2. The new tag triggers `publish.yml`, which builds the sdist and publishes to
+   PyPI, and `docs.yml`, which triggers a ReadTheDocs build.
+
+Notes:
+
+- Because versioning is commit-driven, a release is a no-op unless a
+  `feat`/`fix`/`perf` commit has landed. Nothing to tag by hand.
+- The build backend is [meson-python](https://meson-python.readthedocs.io/);
+  Cython extensions are compiled at build time, so `ninja` and a C/C++ compiler
+  must be available in build and CI environments.

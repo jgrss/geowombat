@@ -559,7 +559,7 @@ Size suffix (``n`` < ``s`` < ``m`` < ``l`` < ``x``) trades inference
 speed for accuracy. Default to ``n`` or ``s`` for prototyping, ``m``+
 for production.
 
-For OBB weights, geowombat auto-detects orientation from the filename
+For OBB weights, GeoWombat auto-detects orientation from the filename
 ending in ``-obb.pt`` — you don't need to pass ``oriented=True``
 explicitly:
 

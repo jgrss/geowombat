@@ -491,12 +491,12 @@ Save predictions
 Object detection
 ----------------
 
-In addition to pixel/patch classification, geowombat ships object
+In addition to pixel/patch classification, GeoWombat ships object
 detectors (axis-aligned and oriented bounding boxes) that return
 georeferenced ``GeoDataFrame`` outputs. They live in a dedicated
 ``geowombat.detect`` module and follow the same
 ``with gw.open(...) as src:`` / ``src.gw.<method>(...)`` shape as the
-rest of geowombat, with module-level wrappers in ``gw.detect`` that
+rest of GeoWombat, with module-level wrappers in ``gw.detect`` that
 mirror ``gw.ml.fit / predict / fit_predict``.
 
 See :ref:`object-detection` for the full walkthrough.

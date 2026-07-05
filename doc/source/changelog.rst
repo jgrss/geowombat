@@ -26,7 +26,7 @@ Unreleased
   * ``SAMRefiner`` for refining bounding-box detections into polygon
     masks via Meta's Segment Anything Model.
 
-* Added geowombat-native accessors ``src.gw.detect(detector, ...)``
+* Added GeoWombat-native accessors ``src.gw.detect(detector, ...)``
   (tiled inference with cross-tile NMS) and
   ``src.gw.to_yolo_dataset(...)`` (Ultralytics-layout training-dataset
   builder).
@@ -157,7 +157,7 @@ New
 Bug fixes
 ~~~~~~~~~
 
-- Added geowombat attribute lookup in :func:`geowombat.open` to support bounds as data slice objects.
+- Added GeoWombat attribute lookup in :func:`geowombat.open` to support bounds as data slice objects.
 
 1.6.6 (11 May 2021)
 -------------------
@@ -165,7 +165,7 @@ Bug fixes
 Bug fixes
 ~~~~~~~~~
 
-- Added geowombat attribute lookup in :func:`geowombat.open` to support windows as data slice objects.
+- Added GeoWombat attribute lookup in :func:`geowombat.open` to support windows as data slice objects.
 
 1.6.5 (6 May 2021)
 ------------------

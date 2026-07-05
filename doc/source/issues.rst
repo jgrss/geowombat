@@ -1,7 +1,7 @@
 .. _issues:
 
-Issues
-======
+Known issues
+============
 
 GDAL 3.0 and GDAL_DATA
 ----------------------

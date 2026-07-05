@@ -1,4 +1,0 @@
-numpy>=1.19.0
-setuptools>=59.5.0
-ipython
-pickleshare

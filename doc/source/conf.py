@@ -65,6 +65,17 @@ extensions = [
 nbsphinx_execute = 'never'
 nbsphinx_allow_errors = False
 
+# Lines executed at the start of every `.. ipython::` block. Applying the
+# same warning filters used in the notebooks keeps the rendered documentation
+# output free of noisy third-party warnings (e.g. tqdm's IProgress notice).
+ipython_execlines = [
+    'import warnings',
+    "warnings.filterwarnings('ignore', category=DeprecationWarning)",
+    "warnings.filterwarnings('ignore', category=FutureWarning)",
+    "warnings.filterwarnings('ignore', category=UserWarning)",
+    "warnings.filterwarnings('ignore', message='.*IProgress not found.*')",
+]
+
 # sphinxcontrib-bibtex configuration (required for version 2.x+)
 bibtex_bibfiles = [
     'api/references_vi.bib',
