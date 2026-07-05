@@ -175,7 +175,12 @@ def _parse_envi(meta):
     """
 
     def parsevec(s):
-        return np.fromstring(s.strip("{}"), dtype='float', sep=',')
+        # np.fromstring(..., sep=',') was removed in NumPy 2.0. Parse the
+        # ENVI vector (e.g. "{0.45, 0.56, 0.66}") manually instead, while
+        # tolerating trailing commas / whitespace as fromstring did.
+        return np.array(
+            [float(x) for x in s.strip("{}").split(",") if x.strip()]
+        )
 
     def default(s):
         return s.strip("{}")

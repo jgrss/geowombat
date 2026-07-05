@@ -5,7 +5,7 @@
 # cython: wraparound=False
 # cython: nonecheck=False
 
-from libc.stdlib cimport free, malloc, qsort, realloc
+from libc.stdlib cimport free, malloc, qsort
 
 
 cdef inline int _cmp(const void * pa, const void * pb) noexcept nogil:
@@ -37,7 +37,7 @@ cdef inline double get_perc2d(double[:, ::1] input_view,
     cdef:
         Py_ssize_t a, b, bidx, nvalid
         int perc_index
-        double *perc_buffer = <double *> malloc(1 * sizeof(double))
+        double *perc_buffer
         double perc_result
 
     nvalid = 0
@@ -47,9 +47,15 @@ cdef inline double get_perc2d(double[:, ::1] input_view,
             if input_view[i+a, j+b] != nodata:
                 nvalid += 1
 
-    # Resize the buffer
-    perc_buffer_re = <double *> realloc(perc_buffer, nvalid * sizeof(double))
-    perc_buffer = perc_buffer_re
+    # The window holds no valid values. Return nodata rather than
+    # dereferencing an empty buffer (realloc(ptr, 0) may return NULL,
+    # which made the old buffer[0] read segfault).
+    if nvalid == 0:
+        return nodata
+
+    perc_buffer = <double *> malloc(nvalid * sizeof(double))
+    if perc_buffer == NULL:
+        return nodata
 
     bidx = 0
     for a in range(0, w):
@@ -63,11 +69,13 @@ cdef inline double get_perc2d(double[:, ::1] input_view,
     # Sort the buffer
     qsort(perc_buffer, nvalid, sizeof(double), _cmp)
 
-    # Get the percentile
+    # Get the percentile, clamping the index to the valid range.
     perc_index = <int>(<double>nvalid * (perc / 100.0))
 
-    if perc_index - 1 < 0:
+    if perc_index < 1:
         perc_result = perc_buffer[0]
+    elif perc_index > nvalid:
+        perc_result = perc_buffer[nvalid-1]
     else:
         perc_result = perc_buffer[perc_index-1]
 

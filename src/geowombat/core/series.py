@@ -27,14 +27,17 @@ try:
     import tensorflow as tf
 
     TENSORFLOW_INSTALLED = True
-except ImportError:
+# These are optional GPU-transfer backends. Catch broadly: a broken or
+# version-mismatched install (e.g. a jax built for a different NumPy) must
+# degrade to "not available" rather than break ``import geowombat``.
+except Exception:
     TENSORFLOW_INSTALLED = False
 
 try:
     import jax.numpy as jnp
 
     JAX_INSTALLED = True
-except ImportError:
+except Exception:
     JAX_INSTALLED = False
 
 

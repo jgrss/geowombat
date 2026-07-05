@@ -208,7 +208,7 @@ GeoWombat provides optional dependency groups for specific functionality.
    * - ``dl``
      - Deep learning (PyTorch, pytorch-tabnet, torchgeo, segmentation-models-pytorch)
    * - ``detect``
-     - Object detection (ultralytics/YOLO, torchmetrics, pycocotools, pillow, opencv-python<4.12)
+     - Object detection (ultralytics/YOLO, torchmetrics, pycocotools, pillow, opencv-python)
    * - ``sam``
      - Segment Anything Model (Meta's segment-anything)
    * - ``stac``
@@ -272,8 +272,8 @@ for the full recipe.
           conda install geowombat-dl
           pip install pytorch-tabnet
 
-    - ``geowombat-detect``: ``opencv-python`` is shipped as ``py-opencv <4.12``
-      on conda-forge to stay compatible with the ``numpy<2`` pin.
+    - ``geowombat-detect``: ``opencv-python`` (``py-opencv`` on conda-forge)
+      is left unpinned; the solver matches it to the installed NumPy.
     - ``geowombat-sam``: ``segment-anything`` (the upstream PyPI package) is
       not available on conda-forge. The ``geowombat-sam`` sub-package is a
       placeholder that only pins the base ``geowombat``; install
@@ -328,23 +328,27 @@ Troubleshooting
 
 .. note::
 
-    **Build fails with NumPy errors**
+    **NumPy 1.x and 2.x are both supported**
 
-    If you see errors mentioning ``PyArray_Descr has no member named
-    'subarray'`` or ``numpy/_core/include not found``, your build environment
-    may have NumPy 2.x despite the ``numpy<2`` pin in ``pyproject.toml``.
-    This can happen with older pip versions or cached build artifacts.
-    Try upgrading pip and clearing the build cache::
+    GeoWombat builds its compiled extensions against NumPy 2.x, which keeps
+    them ABI-compatible with NumPy >=1.23 at runtime, so it runs under either
+    NumPy 1.x or 2.x. The runtime requirement is ``numpy>=1.23,<3``.
+
+    If you **switch** the NumPy major version of an existing **editable**
+    install (e.g. ``pip install "numpy<2"`` on top of an editable build that
+    was compiled against NumPy 2), rebuild the extensions so their ABI matches
+    the active NumPy::
+
+        rm -rf build/
+        pip install --no-build-isolation -e ".[tests]"
+
+    If you see build errors mentioning ``PyArray_Descr has no member named
+    'subarray'`` or ``numpy/_core/include not found``, you are building against
+    a NumPy older than 2.0 with a modern Cython. Upgrade pip and clear the
+    build cache::
 
         pip install --upgrade pip
         pip install --no-cache-dir git+https://github.com/jgrss/geowombat
-
-    If the problem persists, install numpy<2 explicitly and bypass build
-    isolation::
-
-        pip install "numpy<2"
-        C_INCLUDE_PATH=$(python -c "import numpy; print(numpy.get_include())") \
-          pip install --no-build-isolation git+https://github.com/jgrss/geowombat
 
 .. note::
 

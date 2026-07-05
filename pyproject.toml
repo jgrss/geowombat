@@ -1,6 +1,9 @@
 [build-system]
 build-backend = "mesonpy"
-requires = ["meson-python", "numpy<2", "cython", "setuptools-scm"]
+# Build against NumPy 2.x: the resulting C extensions are ABI-backward
+# compatible with NumPy >=1.19 at runtime, so a single build serves both
+# NumPy 1.x and 2.x users. Cython >=3.0 is required to cimport NumPy 2 headers.
+requires = ["meson-python", "numpy>=2.0.0", "cython>=3.0", "setuptools-scm"]
 
 [project]
 name = "geowombat"
@@ -24,7 +27,7 @@ dependencies = [
     "geopandas",
     "joblib",
     "matplotlib",
-    "numpy<2",
+    "numpy>=1.23,<3",
     "pandas",
     "pyproj",
     "rasterio<1.5.0",
@@ -151,9 +154,10 @@ detect = [
     "pycocotools",
     "pyyaml",
     "pillow",
-    # opencv-python>=4.12 requires numpy>=2, but the rest of geowombat
-    # pins numpy<2. Keep the older opencv build compatible with that.
-    "opencv-python<4.12",
+    # Now that geowombat supports numpy>=2, leave opencv-python unpinned and
+    # let the resolver match it to the installed numpy: opencv>=4.12 under
+    # numpy 2.x, an older numpy-1-compatible build under numpy 1.x.
+    "opencv-python",
 ]
 
 sam = [
