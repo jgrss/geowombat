@@ -16,9 +16,19 @@ from geowombat.data import (
     l8_224077_20200518_B2_60m,
     l8_224078_20200518,
     l8_224078_20200518_B2,
-    l8_224077_20200518_B2_nan,
-    l8_224078_20200518_B2_nan,
 )
+
+# The large NaN mosaic rasters are not shipped with the package (issue #362);
+# fetch them on demand and skip the dependent tests if unavailable (offline).
+try:
+    from _testdata import fetch
+
+    l8_224077_20200518_B2_nan = fetch("l8_224077_20200518_B2_nan.tif")
+    l8_224078_20200518_B2_nan = fetch("l8_224078_20200518_B2_nan.tif")
+    _HAVE_NAN_DATA = True
+except Exception:
+    l8_224077_20200518_B2_nan = l8_224078_20200518_B2_nan = None
+    _HAVE_NAN_DATA = False
 
 
 class TestOpen(unittest.TestCase):
@@ -237,6 +247,9 @@ class TestOpen(unittest.TestCase):
                 )
             )
 
+    @unittest.skipUnless(
+        _HAVE_NAN_DATA, "nan test rasters unavailable (offline)"
+    )
     def test_mosaic_max_nan(self):
         filenames = [l8_224077_20200518_B2_nan, l8_224078_20200518_B2_nan]
         with gw.open(
@@ -339,6 +352,9 @@ class TestOpen(unittest.TestCase):
                 )
             )
 
+    @unittest.skipUnless(
+        _HAVE_NAN_DATA, "nan test rasters unavailable (offline)"
+    )
     def test_mosaic_min_nan(self):
         filenames = [l8_224077_20200518_B2_nan, l8_224078_20200518_B2_nan]
         with gw.open(
@@ -442,6 +458,9 @@ class TestOpen(unittest.TestCase):
                 )
             )
 
+    @unittest.skipUnless(
+        _HAVE_NAN_DATA, "nan test rasters unavailable (offline)"
+    )
     def test_mosaic_mean_nan(self):
         filenames = [l8_224077_20200518_B2_nan, l8_224078_20200518_B2_nan]
         with gw.open(

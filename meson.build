@@ -73,8 +73,6 @@ py3.install_sources(
     [
         'src/geowombat/data/__init__.py',
         'src/geowombat/data/L3B_S2B_00390821JXN0L2A_20210319_20220730_C01.nc',
-        'src/geowombat/data/l8_224077_20200518_B2_nan.tif',
-        'src/geowombat/data/l8_224078_20200518_B2_nan.tif',
         'src/geowombat/data/LC08_L1TP_224077_20200518_20200518_01_RT_B2_60m.TIF',
         'src/geowombat/data/LC08_L1TP_224077_20200518_20200518_01_RT_B2.TIF',
         'src/geowombat/data/LC08_L1TP_224077_20200518_20200518_01_RT_B3.TIF',
