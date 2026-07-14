@@ -16,6 +16,7 @@ on:
           - '3.10'
           - '3.11'
           - '3.12'
+          - '3.13'
 
 jobs:
   Tests:
@@ -25,7 +26,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ${{ github.event.inputs.python-version == '3.10' && fromJson('["3.10"]') || github.event.inputs.python-version == '3.11' && fromJson('["3.11"]') || github.event.inputs.python-version == '3.12' && fromJson('["3.12"]') || fromJson('["3.10", "3.11", "3.12"]') }}
+        python-version: ${{ github.event.inputs.python-version == '3.10' && fromJson('["3.10"]') || github.event.inputs.python-version == '3.11' && fromJson('["3.11"]') || github.event.inputs.python-version == '3.12' && fromJson('["3.12"]') || github.event.inputs.python-version == '3.13' && fromJson('["3.13"]') || fromJson('["3.10", "3.11", "3.12", "3.13"]') }}
         # Run the suite under both NumPy major versions. Extensions are built
         # against NumPy 2 (ABI-compatible with 1.x), so both legs must pass.
         numpy: ['1', '2']
