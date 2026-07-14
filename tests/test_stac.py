@@ -1,7 +1,10 @@
 # flake8: noqa
 
+import functools
+import socket
 import tempfile
 import unittest
+import urllib.error
 from pathlib import Path
 
 import geopandas as gpd
@@ -86,6 +89,66 @@ def url_is_valid(url: str) -> bool:
     return False
 
 
+# Exception types that unambiguously indicate a network/DNS failure.
+_NETWORK_ERROR_TYPES = (
+    urllib.error.URLError,
+    socket.gaierror,
+    socket.timeout,
+    ConnectionError,
+    TimeoutError,
+)
+
+# Substrings that flag a network failure re-wrapped by requests / pystac_client
+# / rasterio (which raise their own exception types, not the ones above).
+_NETWORK_ERROR_SIGNATURES = (
+    "name or service not known",
+    "temporary failure in name resolution",
+    "failed to establish a new connection",
+    "max retries exceeded",
+    "connection refused",
+    "connection reset",
+    "connection aborted",
+    "could not connect",
+    "could not resolve host",
+    "couldn't resolve host",
+    "network is unreachable",
+    "no route to host",
+    "timed out",
+    "curl error",
+    "502 server error",
+    "503 server error",
+    "504 server error",
+)
+
+
+def skip_on_network_error(func):
+    """Skip (not fail) a test when it hits a network/DNS error.
+
+    STAC tests query live catalogs and download over HTTP, so a runner without
+    network access — or a transient provider outage — should skip rather than
+    fail the suite (and block releases). Genuine assertion failures and other
+    errors still propagate.
+    """
+
+    @functools.wraps(func)
+    def wrapper(self, *args, **kwargs):
+        try:
+            return func(self, *args, **kwargs)
+        except _NETWORK_ERROR_TYPES as e:
+            raise unittest.SkipTest(f"network unavailable: {e}")
+        except Exception as e:
+            chain = " ".join(
+                str(part)
+                for part in (e, e.__cause__, e.__context__)
+                if part is not None
+            ).lower()
+            if any(sig in chain for sig in _NETWORK_ERROR_SIGNATURES):
+                raise unittest.SkipTest(f"network unavailable: {e}")
+            raise
+
+    return wrapper
+
+
 class TestSearchSingleBand(unittest.TestCase):
     @unittest.skip(
         "S3 assets for historical Sentinel-2 L1C tiles no longer accessible"
@@ -113,6 +176,7 @@ class TestSearchSingleBand(unittest.TestCase):
         self.assertTrue(stack.gw.cellx == 10.0)
         self.assertTrue(stack.gw.nodataval == 32768)
 
+    @skip_on_network_error
     def test_search_sentinel_s1_l1c(self):
         stack = open_stac(
             stac_catalog='element84_v1',
@@ -131,6 +195,7 @@ class TestSearchSingleBand(unittest.TestCase):
             max_items=None,
         )[0]
 
+    @skip_on_network_error
     def test_search_ms_landsat_c2_l2(self):
         stack, df = open_stac(
             stac_catalog='microsoft_v1',
@@ -186,6 +251,7 @@ class TestSearchSingleBand(unittest.TestCase):
             self.assertTrue(len(df.index) == 2)
             self.assertFalse(set(df.id.values).difference(df.id.values))
 
+    @skip_on_network_error
     def test_search_blue_sentinel_s2_l2a(self):
         with tempfile.TemporaryDirectory() as tmp_path:
             stack, df = open_stac(
