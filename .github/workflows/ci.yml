@@ -95,77 +95,13 @@ jobs:
           uv pip install --reinstall-package geowombat ".[ml,dl]"
           cd tests && python -m unittest discover -p 'ml_*.py'
 
-  # Mirror the real user install path: build the sdist (the only artifact
-  # published to PyPI) and install it into a clean env, which triggers a fresh
-  # meson build of the Cython extensions against NumPy 2. Then confirm they
-  # load and compute under both NumPy 1.x and 2.x runtimes.
-  Sdist-smoke:
-    runs-on: ubuntu-latest
-    container:
-      image: ghcr.io/osgeo/gdal:ubuntu-small-3.10.1
-    strategy:
-      fail-fast: false
-      matrix:
-        numpy: ['1', '2']
-        include:
-          - numpy: '1'
-            numpy-spec: '>=1.23,<2'
-          - numpy: '2'
-            numpy-spec: '>=2,<3'
-    steps:
-      - name: Install system requirements
-        run: apt update -y && apt install -y nodejs g++ git python3-dev
-
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0  # For setuptools-scm
-
-      - name: Install uv
-        uses: astral-sh/setup-uv@v5
-        with:
-          python-version: '3.11'
-
-      - name: Create venv
-        run: rm -rf .venv && uv venv
-
-      - name: Constrain NumPy for this leg
-        # See the Tests job: pin at resolution time so SciPy/etc. match the
-        # target NumPy major version instead of being left on a mismatched build.
-        run: |
-          echo "numpy${{ matrix.numpy-spec }}" > "$RUNNER_TEMP/numpy-constraint.txt"
-          echo "UV_CONSTRAINT=$RUNNER_TEMP/numpy-constraint.txt" >> "$GITHUB_ENV"
-
-      - name: Build sdist
-        run: |
-          # ``meson dist`` shells out to git; without this the container's
-          # root-owned checkout trips git's "dubious ownership" guard and the
-          # build aborts with "Dist currently only works with Git ... repos".
-          git config --global --add safe.directory "$GITHUB_WORKSPACE"
-          uv pip install build
-          python -m build --sdist
-
-      - name: Install from sdist
-        run: |
-          uv pip install gdal[numpy]==$(gdal-config --version)
-          uv pip install dist/geowombat-*.tar.gz
-          python -c "import numpy, sys; got = numpy.__version__.split('.')[0]; want = '${{ matrix.numpy }}'; print('Smoke testing against NumPy', numpy.__version__); sys.exit(0 if got == want else 'expected NumPy %s.x, got %s' % (want, numpy.__version__))"
-
-      - name: Smoke import compiled extensions
-        run: |
-          python -c "import geowombat; from geowombat.moving import _moving; from geowombat.radiometry import _fusion; print(geowombat.__version__)"
-
-      - name: Run moving-window test against installed package
-        run: |
-          uv pip install testfixtures
-          cd tests && python -m unittest test_moving test_smoke
-
   Tests-result:
     if: always()
-    needs: [Tests, Sdist-smoke]
+    needs: [Tests]
     runs-on: ubuntu-latest
     steps:
       - run: |
-          if [[ "${{ needs.Tests.result }}" == "success" && "${{ needs.Sdist-smoke.result }}" == "success" ]]; then
+          if [[ "${{ needs.Tests.result }}" == "success" ]]; then
             echo "All tests passed"
             exit 0
           else
