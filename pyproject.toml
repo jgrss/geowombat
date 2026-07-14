@@ -71,6 +71,7 @@ docs = [
 
 tests = [
     "testfixtures",
+    "pooch",
     "jax",
     "jaxlib",
     "pre-commit",

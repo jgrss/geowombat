@@ -9,10 +9,14 @@ import geowombat as gw
 from geowombat.data import (
     l8_224077_20200518_B2,
     l8_224078_20200518_B2,
-    l8_224077_20200518_B2_nan,
-    l8_224078_20200518_B2_nan,
 )
 from geowombat.core import lonlat_to_xy, coords_to_indices
+
+# Large NaN mosaic rasters are fetched on demand, not shipped (issue #362).
+from _testdata import fetch
+
+l8_224077_20200518_B2_nan = fetch("l8_224077_20200518_B2_nan.tif")
+l8_224078_20200518_B2_nan = fetch("l8_224078_20200518_B2_nan.tif")
 
 print("=" * 70)
 print("Testing Mosaic Functionality Fixes")
