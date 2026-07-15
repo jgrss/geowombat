@@ -36,12 +36,26 @@ jobs:
       # — those become the release notes. PSR inserts new version
       # sections at the `<!-- version list -->` marker in CHANGELOG.md
       # and pushes a `chore(release): vX.Y.Z` commit back to main.
+      # Tag-only release strategy (restores the working pre-#353 behavior):
+      # `commit: false` means PSR does NOT create/push a changelog commit
+      # back to `main`, so it never hits branch protection (GH006). It
+      # still computes the version, pushes the tag, and creates the GitHub
+      # release, whose body carries the generated changelog. This works
+      # with the default GITHUB_TOKEN because tags are not branch-protected.
+      #
+      # Uses GW_TOKEN (a PAT with Contents: write) rather than the default
+      # GITHUB_TOKEN so that the GitHub release PSR creates TRIGGERS
+      # publish.yml (GITHUB_TOKEN cannot trigger other workflows, which is
+      # why PyPI silently stopped publishing after 2.2.0.1). No branch-
+      # protection bypass is required here because `commit: false` means
+      # nothing is pushed to `main` — only the tag + release, which
+      # protection does not cover.
       - name: Python Semantic Release
         uses: python-semantic-release/python-semantic-release@v9
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+          github_token: ${{ secrets.GW_TOKEN }}
           changelog: "true"
-          commit: "true"
+          commit: "false"
           tag: "true"
           push: "true"
           vcs_release: "true"
