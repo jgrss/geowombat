@@ -6,7 +6,7 @@ Installing GeoWombat
 Prerequisites
 -------------
 
-GeoWombat requires **Python 3.10, 3.11, or 3.12**.
+GeoWombat requires **Python 3.10, 3.11, 3.12, or 3.13**.
 
 The recommended installation method is **Conda**, which handles the core
 dependencies (including GDAL/rasterio) automatically on every platform.
@@ -42,11 +42,30 @@ Alternatively, install in one line following the
 Install with pip
 ----------------
 
-GeoWombat can be installed from the
-`GitHub repository <https://github.com/jgrss/geowombat>`_ using pip. Because
-GeoWombat includes Cython extensions that must be compiled, a C compiler is
-required (``gcc`` on Linux, Xcode command-line tools on macOS, or Visual Studio
-Build Tools on Windows).
+GeoWombat is published on `PyPI <https://pypi.org/project/geowombat/>`_ and can
+be installed with pip::
+
+    pip install geowombat
+
+To include optional extras (e.g., ``ml`` and ``stac``)::
+
+    pip install "geowombat[ml,stac]"
+
+To install everything needed to run the example notebooks in one step::
+
+    pip install "geowombat[all]"
+
+.. note::
+
+    GeoWombat is currently distributed on PyPI as a source distribution (there
+    are no pre-built wheels yet), so pip compiles its Cython extensions at
+    install time. This requires a C compiler (``gcc`` on Linux, Xcode
+    command-line tools on macOS, or Visual Studio Build Tools on Windows). On
+    Windows, **Conda is strongly recommended** to avoid setting up a compiler.
+
+Installing from source (GitHub) is also supported, and is required when you want
+an unreleased version or a specific commit. The same C compiler requirement
+applies.
 
 .. tabs::
 
@@ -288,6 +307,27 @@ for the full recipe.
       (perf; deprecated — its functionality is now in shapely 2.0+),
       ``segment-anything`` (sam; install via pip as described above), and
       ``pytorch-tabnet`` (dl, conda only — works fine on pip).
+
+
+.. _example-notebooks:
+
+Running the example notebooks
+-----------------------------
+
+The example notebooks in the documentation each depend on one or more optional
+extras. Every notebook lists its exact ``pip`` and ``conda`` install commands in
+a **Requirements** cell at the top, so install the extra(s) for the notebook you
+want to run. To cover every notebook at once, install all extras with
+``pip install "geowombat[all]"`` (or the matching ``geowombat-*`` sub-packages
+with Conda; see :ref:`optional-extras`).
+
+.. note::
+
+   Conda users installing the ``stac`` sub-package must also
+   ``pip install wrapt-timeout-decorator`` (not on conda-forge). ``geowombat-dl``
+   omits ``pytorch-tabnet`` (``pip install pytorch-tabnet`` if you need TabNet),
+   and the ``object_detection`` notebook's SAM-refiner section additionally needs
+   ``pip install segment-anything``. See :ref:`optional-extras` for details.
 
 
 Test the installation

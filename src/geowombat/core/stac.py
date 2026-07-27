@@ -27,7 +27,7 @@ try:
     from pystac_client import Client as _Client
     from rich.console import Console as _Console
     from rich.table import Table as _Table
-except ImportError as e:
+except ImportError:
     pystac = None
     pystac_errors = None
     stackstac = None
@@ -36,9 +36,6 @@ except ImportError as e:
     _Client = None
     _Console = None
     _Table = None
-    warnings.warn(
-        f"Install geowombat with 'pip install .[stac]' to use the STAC API. ({e})"
-    )
 
 try:
     from pydantic.errors import PydanticImportError
@@ -52,6 +49,18 @@ except (ImportError, PydanticImportError) as e:
     warnings.warn(
         f'The planetary-computer package did not import correctly. Use of the microsoft collection may be limited. ({e})'
     )
+
+
+def _require_stac_deps() -> None:
+    """Raise a clear, actionable error if the optional STAC deps are missing."""
+    if _Client is None:
+        raise ImportError(
+            "The STAC API requires optional dependencies that are not installed.\n\n"
+            '  pip:   pip install "geowombat[stac]"\n'
+            "  conda: conda install -c conda-forge geowombat-stac\n\n"
+            "Note (conda): 'wrapt-timeout-decorator' is not on conda-forge; "
+            "install it with: pip install wrapt-timeout-decorator"
+        )
 
 
 class StrEnum(str, enum.Enum):
@@ -570,6 +579,8 @@ def open_stac(
         >>>     .mean(dim='time')
         >>> )
     """
+    _require_stac_deps()
+
     if collection is None:
         raise NameError('A collection must be given.')
 
@@ -1058,6 +1069,8 @@ def composite_stac(
         ...     frequency='MS',
         ... )
     """
+    _require_stac_deps()
+
     # Validate frequency
     try:
         pd.tseries.frequencies.to_offset(frequency)
