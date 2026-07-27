@@ -167,6 +167,11 @@ sam = [
     "segment-anything>=1.0",
 ]
 
+# all optional features in one install (`pip install "geowombat[all]"`).
+all = [
+    "geowombat[ml,dl,detect,sam,stac,coreg,perf,time,view,web,zarr]",
+]
+
 [project.urls]
 Homepage = "https://github.com/jgrss/geowombat"
 Documentation = "https://geowombat.readthedocs.io"

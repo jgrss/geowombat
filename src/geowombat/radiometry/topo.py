@@ -20,6 +20,15 @@ logger = logging.getLogger(__name__)
 logger = add_handler(logger)
 
 
+def _require_opencv() -> None:
+    """Raise a clear, actionable error if OpenCV is missing."""
+    if not OPENCV_INSTALLED:
+        raise ImportError(
+            "Resizing slope/aspect with 'proc_dims' requires OpenCV.\n"
+            "  pip install opencv-python"
+        )
+
+
 def _resize_elev(elev, proc_dims):
 
     if OPENCV_INSTALLED:
@@ -64,6 +73,7 @@ def calc_slope(elev, proc_dims=None, w=None, **kwargs):
     inrows, incols = elev.shape
 
     if proc_dims:
+        _require_opencv()
         elev = _resize_elev(elev, proc_dims)
 
     ds = gdal_array.OpenArray(elev.astype('float64'))
@@ -119,9 +129,8 @@ def calc_aspect(elev, proc_dims=None, w=None, **kwargs):
     inrows, incols = elev.shape
 
     if proc_dims:
-
-        if proc_dims:
-            elev = _resize_elev(elev, proc_dims)
+        _require_opencv()
+        elev = _resize_elev(elev, proc_dims)
 
     ds = gdal_array.OpenArray(elev.astype('float64'))
 

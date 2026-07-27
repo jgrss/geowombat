@@ -41,6 +41,15 @@ except Exception:
     JAX_INSTALLED = False
 
 
+def _require_backend(name: str, installed: bool, install_hint: str) -> None:
+    """Raise a clear, actionable error if an optional backend is missing."""
+    if not installed:
+        raise ImportError(
+            f"The '{name}' backend requires {name}, which is not installed.\n"
+            f"  {install_hint}"
+        )
+
+
 class TransferLib(object):
 
     """Device transfers.
@@ -61,6 +70,7 @@ class TransferLib(object):
 
     @staticmethod
     def jax(array):
+        _require_backend('jax', JAX_INSTALLED, 'pip install jax')
         return jnp.asarray(array, dtype='float32')
 
     @staticmethod
@@ -73,10 +83,16 @@ class TransferLib(object):
 
     @staticmethod
     def pytorch(array):
+        _require_backend(
+            'torch', PYTORCH_INSTALLED, 'pip install "geowombat[dl]"'
+        )
         return torch.from_numpy(array).float().to('cuda:0')
 
     @staticmethod
     def tensorflow(array):
+        _require_backend(
+            'tensorflow', TENSORFLOW_INSTALLED, 'pip install tensorflow'
+        )
         return tf.convert_to_tensor(array, tf.float64)
 
     def __call__(self, array):
@@ -365,6 +381,8 @@ class TimeModulePipeline(object):
             return TimeModulePipeline(self.modules + [other])
 
     def __call__(self, w, array, band_dict):
+
+        _require_backend('jax', JAX_INSTALLED, 'pip install jax')
 
         results = []
         for module in self.modules:
