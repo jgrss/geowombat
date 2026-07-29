@@ -66,6 +66,9 @@ docs = [
     # nbsphinx 0.9.x is the last line tested against sphinx 6.
     "nbsphinx>=0.9,<1",
     "ipykernel",
+    # ipywidgets backs tqdm.auto progress bars and interactive output in
+    # the example notebooks (STAC downloads, training loops).
+    "ipywidgets",
     # myst-parser is registered for future Markdown content in the
     # docs tree. 1.x is the Sphinx 6-compatible line.
     "myst-parser>=1.0,<2",
@@ -135,7 +138,6 @@ stac = [
     "planetary-computer",
     "Rich",
     "wget",
-    "wrapt-timeout-decorator",
 ]
 
 web = [
