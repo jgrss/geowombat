@@ -2,6 +2,7 @@ import logging
 
 import matplotlib as mpl
 import matplotlib.pyplot as plt
+import numpy as np
 import xarray as xr
 
 from ..handler import add_handler
@@ -105,6 +106,16 @@ class Plotting(object):
 
             if flip:
                 plot_data = plot_data[..., ::-1]
+
+            # matplotlib expects RGB floats in [0, 1]; float data outside that
+            # range (e.g. a uint8 mosaic promoted to float, raw DN, or scaled
+            # reflectance) is otherwise silently clipped to a blank image. Fall
+            # back to a robust percentile stretch when the caller has not set
+            # the scaling explicitly.
+            if np.issubdtype(plot_data.dtype, np.floating) and not (
+                {'robust', 'vmin', 'vmax'} & set(kwargs)
+            ):
+                kwargs['robust'] = True
 
             plot_data.plot.imshow(rgb='band', **kwargs)
 

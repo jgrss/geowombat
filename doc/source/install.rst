@@ -303,7 +303,7 @@ for the full recipe.
 
     - A few packages are unavailable on conda-forge (or unavailable in a
       compatible build) and must be installed via pip when using Conda:
-      ``wrapt-timeout-decorator`` (stac), ``sphinx_tabs`` (docs), ``pygeos``
+      ``sphinx_tabs`` (docs), ``pygeos``
       (perf; deprecated — its functionality is now in shapely 2.0+),
       ``segment-anything`` (sam; install via pip as described above), and
       ``pytorch-tabnet`` (dl, conda only — works fine on pip).
@@ -323,10 +323,9 @@ with Conda; see :ref:`optional-extras`).
 
 .. note::
 
-   Conda users installing the ``stac`` sub-package must also
-   ``pip install wrapt-timeout-decorator`` (not on conda-forge). ``geowombat-dl``
-   omits ``pytorch-tabnet`` (``pip install pytorch-tabnet`` if you need TabNet),
-   and the ``object_detection`` notebook's SAM-refiner section additionally needs
+   With Conda, ``geowombat-dl`` omits ``pytorch-tabnet``
+   (``pip install pytorch-tabnet`` if you need TabNet), and the
+   ``object_detection`` notebook's SAM-refiner section additionally needs
    ``pip install segment-anything``. See :ref:`optional-extras` for details.
 
 
