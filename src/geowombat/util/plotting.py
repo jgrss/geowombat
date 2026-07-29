@@ -100,6 +100,13 @@ class Plotting(object):
         else:
             plot_data = data
 
+        # matplotlib/xarray's percentile scaling (``robust=True``) and NaN
+        # masking both use subtraction, which numpy does not support on boolean
+        # arrays. Boolean masks (e.g. ``ndvi >= -0.25``) are a common thing to
+        # plot, so promote them to uint8 first.
+        if np.issubdtype(plot_data.dtype, np.bool_):
+            plot_data = plot_data.astype('uint8')
+
         if plot_data.gw.nbands == 3:
 
             plot_data = plot_data.transpose('y', 'x', 'band')
