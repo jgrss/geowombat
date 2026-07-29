@@ -27,7 +27,9 @@ try:
     from pystac_client import Client as _Client
     from rich.console import Console as _Console
     from rich.table import Table as _Table
-except ImportError:
+
+    _STAC_IMPORT_ERROR = None
+except ImportError as e:
     pystac = None
     pystac_errors = None
     stackstac = None
@@ -36,6 +38,10 @@ except ImportError:
     _Client = None
     _Console = None
     _Table = None
+    # Keep the underlying error so a missing *or broken* dependency (e.g. a
+    # sub-package that fails to import on a newer Python) is reported clearly
+    # instead of a misleading "not installed" message.
+    _STAC_IMPORT_ERROR = e
 
 try:
     from pydantic.errors import PydanticImportError
@@ -55,12 +61,16 @@ def _require_stac_deps() -> None:
     """Raise a clear, actionable error if the optional STAC deps are missing."""
     if _Client is None:
         raise ImportError(
-            "The STAC API requires optional dependencies that are not installed.\n\n"
+            "The STAC API could not load its optional dependencies. The "
+            "underlying import failed with:\n\n"
+            f"    {type(_STAC_IMPORT_ERROR).__name__}: {_STAC_IMPORT_ERROR}\n\n"
+            "If the STAC extras are not installed, install them with:\n"
             '  pip:   pip install "geowombat[stac]"\n'
             "  conda: conda install -c conda-forge geowombat-stac\n\n"
-            "Note (conda): 'wrapt-timeout-decorator' is not on conda-forge; "
-            "install it with: pip install wrapt-timeout-decorator"
-        )
+            "If they are already installed, the package named above failed to "
+            "import (often a version conflict on a newer Python); reinstall or "
+            "pin a compatible version."
+        ) from _STAC_IMPORT_ERROR
 
 
 class StrEnum(str, enum.Enum):
