@@ -3,12 +3,9 @@ title: 'GeoWombat: Scalable geospatial and remote sensing analysis in Python'
 tags:
   - Python
   - remote sensing
-  - raster
   - geospatial
+  - raster
   - machine learning
-  - deep learning
-  - object detection
-  - satellite imagery
 authors:
   - name: Jordan Graesser
     orcid: 0000-0002-6137-7050
@@ -19,19 +16,20 @@ authors:
   - name: Leonardo Hardtke
     affiliation: 3
   - name: Robert Denham
-    affiliation: 4
+    orcid: 0000-0002-3342-7970
+    affiliation: 3
   - name: Sharon Xu
-    affiliation: 2
+    affiliation: 4
 affiliations:
-  - name: Independent Researcher
+  - name: Independent Researcher, Brisbane, Australia
     index: 1
-    ror: ""
-  - name: Department of Geography & Environment, The George Washington University, USA
+  - name: Department of Geography & Environment, The George Washington University, Washington, DC, USA
     index: 2
     ror: 00y4zzh67
-  - name: Independent Researcher
+  - name: The University of Queensland, School of the Environment, Brisbane, Australia
     index: 3
-  - name: Independent Researcher
+    ror: 00rqy9422
+  - name: Independent Researcher, USA
     index: 4
 date: 7 April 2026
 bibliography: paper.bib
@@ -39,7 +37,7 @@ bibliography: paper.bib
 
 # Summary
 
-GeoWombat is an open-source Python library that provides an end-to-end platform for geospatial raster data processing and remote sensing analysis at scale. Built on xarray [@xarray], Dask [@dask], and rasterio [@rasterio_software], GeoWombat simplifies common but complex operations - such as mosaicking multi-tile imagery, reprojecting across coordinate reference systems, aligning rasters of varying resolutions, and performing radiometric corrections - into concise, intuitive commands. The library includes built-in sensor profiles for Landsat 1--8, Sentinel-1 and Sentinel-2, MODIS, and NAIP that automate band naming, scaling, and metadata handling. It supports workflows spanning cloud-based data access via SpatioTemporal Asset Catalogs (STAC) from multiple providers, a full radiometric processing chain (DN-to-reflectance conversion, atmospheric correction, BRDF normalization, and topographic correction), vegetation index computation, raster-vector interoperability, Cython-accelerated moving window statistics, scikit-learn-based [@scikit-learn] machine learning classification, deep learning with PyTorch [@pytorch], and georeferenced object detection. By leveraging Dask's lazy evaluation and task graphs, GeoWombat enables out-of-core processing of raster datasets of any size on commodity hardware.
+GeoWombat is an open-source Python library that provides an end-to-end platform for geospatial raster data processing and remote sensing analysis at scale. Built on xarray [@xarray], Dask [@dask], and rasterio [@rasterio_software], GeoWombat simplifies common but complex operations---such as mosaicking multi-tile imagery, reprojecting across coordinate reference systems, aligning rasters of varying resolutions, and performing radiometric corrections---into concise, intuitive commands. The library includes built-in sensor profiles for Landsat 1--8, Sentinel-1 and Sentinel-2, MODIS, and NAIP that automate band naming, scaling, and metadata handling. It supports workflows spanning cloud-based data access via SpatioTemporal Asset Catalogs (STAC) from multiple providers, a full radiometric processing chain (DN-to-reflectance conversion, atmospheric correction, BRDF normalization, and topographic correction), vegetation index computation, raster-vector interoperability, Cython-accelerated moving window statistics, scikit-learn-based [@scikit-learn] machine learning classification, deep learning with PyTorch [@pytorch], and georeferenced object detection. By leveraging Dask's lazy evaluation and task graphs, GeoWombat enables out-of-core processing of raster datasets of any size on commodity hardware.
 
 
 # Statement of need
@@ -54,7 +52,7 @@ GeoWombat addresses this gap by providing a unified, high-level API that orchest
 
 Several Python packages address parts of the geospatial raster workflow. Rioxarray [@rioxarray] adds rasterio-backed I/O and CRS-aware operations to xarray but no remote sensing-specific functionality such as vegetation indices, QA masking, or classification. Google Earth Engine [@gorelick2017google] processes global archives in the cloud but is proprietary, requires connectivity, and limits control over computation; Xee [@xee] bridges it to xarray but inherits those constraints. Open Data Cube [@odc] indexes analysis-ready data but requires infrastructure setup and ingestion, and Raster Vision [@rv] targets deep learning alone rather than the broader workflow.
 
-Other contemporary packages overlap parts of GeoWombat's scope but remain in-memory and single-focus. scikit-eo [@tarazona2024scikiteo] supplies ready-made analysis algorithms: classification with calibration and accuracy assessment, spectral mixture analysis, image fusion, atmospheric correction, and a U-Net segmenter; without cloud access or out-of-core scaling. EarthPy [@wasser2019earthpy] provides education-oriented utilities for stacking, masking, and plotting raster and vector data, omitting radiometry, classification, and large-dataset processing. rastereasy [@corpetti2025rastereasy] wraps I/O, resampling, reprojection, filtering, and light machine learning behind a NumPy-like Geoimage object, but loads whole images into memory.
+Other contemporary packages overlap parts of GeoWombat's scope but remain in-memory and single-focus. scikit-eo [@tarazona2024scikiteo] supplies ready-made analysis algorithms: classification with calibration and accuracy assessment, spectral mixture analysis, image fusion, atmospheric correction, and a U-Net segmenter, but it offers neither cloud data access nor out-of-core scaling. EarthPy [@wasser2019earthpy] provides education-oriented utilities for stacking, masking, and plotting raster and vector data, omitting radiometry, classification, and large-dataset processing. rastereasy [@corpetti2025rastereasy] wraps I/O, resampling, reprojection, filtering, and light machine learning behind a NumPy-like Geoimage object, but loads whole images into memory.
 
 GeoWombat differentiates itself by offering a comprehensive, local-first toolkit that spans the full analysis chain, from data access through modeling, within a single API. Its context manager pattern for on-the-fly reprojection and alignment, built-in sensor profiles for automatic band naming and scaling, and tight integration with scikit-learn pipelines and PyTorch models provide a uniquely cohesive workflow, while Dask-backed lazy evaluation runs the same code from a single tile to continental mosaics, a combination the tools above do not individually replicate.
 
@@ -68,7 +66,7 @@ All raster operations return Dask-backed xarray DataArrays. Computation is defer
 
 2. **Configuration context manager**
 
-The `gw.config.update()` context manager sets global parameters, sensor type, reference CRS, spatial resolution, bounding box, and nodata handling, that propagate to all downstream operations:
+The `gw.config.update()` context manager sets global parameters, sensor type, reference CRS, spatial resolution, bounding box, and nodata handling, and those propagate to all downstream operations:
 ```python
 import geowombat as gw
 
@@ -143,6 +141,6 @@ The paper was initially drafted in full by the authors. Generative AI (Claude, A
 
 # Acknowledgements
 
-We thank all contributors to the GeoWombat project, including Leonardo Hardtke, Robert Denham, and Sharon Xu. This project was not financially supported by any grant funding.
+We thank all contributors to the GeoWombat project. This project was not financially supported by any grant funding.
 
 # References

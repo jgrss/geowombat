@@ -1,0 +1,39 @@
+{
+  "title": "GeoWombat: Scalable geospatial and remote sensing analysis in Python",
+  "description": "GeoWombat is an open-source Python library providing an end-to-end platform for geospatial raster data processing and remote sensing analysis at scale, built on xarray, Dask, and rasterio.",
+  "license": "MIT",
+  "upload_type": "software",
+  "access_right": "open",
+  "creators": [
+    {
+      "name": "Graesser, Jordan",
+      "affiliation": "Independent Researcher, Brisbane, Australia",
+      "orcid": "0000-0002-6137-7050"
+    },
+    {
+      "name": "Mann, Michael L.",
+      "affiliation": "Department of Geography & Environment, The George Washington University, Washington, DC, USA",
+      "orcid": "0000-0002-6268-6867"
+    },
+    {
+      "name": "Hardtke, Leonardo",
+      "affiliation": "The University of Queensland, School of the Environment, Brisbane, Australia"
+    },
+    {
+      "name": "Denham, Robert",
+      "affiliation": "The University of Queensland, School of the Environment, Brisbane, Australia",
+      "orcid": "0000-0002-3342-7970"
+    },
+    {
+      "name": "Xu, Sharon",
+      "affiliation": "Independent Researcher, USA"
+    }
+  ],
+  "keywords": [
+    "Python",
+    "remote sensing",
+    "geospatial",
+    "raster",
+    "machine learning"
+  ]
+}
