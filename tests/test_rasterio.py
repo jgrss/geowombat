@@ -29,7 +29,7 @@ class TestRasterio(unittest.TestCase):
         transform, width, height = align_bounds(
             -100.0, -100.0, 100.0, 100.0, (2.0, 2.0)
         )
-        self.assertTupleEqual(
+        self.assertEqual(
             transform, Affine(2.0, 0.0, -100.0, 0.0, -2.0, 100.0)
         )
 
@@ -40,14 +40,14 @@ class TestRasterio(unittest.TestCase):
         transform, width, height = align_bounds(
             -100.0, -100.0, 100.0, 100.0, 2.0
         )
-        self.assertTupleEqual(
+        self.assertEqual(
             transform, Affine(2.0, 0.0, -100.0, 0.0, -2.0, 100.0)
         )
 
         transform, width, height = align_bounds(
             -100.0, -100.0, 100.0, 100.0, 1.67
         )
-        self.assertTupleEqual(
+        self.assertEqual(
             transform,
             Affine(
                 1.67, 0.0, -100.19999999999999, 0.0, -1.67, 100.19999999999999
