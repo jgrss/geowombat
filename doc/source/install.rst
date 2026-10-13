@@ -223,7 +223,8 @@ GeoWombat provides optional dependency groups for specific functionality.
    * - Extra
      - Description
    * - ``ml``
-     - Machine learning and classification (dask-ml, lightgbm, sklearn-xarray, numba)
+     - Machine learning, classification and MiniRocket time-series
+       classification (dask-ml, lightgbm, sklearn-xarray, numba, aeon)
    * - ``dl``
      - Deep learning (PyTorch, pytorch-tabnet, torchgeo, segmentation-models-pytorch)
    * - ``detect``

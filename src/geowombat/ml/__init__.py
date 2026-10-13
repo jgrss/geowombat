@@ -10,14 +10,22 @@ __all__ = ['fit', 'fit_predict', 'predict']
 
 try:
     from .dl_classifiers import (
-        TabNetClassifier,
         LTAEClassifier,
+        TabNetClassifier,
         TorchGeoClassifier,
     )
+
     __all__ += [
         'TabNetClassifier',
         'LTAEClassifier',
         'TorchGeoClassifier',
     ]
+except ImportError:
+    pass
+
+try:
+    from .rocket_classifiers import MiniRocketClassifier
+
+    __all__ += ['MiniRocketClassifier']
 except ImportError:
     pass

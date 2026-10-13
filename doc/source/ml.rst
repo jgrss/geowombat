@@ -8,6 +8,10 @@ pipeline. Pass a classifier to :func:`~geowombat.ml.fit`,
 :func:`~geowombat.ml.predict`, or :func:`~geowombat.ml.fit_predict` and it
 will be applied to the raster data as an xarray DataArray.
 
+For satellite image time series, the module also ships
+:class:`~geowombat.ml.MiniRocketClassifier`, a fast CPU time-series
+classifier (see :ref:`ml-time-series`).
+
 To install ML dependencies::
 
     pip install "geowombat[ml]"
@@ -43,6 +47,10 @@ Supervised
    * - k-Nearest Neighbors
      - ``sklearn.neighbors.KNeighborsClassifier``
      - Non-parametric; useful for complex class boundaries
+   * - MiniRocket
+     - ``geowombat.ml.MiniRocketClassifier``
+     - Satellite image time series (9+ dates); fixed convolution kernels
+       plus a ridge classifier, fast and CPU-only. See :ref:`ml-time-series`
 
 Unsupervised
 ~~~~~~~~~~~~
@@ -382,6 +390,158 @@ Compare panel vs flatten
 .. image:: _static/ml_supervised_time.png
    :width: 700px
    :alt: Panel vs flatten comparison
+
+
+.. _ml-time-series:
+
+Time series classifiers
+-----------------------
+
+There are two ways to classify ``(time, band, y, x)`` stacks:
+
+- ``temporal_mode='flatten'`` (above) turns the T×B values of each pixel
+  into one feature vector and hands it to any scikit-learn model. The model
+  sees the dates as independent columns.
+- :class:`~geowombat.ml.MiniRocketClassifier` keeps the series structure of
+  each pixel (``band`` × ``time``) and extracts ~10,000 convolutional
+  features from it before a linear classifier.
+
+MiniRocket (Dempster, Schmidt and Webb, 2021) applies 84 fixed dilated
+convolution kernels of length 9 to each series and records the proportion
+of positive values for a set of random biases. It is almost deterministic,
+trains in seconds on a CPU, needs no GPU, and is a strong baseline for
+per-pixel classification of multi-date imagery such as crop phenology. See
+the `paper <https://arxiv.org/abs/2012.08791>`_ and the `original repository
+<https://github.com/angus924/minirocket>`_. GeoWombat uses the BSD-licensed
+implementation in `aeon <https://www.aeon-toolkit.org/>`_, a port of the
+original code made with the authors' permission.
+
+**Requires** multi-temporal data with a ``time`` dimension (open with
+``stack_dim='time'``) and at least 9 time steps. It is installed with the
+``ml`` extra::
+
+    pip install "geowombat[ml]"
+
+How it works:
+
+- Each pixel's ``(band, time)`` series is transformed with MiniRocket,
+  scaled with ``StandardScaler``, and classified with ``estimator``
+  (default ``RidgeClassifierCV``). Any scikit-learn classifier can be
+  swapped in.
+- Training uses the pixels covered by the label polygons or points.
+- Prediction runs lazily, block by block, transforming ``batch_size``
+  pixels at a time to bound memory.
+- NaN values are replaced by 0 before the transform. Fill or interpolate
+  gaps (e.g. cloud masks) beforehand for best results.
+
+Key parameters:
+
+- ``n_kernels``: number of kernels, rounded down to a multiple of 84
+  (default 10,000)
+- ``max_dilations_per_kernel``: dilations per kernel (default 32)
+- ``estimator``: scikit-learn classifier fitted on the MiniRocket
+  features (default ``RidgeClassifierCV(alphas=np.logspace(-3, 3, 10))``)
+- ``class_weight``: ``'balanced'`` or a dict, for the default ridge only
+- ``max_train_samples``: cap on the number of labeled pixels used for
+  training (default: all)
+- ``batch_size``: pixels transformed at once during prediction
+  (default 2048; peak memory per block is about
+  ``batch_size × n_kernels × 4`` bytes)
+- ``n_jobs``: threads for the transform (``-1`` for all cores)
+- ``random_state``: seed for the kernel biases and subsampling
+
+MiniRocket fit_predict with time-stacked data
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. code-block:: python
+
+    from geowombat.ml import fit_predict, MiniRocketClassifier
+
+    # One file per acquisition date; the list order is the time order
+    with gw.config.update(ref_res=150):
+        with gw.open(
+            [l8_224078_20200518] * 9,   # demo only: 9 copies of one date
+            stack_dim='time',
+            nodata=0,
+        ) as src:
+            print(src.dims)  # ('time', 'band', 'y', 'x')
+            y = fit_predict(
+                src,
+                MiniRocketClassifier(n_kernels=2000, random_state=42),
+                labels_point,
+                col='lc',
+            )
+
+    print(f'Shape: {y.shape}')  # (1, 372, 408)
+    print(f'Dims:  {y.dims}')   # ('band', 'y', 'x')
+    y.gw.save('minirocket_lc.tif')
+
+.. image:: _static/ml_minirocket.png
+   :width: 500px
+   :alt: MiniRocket time series classification
+
+.. note::
+
+   This demo stacks the same image nine times to satisfy the minimum
+   series length. In practice, use imagery from different acquisition
+   dates: MiniRocket is most useful when the temporal profile differs
+   between classes (e.g. crop phenology vs. forest).
+
+MiniRocket: separate fit then predict
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. code-block:: python
+
+    with gw.config.update(ref_res=150):
+        with gw.open(
+            [l8_224078_20200518] * 9,
+            stack_dim='time',
+            nodata=0,
+        ) as src:
+            clf = MiniRocketClassifier(n_kernels=2000, random_state=42)
+            X, Xy, clf = fit(src, clf, labels_point, col='lc')
+            y = predict(src, X, clf)
+
+The fitted model only predicts stacks with the same number of bands and
+time steps it was trained on, because the MiniRocket features depend on
+the series length.
+
+Swapping the estimator
+~~~~~~~~~~~~~~~~~~~~~~
+
+MiniRocket is a feature extractor; the final classifier is any
+scikit-learn model. Use ``estimator`` when you need class probabilities,
+class weights on a non-ridge model, or a tree ensemble on the extracted
+features:
+
+.. code-block:: python
+
+    from sklearn.linear_model import LogisticRegression
+
+    clf = MiniRocketClassifier(
+        n_kernels=2000,
+        estimator=LogisticRegression(max_iter=500, class_weight='balanced'),
+        random_state=42,
+    )
+
+Errors
+~~~~~~
+
+MiniRocket raises a clear error when the data is missing the ``time``
+dimension or has too few dates:
+
+.. code-block:: python
+
+    with gw.open(l8_224078_20200518, nodata=0) as src:
+        fit(src, MiniRocketClassifier(), labels_point, col='lc')
+    # ValueError: MiniRocketClassifier.fit() requires multi-temporal data
+    # with a 'time' dimension (time, band, y, x). Open data with
+    # stack_dim='time'.
+
+    with gw.open([l8_224078_20200518] * 2, stack_dim='time') as src:
+        fit(src, MiniRocketClassifier(), labels_point, col='lc')
+    # ValueError: MiniRocketClassifier requires at least 9 time steps;
+    # found 2.
 
 
 Classification with STAC satellite imagery

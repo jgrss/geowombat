@@ -166,6 +166,9 @@ temporal attention with a learned master query.
 **Requires** multi-temporal data with a ``time`` dimension (open with
 ``stack_dim='time'``). Raises ``ValueError`` if data has no time dimension.
 
+For a fast CPU baseline on the same data, see
+:class:`~geowombat.ml.MiniRocketClassifier` in :ref:`ml-time-series`.
+
 Key parameters:
 
 - ``n_head``: Attention heads (default 4)

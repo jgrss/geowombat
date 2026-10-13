@@ -14,6 +14,11 @@ Unreleased
 
 **Features**
 
+* Added ``MiniRocketClassifier`` (``geowombat.ml.rocket_classifiers``,
+  exported from ``geowombat.ml``), a fast CPU time-series classifier
+  based on MiniRocket via ``aeon``. It works with ``fit`` / ``predict`` /
+  ``fit_predict`` on ``(time, band, y, x)`` data and takes any
+  scikit-learn ``estimator`` for the final classification step.
 * Added ``geowombat.detect`` submodule for tiled, georeferenced object
   detection on overhead imagery, mirroring the
   ``fit / predict / fit_predict`` shape of ``geowombat.ml``:
@@ -45,6 +50,7 @@ Unreleased
 
 **Documentation**
 
+* New "Time series classifiers" section in the machine learning guide.
 * New :ref:`object-detection` walkthrough with a recommended
   DOTA-v1 + OBB setup callout, AABB-vs-OBB explainer, and
   polygon-digitization guidance.
@@ -61,6 +67,7 @@ Unreleased
 
 **Build**
 
+* Added ``aeon`` to the ``[ml]`` and ``[docs]`` extras.
 * Added ``nbsphinx``, ``ipykernel``, and ``myst-parser`` to the
   ``[docs]`` extras.
 * Added ``[detect]`` (ultralytics, torchmetrics, pycocotools, pillow,

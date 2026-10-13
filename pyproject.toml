@@ -72,6 +72,8 @@ docs = [
     # myst-parser is registered for future Markdown content in the
     # docs tree. 1.x is the Sphinx 6-compatible line.
     "myst-parser>=1.0,<2",
+    # so MiniRocketClassifier is importable for the API reference
+    "aeon>=1.0",
 ]
 
 tests = [
@@ -113,6 +115,10 @@ ml = [
     "sklearn-xarray-ext",
     "numpy_groupies",
     "numba>=0.57.0",
+    # MiniRocket time-series classifier. aeon (BSD-3) carries the
+    # author-approved port of https://github.com/angus924/minirocket
+    # (GPL, not on PyPI). CPU-only, no torch.
+    "aeon>=1.0",
 ]
 
 perf = [
