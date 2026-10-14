@@ -2,3 +2,23 @@
 .highlight .gp {
     display: none;
 }
+
+/* Wide pandas / geopandas tables in notebook output.
+   nbsphinx forces `table-layout: fixed` and the pydata theme caps tables
+   at `max-width: 100%`, so a frame with many columns is squashed into
+   the page width with overlapping, wrapped cells. Let the table size to
+   its content and scroll horizontally inside the output area instead. */
+div.nboutput.container div.output_area.rendered_html {
+    overflow-x: auto;
+}
+div.rendered_html table.dataframe {
+    table-layout: auto;
+    width: auto;
+    max-width: none;
+    margin-left: 0;
+}
+div.rendered_html table.dataframe th,
+div.rendered_html table.dataframe td {
+    white-space: nowrap;
+    overflow-wrap: normal;
+}
