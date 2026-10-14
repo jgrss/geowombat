@@ -1,18 +1,22 @@
 ![](data/logo.png)
 
-[![](https://img.shields.io/badge/License-MIT-black.svg)](https://github.com/jgrss/geowombat/blob/main/LICENSE.txt)
 [![python](https://img.shields.io/badge/Python-3.10%20%7C%203.11%20%7C%203.12%20%7C%203.13-3776AB.svg?style=flat&logo=python&logoColor=white)](https://www.python.org)
 [![](https://img.shields.io/github/v/release/jgrss/geowombat?display_name=release)](https://github.com/jgrss/geowombat/releases)
 [![](https://github.com/jgrss/geowombat/actions/workflows/ci.yml/badge.svg)](https://github.com/jgrss/geowombat/actions/)
-[![](https://img.shields.io/github/repo-size/jgrss/geowombat)](https://shields.io/category/size)
 [![](https://readthedocs.org/projects/geowombat/badge/?version=latest&style=flat)](https://readthedocs.org/projects/geowombat/)
 
-[GeoWombat on Anaconda](https://anaconda.org/conda-forge/geowombat)
+[![](https://img.shields.io/badge/License-MIT-black.svg)](https://github.com/jgrss/geowombat/blob/main/LICENSE.txt)
+[![](https://img.shields.io/github/repo-size/jgrss/geowombat)](https://shields.io/category/size)
+[![DOI](https://joss.theoj.org/papers/10.21105/joss.10812/status.svg)](https://doi.org/10.21105/joss.10812)
+
 
 [![Anaconda-Server Badge](https://anaconda.org/conda-forge/geowombat/badges/version.svg)](https://anaconda.org/conda-forge/geowombat)
 [![Anaconda-Server Badge](https://anaconda.org/conda-forge/geowombat/badges/platforms.svg)](https://anaconda.org/conda-forge/geowombat)
 [![Anaconda-Server Badge](https://anaconda.org/conda-forge/geowombat/badges/downloads.svg)](https://anaconda.org/conda-forge/geowombat)
 [![Anaconda-Server Badge](https://anaconda.org/conda-forge/geowombat/badges/latest_release_date.svg)](https://anaconda.org/conda-forge/geowombat)
+
+[GeoWombat on Anaconda](https://anaconda.org/conda-forge/geowombat)
+
 
 ### GeoWombat: Utilities for geospatial data
 
@@ -141,6 +145,17 @@ pip install "geowombat[all]"
 
 We provide detailed instructions in our [documentation](https://geowombat.readthedocs.io/en/latest/install.html).
 
+
+
 ## Learning
 
 If you are new to geospatial programming in Python please refer to [pygis.io](https://pygis.io)
+
+## Reference
+Please reference this work in your papers as:
+
+Graesser et al., (2026). GeoWombat: Scalable geospatial and remote sensing analysis in Python. Journal of Open Source Software, 11(125), 10812, https://doi.org/10.21105/joss.10812
+
+```
+@article{Graesser2026, doi = {10.21105/joss.10812}, url = {https://doi.org/10.21105/joss.10812}, year = {2026}, publisher = {The Open Journal}, volume = {11}, number = {125}, pages = {10812}, author = {Graesser, Jordan and Mann, Michael L. and Hardtke, Leonardo and Denham, Robert and Xu, Sharon}, title = {GeoWombat: Scalable geospatial and remote sensing analysis in Python}, journal = {Journal of Open Source Software} }
+```
