@@ -9,6 +9,7 @@ predict = _classifier.predict
 __all__ = ['fit', 'fit_predict', 'predict']
 
 try:
+    from ._torch_base import TorchSequenceClassifier
     from .dl_classifiers import (
         LTAEClassifier,
         TabNetClassifier,
@@ -16,6 +17,7 @@ try:
     )
 
     __all__ += [
+        'TorchSequenceClassifier',
         'TabNetClassifier',
         'LTAEClassifier',
         'TorchGeoClassifier',

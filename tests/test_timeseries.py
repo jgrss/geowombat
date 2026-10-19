@@ -119,6 +119,17 @@ class TestMissingReport(unittest.TestCase):
         self.assertAlmostEqual(rep.loc[(0, 'b0'), 'frac_nodata'], 0.1)
         self.assertAlmostEqual(rep.loc[(0, 'b0'), 'frac_zero'], 0.0)
 
+    def test_footprint_nodata_is_excluded_from_fractions(self):
+        # Pixels missing in every (time, band) are outside the footprint
+        # and must not count as gaps; one extra gap at time 1 still does.
+        da_ = _make_da()
+        da_[:, :, :5, :] = np.nan  # 50 footprint pixels
+        da_[1, 0, 5, :] = np.nan  # 10 real gaps among the 50 valid
+        rep = missing_report(da_).set_index(['time', 'band'])
+        self.assertEqual(rep.loc[(0, 'b0'), 'n_pixels'], 50)
+        self.assertAlmostEqual(rep.loc[(0, 'b0'), 'frac_missing'], 0.0)
+        self.assertAlmostEqual(rep.loc[(1, 'b0'), 'frac_missing'], 0.2)
+
     def test_report_without_time(self):
         da_ = _make_da(with_time=False)
         da_[1, :5, :] = np.nan

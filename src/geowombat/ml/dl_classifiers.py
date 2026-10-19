@@ -40,20 +40,15 @@ from ._base import (  # noqa: E402
     _get_nodata_mask,
     _rasterize_labels,
 )
+from ._torch_base import (  # noqa: E402,F401
+    TorchSequenceClassifier,
+    _resolve_device,
+)
 
 
 # ---------------------------------------------------------------------------
 # Shared utilities
 # ---------------------------------------------------------------------------
-
-def _resolve_device(device):
-    """Resolve device string to torch.device."""
-    if device == 'auto':
-        return torch.device(
-            'cuda' if torch.cuda.is_available() else 'cpu'
-        )
-    return torch.device(device)
-
 
 def _train_loop(model, dataloader, criterion, optimizer, epochs,
                 device, verbose=0):
@@ -255,6 +250,11 @@ class TabNetClassifier(GeoWombatDLClassifier):
         'cpu', 'cuda', or 'auto'. Default 'cpu'.
     verbose : int
         0 = silent, 1 = progress. Default 0.
+    audit : str
+        Input audit policy: 'warn' (default), 'raise' or 'off'.
+    fill : str
+        Gap filling: 'train_median' (default), 'interpolate' (needs a
+        time dimension), 'zero' or 'none'.
     tabnet_params : dict
         Extra kwargs passed to pytorch_tabnet.TabNetClassifier.
 
@@ -265,7 +265,10 @@ class TabNetClassifier(GeoWombatDLClassifier):
     """
 
     def __init__(self, max_epochs=50, batch_size=1024, patience=10,
-                 device='cpu', verbose=0, **tabnet_params):
+                 device='cpu', verbose=0, audit='warn',
+                 fill='train_median', **tabnet_params):
+        self.audit = audit
+        self.fill = fill
         self.max_epochs = max_epochs
         self.batch_size = batch_size
         self.patience = patience
@@ -289,29 +292,13 @@ class TabNetClassifier(GeoWombatDLClassifier):
                 "Install with: pip install pytorch-tabnet"
             ) from e
 
-        # Get image data as numpy (band, y, x)
-        data_np = data.values
-        if data_np.ndim == 4:
-            # (time, band, y, x) -> flatten to (time*band, y, x)
-            nt, nb, ny, nx = data_np.shape
-            data_np = data_np.reshape(nt * nb, ny, nx)
-
-        n_features = data_np.shape[0]
-
-        # Rasterize labels
-        label_arr, self._n_classes = _rasterize_labels(
-            data, labels, col
+        self._check_series(data, 'fit', require_time=False)
+        filled = self._prepare_fit_data(data)
+        X_train, y_train = self._extract_training_series(
+            filled, data, labels, col
         )
-
-        # Stack to (samples, features)
-        # data_np: (bands, y, x) -> (y*x, bands)
-        pixels = data_np.reshape(n_features, -1).T  # (n_pixels, n_feat)
-        flat_labels = label_arr.ravel()  # (n_pixels,)
-
-        # Filter to labeled pixels (label > 0)
-        mask = flat_labels > 0
-        X_train = pixels[mask].astype(np.float32)
-        y_train = (flat_labels[mask] - 1).astype(np.int64)  # 0-based
+        # (pixels, time, band) -> (pixels, time*band), time-major
+        X_train = X_train.reshape(len(X_train), -1)
 
         # Standardize features (important for raw DN values)
         self._feat_mean = X_train.mean(axis=0)
@@ -346,25 +333,18 @@ class TabNetClassifier(GeoWombatDLClassifier):
         if not self.fitted_:
             raise RuntimeError("Call fit() before predict().")
 
+        filled, residual = self._prepare_predict_data(
+            data, require_time=False
+        )
         # Flatten time*band if multi-temporal
-        if data.ndim == 4:
+        if filled.ndim == 4:
             slices = [
-                data.isel(time=i).drop_vars('time')
-                for i in range(data.sizes['time'])
+                filled.isel(time=i).drop_vars('time')
+                for i in range(filled.sizes['time'])
             ]
-            data_flat = xr.concat(slices, dim='band')
+            data_flat = xr.concat(slices, dim='band').chunk({'band': -1})
         else:
-            data_flat = data
-
-        # Ensure dask-backed with band as single chunk
-        if not hasattr(data_flat.data, 'dask'):
-            data_flat = data_flat.chunk({
-                'band': -1,
-                'y': min(512, data_flat.sizes['y']),
-                'x': min(512, data_flat.sizes['x']),
-            })
-        else:
-            data_flat = data_flat.chunk({'band': -1})
+            data_flat = filled
 
         feat_mean = self._feat_mean
         feat_std = self._feat_std
@@ -385,23 +365,7 @@ class TabNetClassifier(GeoWombatDLClassifier):
             new_axis=0,
         )
 
-        result = xr.DataArray(
-            result_da,
-            dims=("band", "y", "x"),
-            coords={
-                "band": ["targ"],
-                "y": data.y,
-                "x": data.x,
-            },
-        )
-
-        # Mask nodata pixels in prediction output
-        nd_mask = _get_nodata_mask(data)
-        if nd_mask is not None:
-            result = xr.where(nd_mask, np.nan, result)
-
-        result = result.assign_attrs(**data.attrs)
-        return result
+        return self._finalize_prediction(result_da, filled, residual)
 
 
 # ---------------------------------------------------------------------------
@@ -535,7 +499,7 @@ class _LTAEModule(nn.Module):
         return self.out_mlp(out)
 
 
-class LTAEClassifier(GeoWombatDLClassifier):
+class LTAEClassifier(TorchSequenceClassifier):
     """L-TAE classifier for satellite image time series.
 
     Expects multi-temporal data. Uses temporal attention to
@@ -561,182 +525,39 @@ class LTAEClassifier(GeoWombatDLClassifier):
         'cpu', 'cuda', or 'auto'. Default 'cpu'.
     verbose : int
         0 = silent, 1 = progress. Default 0.
+    **kwargs
+        Further shared options (``weight_decay``, ``scheduler``,
+        ``loss``, ``class_weight``, ``val_fraction``, ``patience``,
+        ``seed``, ``audit``, ``fill``), see
+        :class:`geowombat.ml.TorchSequenceClassifier`.
 
     Example
     -------
     >>> with gw.open([img1, img2, img3], stack_dim='time') as src:
-    ...     y = fit_predict(src, LTAEClassifier(),
-    ...         labels, col='lc', temporal_mode='flatten')
+    ...     y = fit_predict(src, LTAEClassifier(), labels, col='lc')
     """
 
     def __init__(self, n_head=4, d_k=32, d_model=128, dropout=0.1,
                  max_epochs=50, batch_size=256, lr=1e-3,
-                 device='cpu', verbose=0):
+                 device='cpu', verbose=0, **kwargs):
+        super().__init__(
+            max_epochs=max_epochs, batch_size=batch_size, lr=lr,
+            device=device, verbose=verbose, **kwargs,
+        )
         self.n_head = n_head
         self.d_k = d_k
         self.d_model = d_model
         self.dropout = dropout
-        self.max_epochs = max_epochs
-        self.batch_size = batch_size
-        self.lr = lr
-        self.device = device
-        self.verbose = verbose
-        self._model = None
-        self._n_classes = None
-        self._n_bands = None
-        self._n_timesteps = None
-        self._feat_mean = None
-        self._feat_std = None
-        self.fitted_ = False
 
-    def fit(self, data, labels=None, col=None, targ_name="targ",
-            **kwargs):
-        if 'time' not in data.dims:
-            raise ValueError(
-                "LTAEClassifier requires multi-temporal data with a "
-                "'time' dimension. Open data with stack_dim='time'."
-            )
-
-        # Infer n_bands and n_timesteps from data dimensions
-        self._n_timesteps = data.sizes['time']
-        self._n_bands = data.sizes['band']
-
-        # Get data as (time, band, y, x)
-        data_np = data.values  # (time, band, y, x)
-        nt, nb, ny, nx = data_np.shape
-
-        # Rasterize labels
-        label_arr, self._n_classes = _rasterize_labels(
-            data, labels, col
-        )
-
-        # Reshape to (pixels, time, bands)
-        # data_np: (time, band, y, x) -> (y*x, time, band)
-        pixels = data_np.transpose(2, 3, 0, 1).reshape(
-            ny * nx, nt, nb
-        )
-        flat_labels = label_arr.ravel()
-
-        # Filter to labeled pixels
-        mask = flat_labels > 0
-        X_train = pixels[mask].astype(np.float32)
-        y_train = (flat_labels[mask] - 1).astype(np.int64)
-
-        # Standardize features per band (across time and pixels)
-        self._feat_mean = X_train.mean(axis=(0, 1))
-        self._feat_std = X_train.std(axis=(0, 1)) + 1e-8
-        X_train = (
-            (X_train - self._feat_mean) / self._feat_std
-        )
-
-        dev = _resolve_device(self.device)
-
-        self._model = _LTAEModule(
-            in_channels=nb,
-            n_classes=self._n_classes,
+    def _build_module(self, in_channels, n_classes):
+        return _LTAEModule(
+            in_channels=in_channels,
+            n_classes=n_classes,
             n_head=self.n_head,
             d_k=self.d_k,
             d_model=self.d_model,
             dropout=self.dropout,
-        ).to(dev)
-
-        dataset = TensorDataset(
-            torch.from_numpy(X_train),
-            torch.from_numpy(y_train),
         )
-        loader = DataLoader(
-            dataset, batch_size=self.batch_size, shuffle=True,
-        )
-
-        criterion = nn.CrossEntropyLoss()
-        optimizer = torch.optim.Adam(
-            self._model.parameters(), lr=self.lr
-        )
-
-        _train_loop(
-            self._model, loader, criterion, optimizer,
-            self.max_epochs, dev, self.verbose,
-        )
-        self.fitted_ = True
-
-    def predict(self, data, **kwargs):
-        if not self.fitted_:
-            raise RuntimeError("Call fit() before predict().")
-
-        if data.ndim != 4:
-            raise ValueError(
-                "LTAEClassifier.predict() requires time-dimensioned "
-                "data (time, band, y, x)."
-            )
-
-        # Ensure dask-backed with time and band as single chunks
-        if not hasattr(data.data, 'dask'):
-            data = data.chunk({
-                'time': -1, 'band': -1,
-                'y': min(512, data.sizes['y']),
-                'x': min(512, data.sizes['x']),
-            })
-        else:
-            data = data.chunk({'time': -1, 'band': -1})
-
-        feat_mean = self._feat_mean
-        feat_std = self._feat_std
-        ltae_model = self._model
-        batch_size = self.batch_size
-        device_str = self.device
-
-        def _predict_block(block):
-            # block: (time, band, y, x) numpy array
-            nt, nb, cy, cx = block.shape
-            dev = _resolve_device(device_str)
-
-            # Reshape to (pixels, time, bands)
-            pixels = block.transpose(
-                2, 3, 0, 1
-            ).reshape(cy * cx, nt, nb).astype(np.float32)
-            pixels = (pixels - feat_mean) / feat_std
-
-            ltae_model.eval()
-            preds = []
-            with torch.no_grad():
-                for i in range(0, len(pixels), batch_size):
-                    batch = torch.from_numpy(
-                        pixels[i:i + batch_size]
-                    ).to(dev)
-                    logits = ltae_model(batch)
-                    preds.append(
-                        logits.argmax(dim=1).cpu().numpy()
-                    )
-
-            pred_flat = np.concatenate(preds)
-            pred_flat = (pred_flat + 1).astype(np.float32)
-            return pred_flat.reshape(1, cy, cx)
-
-        result_da = da.map_blocks(
-            _predict_block,
-            data.data,
-            dtype=np.float32,
-            drop_axis=[0, 1],
-            new_axis=0,
-        )
-
-        result = xr.DataArray(
-            result_da,
-            dims=("band", "y", "x"),
-            coords={
-                "band": ["targ"],
-                "y": data.y,
-                "x": data.x,
-            },
-        )
-
-        # Mask nodata pixels in prediction output
-        nd_mask = _get_nodata_mask(data)
-        if nd_mask is not None:
-            result = xr.where(nd_mask, np.nan, result)
-
-        result = result.assign_attrs(**data.attrs)
-        return result
 
 
 # ---------------------------------------------------------------------------

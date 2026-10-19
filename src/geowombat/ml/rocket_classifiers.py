@@ -42,23 +42,10 @@ except ImportError as e:
         "or: pip install geowombat[ml]"
     ) from e
 
-from ._base import GeoWombatDLClassifier, _get_nodata_mask, _rasterize_labels
+from ._base import GeoWombatDLClassifier, _to_series
 
 #: MiniRocket kernels have length 9, so series must be at least this long.
 MIN_TIMESTEPS = 9
-
-
-def _to_series(block):
-    """Reshape ``(time, band, y, x)`` to aeon's ``(cases, channels, time)``.
-
-    Returns a float32 array of shape ``(y * x, band, time)`` with NaN and
-    infinite values replaced by 0 (MiniRocket does not support missing values).
-    """
-    nt, nb, ny, nx = block.shape
-    series = block.transpose(2, 3, 1, 0).reshape(ny * nx, nb, nt)
-    return np.nan_to_num(
-        series.astype(np.float32), nan=0.0, posinf=0.0, neginf=0.0
-    )
 
 
 class MiniRocketClassifier(GeoWombatDLClassifier):
@@ -141,6 +128,8 @@ class MiniRocketClassifier(GeoWombatDLClassifier):
         n_jobs=1,
         random_state=None,
         verbose=0,
+        audit='warn',
+        fill='train_median',
     ):
         self.n_kernels = n_kernels
         self.max_dilations_per_kernel = max_dilations_per_kernel
@@ -151,6 +140,8 @@ class MiniRocketClassifier(GeoWombatDLClassifier):
         self.n_jobs = n_jobs
         self.random_state = random_state
         self.verbose = verbose
+        self.audit = audit
+        self.fill = fill
         self._transformer = None
         self._scaler = None
         self._estimator = None
@@ -160,20 +151,6 @@ class MiniRocketClassifier(GeoWombatDLClassifier):
         self._n_train_samples = None
         self.fitted_ = False
 
-    @staticmethod
-    def _check_series(data, method):
-        if data.ndim != 4 or 'time' not in data.dims:
-            raise ValueError(
-                f"MiniRocketClassifier.{method}() requires multi-temporal "
-                "data with a 'time' dimension (time, band, y, x). "
-                "Open data with stack_dim='time'."
-            )
-        if data.sizes['time'] < MIN_TIMESTEPS:
-            raise ValueError(
-                f"MiniRocketClassifier requires at least {MIN_TIMESTEPS} "
-                f"time steps; found {data.sizes['time']}."
-            )
-
     def _make_estimator(self):
         if self.estimator is not None:
             return self.estimator
@@ -182,20 +159,11 @@ class MiniRocketClassifier(GeoWombatDLClassifier):
         )
 
     def fit(self, data, labels=None, col=None, targ_name="targ", **kwargs):
-        self._check_series(data, 'fit')
-        if labels is None or col is None:
-            raise ValueError(
-                "MiniRocketClassifier is supervised: pass labels and col."
-            )
-
-        label_arr, self._n_classes = _rasterize_labels(data, labels, col)
-        flat_labels = label_arr.ravel()
-        mask = flat_labels > 0
-        if not mask.any():
-            raise ValueError("No labeled pixels overlap the raster.")
-
-        series = _to_series(data.values)[mask]
-        y = (flat_labels[mask] - 1).astype(np.int64)
+        self._check_series(data, 'fit', min_timesteps=MIN_TIMESTEPS)
+        filled = self._prepare_fit_data(data)
+        X, y = self._extract_training_series(filled, data, labels, col)
+        # aeon expects (cases, channels, timepoints)
+        series = np.ascontiguousarray(X.transpose(0, 2, 1))
 
         if (
             self.max_train_samples is not None
@@ -222,40 +190,12 @@ class MiniRocketClassifier(GeoWombatDLClassifier):
         self._estimator = self._make_estimator()
         self._estimator.fit(self._scaler.transform(feats), y)
 
-        self._n_bands = data.sizes['band']
-        self._n_timesteps = data.sizes['time']
         self._n_train_samples = len(y)
         self.fitted_ = True
         return self
 
     def predict(self, data, **kwargs):
-        if not self.fitted_:
-            raise RuntimeError("Call fit() before predict().")
-        self._check_series(data, 'predict')
-        if data.sizes['time'] != self._n_timesteps:
-            raise ValueError(
-                f"MiniRocketClassifier was fitted on {self._n_timesteps} "
-                f"time steps but the data has {data.sizes['time']}. "
-                "MiniRocket features depend on the series length."
-            )
-        if data.sizes['band'] != self._n_bands:
-            raise ValueError(
-                f"MiniRocketClassifier was fitted on {self._n_bands} bands "
-                f"but the data has {data.sizes['band']}."
-            )
-
-        # Time and band must be single chunks inside each block
-        if not hasattr(data.data, 'dask'):
-            data = data.chunk(
-                {
-                    'time': -1,
-                    'band': -1,
-                    'y': min(512, data.sizes['y']),
-                    'x': min(512, data.sizes['x']),
-                }
-            )
-        else:
-            data = data.chunk({'time': -1, 'band': -1})
+        filled, residual = self._prepare_predict_data(data)
 
         transformer = self._transformer
         scaler = self._scaler
@@ -277,29 +217,10 @@ class MiniRocketClassifier(GeoWombatDLClassifier):
 
         result_da = da.map_blocks(
             _predict_block,
-            data.data,
+            filled.data,
             dtype=np.float32,
             drop_axis=[0, 1],
             new_axis=0,
         )
 
-        result = xr.DataArray(
-            result_da,
-            dims=("band", "y", "x"),
-            coords={
-                "band": ["targ"],
-                "y": data.y,
-                "x": data.x,
-            },
-        )
-
-        nd_mask = _get_nodata_mask(data)
-        if nd_mask is not None:
-            # xr.where puts the mask dims first; restore (band, y, x)
-            result = xr.where(nd_mask, np.nan, result).transpose(
-                'band', 'y', 'x'
-            )
-            # xr.where names the result after the mask; drop it
-            result.name = None
-
-        return result.assign_attrs(**data.attrs)
+        return self._finalize_prediction(result_da, filled, residual)

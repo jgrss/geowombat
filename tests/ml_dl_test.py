@@ -64,9 +64,8 @@ class TestTabNet(unittest.TestCase):
                     )
 
         self.assertIsInstance(y, xr_da)
-        self.assertIn('band', y.dims)
-        self.assertIn('y', y.dims)
-        self.assertIn('x', y.dims)
+        self.assertEqual(y.dims, ('band', 'y', 'x'))
+        self.assertIsNone(y.name)
         # Check prediction values are valid (1-based or nan)
         vals = y.values[np.isfinite(y.values)]
         self.assertTrue(len(vals) > 0)
@@ -188,9 +187,8 @@ class TestLTAE(unittest.TestCase):
                     )
 
         self.assertIsInstance(y, xr_da)
-        self.assertIn('band', y.dims)
-        self.assertIn('y', y.dims)
-        self.assertIn('x', y.dims)
+        self.assertEqual(y.dims, ('band', 'y', 'x'))
+        self.assertIsNone(y.name)
         vals = y.values[np.isfinite(y.values)]
         self.assertTrue(len(vals) > 0)
         self.assertTrue(np.all(vals >= 1))

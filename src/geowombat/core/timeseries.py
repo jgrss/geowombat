@@ -88,18 +88,31 @@ def missing_report(data):
         ``time, band, n_pixels, frac_nan, frac_nodata, frac_zero,
         frac_missing``. ``frac_missing`` is NaN or nodata; ``frac_zero``
         counts exact zeros that are *not* the declared nodata value.
+        Pixels that are missing in every time step and band (outside the
+        image footprint) are excluded; ``n_pixels`` is the number of
+        pixels inside the footprint.
     """
     is_nan = data.isnull()
     nd = _nodata_mask(data)
     if nd is None:
         nd = xr.zeros_like(is_nan, dtype=bool)
     is_zero = (data == 0) & ~nd
+    missing = is_nan | nd
+    # Pixels missing in every time step and band are outside the image
+    # footprint; they are not gaps and are excluded from the fractions.
+    footprint = ~missing.all(dim=list(_series_dims(data)))
+    n_valid = int(footprint.sum())
+    denom = max(n_valid, 1)
+
+    def frac(flag):
+        return (flag & footprint).sum(dim=_PIXEL_DIMS) / denom
+
     stats = xr.Dataset(
         {
-            'frac_nan': is_nan.mean(dim=_PIXEL_DIMS),
-            'frac_nodata': nd.mean(dim=_PIXEL_DIMS),
-            'frac_zero': is_zero.mean(dim=_PIXEL_DIMS),
-            'frac_missing': (is_nan | nd).mean(dim=_PIXEL_DIMS),
+            'frac_nan': frac(is_nan),
+            'frac_nodata': frac(nd),
+            'frac_zero': frac(is_zero),
+            'frac_missing': frac(missing),
         }
     ).compute()
     keep = [c for c in stats.coords if c in _series_dims(data)]
@@ -108,7 +121,7 @@ def missing_report(data):
     df = stats.to_dataframe().reset_index()
     if 'time' not in df.columns:
         df['time'] = np.nan
-    df['n_pixels'] = int(data.sizes['y'] * data.sizes['x'])
+    df['n_pixels'] = n_valid
     cols = [
         'time',
         'band',
