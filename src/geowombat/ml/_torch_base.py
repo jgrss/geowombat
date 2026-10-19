@@ -147,6 +147,9 @@ def _train_sequence_model(
         batch_size=batch_size,
         shuffle=True,
         generator=gen,
+        # BatchNorm cannot train on a lone sample; drop a trailing batch
+        # of one when there is more than one batch.
+        drop_last=len(tr_idx) > batch_size,
     )
     sched = None
     if scheduler == 'cosine':

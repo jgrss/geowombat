@@ -25,6 +25,15 @@ __all__ = [
 FILL_STRATEGIES = ('train_median', 'interpolate', 'zero', 'none')
 AUDIT_POLICIES = ('warn', 'raise', 'off')
 _PIXEL_DIMS = ('y', 'x')
+_REPORT_COLUMNS = [
+    'time',
+    'band',
+    'n_pixels',
+    'frac_nan',
+    'frac_nodata',
+    'frac_zero',
+    'frac_missing',
+]
 
 
 class GeoWombatInputWarning(UserWarning):
@@ -96,13 +105,15 @@ def missing_report(data):
     nd = _nodata_mask(data)
     if nd is None:
         nd = xr.zeros_like(is_nan, dtype=bool)
+    if '_nodata_mask' in data.coords:
+        nd = nd | data.coords['_nodata_mask'].astype(bool)
     is_zero = (data == 0) & ~nd
     missing = is_nan | nd
     # Pixels missing in every time step and band are outside the image
     # footprint; they are not gaps and are excluded from the fractions.
     footprint = ~missing.all(dim=list(_series_dims(data)))
-    n_valid = int(footprint.sum())
-    denom = max(n_valid, 1)
+    n_valid = footprint.sum()
+    denom = xr.where(n_valid > 0, n_valid, 1)
 
     def frac(flag):
         return (flag & footprint).sum(dim=_PIXEL_DIMS) / denom
@@ -113,8 +124,11 @@ def missing_report(data):
             'frac_nodata': frac(nd),
             'frac_zero': frac(is_zero),
             'frac_missing': frac(missing),
+            'n_valid': n_valid,
         }
     ).compute()
+    n_valid = int(stats['n_valid'])
+    stats = stats.drop_vars('n_valid')
     keep = [c for c in stats.coords if c in _series_dims(data)]
     stats = stats.reset_coords(drop=True)[list(stats.data_vars)]
     stats = stats.drop_vars([c for c in stats.coords if c not in keep])
@@ -122,16 +136,7 @@ def missing_report(data):
     if 'time' not in df.columns:
         df['time'] = np.nan
     df['n_pixels'] = n_valid
-    cols = [
-        'time',
-        'band',
-        'n_pixels',
-        'frac_nan',
-        'frac_nodata',
-        'frac_zero',
-        'frac_missing',
-    ]
-    return df[cols].reset_index(drop=True)
+    return df[_REPORT_COLUMNS].reset_index(drop=True)
 
 
 def _label(row):
@@ -184,9 +189,9 @@ def audit_input(
         raise ValueError(f"policy must be one of {AUDIT_POLICIES}")
     if stage not in ('fit', 'predict'):
         raise ValueError("stage must be 'fit' or 'predict'")
-    report = missing_report(data)
     if policy == 'off':
-        return report
+        return pd.DataFrame(columns=_REPORT_COLUMNS)
+    report = missing_report(data)
 
     def emit(msg):
         if policy == 'raise':
@@ -236,12 +241,18 @@ def audit_input(
             "treated as real measurements."
         )
 
-    if stage == 'predict' and reference is not None:
-        ref = reference[['time', 'band', 'frac_missing']].rename(
-            columns={'frac_missing': 'frac_missing_fit'}
-        )
-        merged = report.merge(ref, on=['time', 'band'], how='left')
-        merged['frac_missing_fit'] = merged['frac_missing_fit'].fillna(0.0)
+    if stage == 'predict' and reference is not None and len(reference):
+        merged = report.copy()
+        if len(reference) == len(report):
+            # Same shape as at fit: compare by position so that a
+            # different year (other time labels) is not a false shift.
+            merged['frac_missing_fit'] = reference['frac_missing'].to_numpy()
+        else:
+            ref = reference[['time', 'band', 'frac_missing']].rename(
+                columns={'frac_missing': 'frac_missing_fit'}
+            )
+            merged = report.merge(ref, on=['time', 'band'], how='left')
+            merged['frac_missing_fit'] = merged['frac_missing_fit'].fillna(0.0)
         delta = merged['frac_missing'] - merged['frac_missing_fit']
         shifted = merged[delta > warn_shift_frac]
         if len(shifted):
@@ -312,6 +323,11 @@ def _interpolate_time(data, max_gap=None):
         use_coordinate=False,
         fill_value='extrapolate',
     )
+    # xarray leaves series with a single valid value untouched; carry
+    # that value to every step (all-NaN series stay NaN).
+    n_valid = data.notnull().sum('time')
+    single = data.fillna(0).sum('time') / xr.where(n_valid > 0, n_valid, 1)
+    out = out.fillna(xr.where(n_valid > 0, single, np.nan))
     if max_gap is not None:
         run = xr.apply_ufunc(
             _nan_run_length,
@@ -346,16 +362,44 @@ class TimeSeriesFiller:
         if self.strategy == 'train_median':
             med = data.median(dim=_PIXEL_DIMS, skipna=True).compute()
             med = med.reset_coords(drop=True)
-            self.fill_values_ = med.drop_vars(
+            med = med.drop_vars(
                 [c for c in med.coords if c not in _series_dims(data)]
             )
+            if bool(med.isnull().any()):
+                where = ', '.join(
+                    str(dict(zip(med.dims, idx)))
+                    for idx in zip(*np.nonzero(med.isnull().values))
+                )
+                raise ValueError(
+                    "No training median exists for slices that are "
+                    f"entirely missing (positions {where}; dims "
+                    f"{med.dims}). Drop those time steps "
+                    "(data.isel(time=...)) or use fill='interpolate'."
+                )
+            self.fill_values_ = med
         return self
 
+    def _aligned_fill_values(self, data):
+        fv = self.fill_values_
+        for d in fv.dims:
+            if data.sizes.get(d) != fv.sizes[d]:
+                raise ValueError(
+                    f"Data has {data.sizes.get(d)} {d} steps but the fill "
+                    f"values were fitted on {fv.sizes[d]}."
+                )
+        # Match by position: another year has other time labels but
+        # the same series layout.
+        return fv.assign_coords(
+            {d: data.coords[d] for d in fv.dims if d in data.coords}
+        )
+
     def transform(self, data):
+        footprint = data.isnull().all(dim=list(_series_dims(data)))
         if self.strategy == 'train_median':
             if self.fill_values_ is None:
                 raise RuntimeError("Call fit() before transform().")
-            out = data.fillna(self.fill_values_)
+            out = data.fillna(self._aligned_fill_values(data))
+            out = out.where(~footprint)
         elif self.strategy == 'interpolate':
             out = _interpolate_time(data)
         elif self.strategy == 'zero':
@@ -366,7 +410,7 @@ class TimeSeriesFiller:
                 GeoWombatInputWarning,
                 stacklevel=2,
             )
-            out = data.fillna(0)
+            out = data.fillna(0).where(~footprint)
         else:
             out = data
         out.attrs = dict(data.attrs)
@@ -431,6 +475,16 @@ def mask_clouds(data, mask, clear_values=(0,), broadcast_time=False):
                 "The mask has no 'time' dimension but the data does. Pass "
                 "broadcast_time=True to apply the same mask to every date."
             )
+    for d in _PIXEL_DIMS:
+        if d in cloud.coords and d in data.coords:
+            if cloud.sizes[d] != data.sizes[d] or not np.allclose(
+                cloud[d].values, data[d].values
+            ):
+                raise ValueError(
+                    f"The mask is on a different grid than the data "
+                    f"(coordinate '{d}' differs). Reproject or crop the "
+                    "mask to the data first."
+                )
     cloud = cloud.assign_coords(
         {d: data.coords[d] for d in cloud.dims if d in data.coords}
     )

@@ -140,6 +140,27 @@ class TestTempCNN(_SequenceClassifierTests, unittest.TestCase):
         params.update(kwargs)
         return TempCNNClassifier(**params)
 
+    def test_lone_last_batch_does_not_crash(self):
+        # C2: 257 samples with batch_size 256 leaves a batch of one
+        import torch
+
+        from geowombat.ml._torch_base import _train_sequence_model
+        from geowombat.ml.sequence_classifiers import _TempCNNModule
+
+        X = np.random.default_rng(0).normal(size=(257, 4, 3)).astype('float32')
+        y = np.random.default_rng(0).integers(0, 2, 257).astype('int64')
+        mod = _TempCNNModule(3, 2, hidden=(8, 8, 8))
+        _train_sequence_model(
+            mod,
+            X,
+            y,
+            criterion=torch.nn.CrossEntropyLoss(),
+            optimizer=torch.optim.AdamW(mod.parameters()),
+            max_epochs=1,
+            batch_size=256,
+            device=torch.device('cpu'),
+        )
+
     def test_module_shape(self):
         from geowombat.ml.sequence_classifiers import _TempCNNModule
 

@@ -354,6 +354,9 @@ class TabNetClassifier(GeoWombatDLClassifier):
             n_feat, cy, cx = block.shape
             pixels = block.reshape(n_feat, -1).T.astype(np.float32)
             pixels = (pixels - feat_mean) / feat_std
+            # Footprint / unfillable pixels are NaN here and are
+            # masked in the output; keep the network input finite.
+            pixels = np.nan_to_num(pixels, nan=0.0)
             preds = tabnet_model.predict(pixels)
             return (preds + 1).astype(np.float32).reshape(1, cy, cx)
 

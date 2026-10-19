@@ -225,6 +225,11 @@ class GeoWombatDLClassifier:
                     "'interpolate'."
                 )
             X, y = X[~bad], y[~bad]
+        if not len(y):
+            raise ValueError(
+                "No usable training pixels remain: every labelled pixel "
+                f"has gaps that fill='{self.fill}' could not fill."
+            )
         return X, y
 
     def _prepare_predict_data(self, data, require_time=True):

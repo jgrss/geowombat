@@ -102,6 +102,25 @@ def _assert_prediction(test, y, src):
     test.assertTrue(np.isnan(vals[0][nd]).all())
 
 
+class TestBaseExtraction(unittest.TestCase):
+    def test_no_usable_training_pixels_raises(self):
+        from unittest import mock
+
+        from geowombat.ml import _base
+
+        clf = _base.GeoWombatDLClassifier()
+        clf.fill = 'interpolate'
+        arr = np.full((4, 2, 5, 5), np.nan, dtype='float32')
+        filled = xr.DataArray(arr, dims=('time', 'band', 'y', 'x'))
+        labels = np.zeros((5, 5), dtype=int)
+        labels[1, 1] = 1
+        with mock.patch.object(
+            _base, '_rasterize_labels', return_value=(labels, 1)
+        ):
+            with self.assertRaisesRegex(ValueError, 'training'):
+                clf._extract_training_series(filled, filled, 'labels', 'lc')
+
+
 @unittest.skipUnless(AEON_AVAILABLE, "aeon not installed")
 class TestMiniRocketHygiene(unittest.TestCase):
     def _clf(self, **kwargs):

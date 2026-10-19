@@ -130,6 +130,19 @@ class TestMissingReport(unittest.TestCase):
         self.assertAlmostEqual(rep.loc[(0, 'b0'), 'frac_missing'], 0.0)
         self.assertAlmostEqual(rep.loc[(1, 'b0'), 'frac_missing'], 0.2)
 
+    def test_nodata_mask_coord_counts_as_nodata(self):
+        # I4: the accessor report must see what the classifiers see
+        da_ = _make_da()
+        mask = np.zeros((NY, NX), dtype=bool)
+        mask[0, :3] = True
+        da_ = da_.assign_coords(
+            _nodata_mask=xr.DataArray(mask, dims=('y', 'x'))
+        )
+        da_[1, 0, 5, :5] = np.nan  # 5 real gaps among 97 valid pixels
+        rep = missing_report(da_).set_index(['time', 'band'])
+        self.assertEqual(rep.loc[(0, 'b0'), 'n_pixels'], 97)
+        self.assertAlmostEqual(rep.loc[(1, 'b0'), 'frac_missing'], 5 / 97)
+
     def test_report_without_time(self):
         da_ = _make_da(with_time=False)
         da_[1, :5, :] = np.nan
@@ -179,7 +192,7 @@ class TestAuditInput(unittest.TestCase):
     def test_predict_shift_warning_names_time_step(self):
         clean = _make_da()
         clean.attrs['cloud_masked'] = True
-        ref = audit_input(clean, stage='fit', policy='off')
+        ref = audit_input(clean, stage='fit', policy='warn')
         pred = _make_da(seed=1)
         pred[1, :, :4, :] = np.nan
         _, msgs = _caught(
@@ -196,7 +209,7 @@ class TestAuditInput(unittest.TestCase):
     def test_predict_without_shift_is_silent(self):
         clean = _make_da()
         clean.attrs['cloud_masked'] = True
-        ref = audit_input(clean, stage='fit', policy='off')
+        ref = audit_input(clean, stage='fit', policy='warn')
         pred = _make_da(seed=1)
         pred.attrs['cloud_masked'] = True
         _, msgs = _caught(audit_input, pred, stage='predict', reference=ref)
@@ -209,6 +222,45 @@ class TestAuditInput(unittest.TestCase):
         da_.attrs['cloud_masked'] = True
         _, msgs = _caught(audit_input, da_, stage='fit')
         self.assertFalse(any('cloud' in m.lower() for m in msgs), msgs)
+
+    def test_all_missing_slice_guard_lives_in_the_filler(self):
+        # I1: the guarantee must not depend on the audit policy
+        da_ = _make_da()
+        da_[2, 1] = np.nan
+        with self.assertRaisesRegex(ValueError, 'time'):
+            TimeSeriesFiller('train_median').fit(da_)
+        # interpolation can bridge a fully missing step
+        TimeSeriesFiller('interpolate').fit(da_)
+
+    def test_policy_off_returns_empty_report_without_warnings(self):
+        # I7: 'off' must not scan the raster
+        da_ = _make_da()
+        da_[1, 0, :4, :] = np.nan
+        rep, msgs = _caught(audit_input, da_, stage='fit', policy='off')
+        self.assertEqual(msgs, [])
+        self.assertEqual(len(rep), 0)
+        self.assertIn('frac_missing', rep.columns)
+
+    def test_predict_shift_compares_by_position(self):
+        # I3: a different year with the same number of steps is not a shift
+        clean = _make_da()
+        clean.attrs['cloud_masked'] = True
+        clean[1, :, 0, :] = np.nan  # 10% missing at fit, step 1
+        ref = audit_input(clean, stage='fit', policy='warn')
+        other_year = _make_da(seed=1).assign_coords(time=np.arange(10, 14))
+        other_year[1, :, 0, :] = np.nan  # same 10%: not a shift
+        _, msgs = _caught(
+            audit_input, other_year, stage='predict', reference=ref
+        )
+        self.assertFalse(any('training' in m.lower() for m in msgs), msgs)
+        other_year[1, :, :4, :] = np.nan  # now 40%
+        _, msgs = _caught(
+            audit_input, other_year, stage='predict', reference=ref
+        )
+        shift = [m for m in msgs if 'training' in m.lower()]
+        self.assertTrue(shift, msgs)
+        self.assertIn('11', shift[0])
+        self.assertIn('10% missing at fit', shift[0])
 
     def test_policy_off_and_raise(self):
         da_ = _make_da()
@@ -263,6 +315,43 @@ class TestTimeSeriesFiller(unittest.TestCase):
         self.assertAlmostEqual(float(out.values[1, 0, 0, 0]), 0.4, places=5)
         self.assertAlmostEqual(float(out.values[0, 1, 0, 0]), 0.3, places=5)
         self.assertAlmostEqual(float(out.values[3, 1, 0, 0]), 0.5, places=5)
+
+    def test_train_median_fills_positionally_when_labels_differ(self):
+        # C1: predicting another year must still use the fit medians
+        train = self._gappy()
+        filler = TimeSeriesFiller('train_median').fit(train)
+        test = _make_da(seed=5).assign_coords(time=np.arange(10, 14))
+        test[2, 1, 0, 0] = np.nan
+        out = filler.transform(test).compute()
+        self.assertAlmostEqual(
+            float(out.values[2, 1, 0, 0]),
+            float(np.nanmedian(train.values[2, 1])),
+            places=6,
+        )
+        short = _make_da(seed=5).isel(time=slice(0, 3))
+        with self.assertRaisesRegex(ValueError, 'time'):
+            filler.transform(short)
+
+    def test_transform_keeps_footprint_nan(self):
+        # I5: pixels missing everywhere stay NaN after filling
+        da_ = _make_da()
+        da_[:, :, :2, :] = np.nan
+        da_[1, 0, 5, 5] = np.nan
+        for strategy in ('train_median', 'zero'):
+            filler = TimeSeriesFiller(strategy).fit(da_)
+            out, _ = _caught(filler.transform, da_)
+            out = out.compute()
+            self.assertTrue(np.isnan(out.values[:, :, :2, :]).all())
+            self.assertFalse(np.isnan(out.values[1, 0, 5, 5]))
+
+    def test_interpolate_single_valid_observation_is_propagated(self):
+        # I6: one valid value must be carried to every step
+        da_ = _make_da()
+        da_[:, 0, 0, 0] = [np.nan, np.nan, 0.5, np.nan]
+        da_[:, 1, 0, 0] = np.nan
+        out = TimeSeriesFiller('interpolate').fit(da_).transform(da_).compute()
+        np.testing.assert_allclose(out.values[:, 0, 0, 0], 0.5)
+        self.assertTrue(np.isnan(out.values[:, 1, 0, 0]).all())
 
     def test_interpolate_requires_time(self):
         da_ = _make_da(with_time=False)
@@ -378,6 +467,14 @@ class TestMaskClouds(unittest.TestCase):
         out = mask_clouds(da_, cloud).compute()
         self.assertTrue(np.isnan(out.values[3, :, 5, 5]).all())
         self.assertEqual(int(np.isnan(out.values).sum()), NB)
+
+    def test_mismatched_grid_is_rejected(self):
+        # I2
+        da_ = _make_da()
+        mask = self._code_mask()
+        shifted = mask.assign_coords(x=mask.x + 5000.0)
+        with self.assertRaisesRegex(ValueError, 'grid'):
+            mask_clouds(da_, shifted)
 
     def test_custom_clear_values(self):
         da_ = _make_da()
