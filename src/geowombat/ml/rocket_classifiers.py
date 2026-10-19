@@ -98,9 +98,10 @@ class MiniRocketClassifier(GeoWombatDLClassifier):
     - Requires multi-temporal data opened with ``stack_dim='time'`` and
       at least 9 time steps. The fitted model only predicts series of
       the same length it was trained on.
-    - NaN values are replaced by 0 before the transform. Fill or
-      interpolate gaps (e.g. cloud masks) beforehand for best results.
-    - Implementation: ``aeon.transformations.collection.convolution_based.MiniRocket``.
+    - Inputs are audited and gaps filled before the transform (training
+      medians by default); see ``audit`` and ``fill``.
+    - Implementation:
+      :class:`aeon.transformations.collection.convolution_based.MiniRocket`.
 
     References
     ----------
@@ -205,7 +206,7 @@ class MiniRocketClassifier(GeoWombatDLClassifier):
         def _predict_block(block):
             # block: (time, band, y, x) numpy array
             nt, nb, cy, cx = block.shape
-            series = _to_series(block)
+            series = _to_series(block, 'band_major')
             preds = np.empty(len(series), dtype=np.float32)
             for i in range(0, len(series), batch_size):
                 feats = transformer.transform(series[i : i + batch_size])

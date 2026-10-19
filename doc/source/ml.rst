@@ -209,7 +209,9 @@ drop it (``src.isel(time=...)``) or use ``fill='interpolate'``.
 Every time-series classifier takes two hygiene options:
 
 - ``audit``: ``'warn'`` (default), ``'raise'`` to turn findings into
-  errors, or ``'off'``.
+  errors, or ``'off'``. The audit reads the raster once before
+  ``predict()`` builds its lazy prediction graph, so on very large stacks
+  ``predict()`` does one full pass up front; ``audit='off'`` skips it.
 - ``fill``: how gaps are filled before scaling.
 
 .. list-table::

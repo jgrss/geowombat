@@ -161,6 +161,17 @@ class TestTempCNN(_SequenceClassifierTests, unittest.TestCase):
             device=torch.device('cpu'),
         )
 
+    def test_drop_last_only_for_a_lone_sample(self):
+        # Finding 6
+        from geowombat.ml._torch_base import _drop_last
+
+        self.assertFalse(_drop_last(300, 256))
+        self.assertTrue(_drop_last(257, 256))
+        self.assertFalse(_drop_last(100, 256))
+        self.assertFalse(_drop_last(511, 256))
+        self.assertTrue(_drop_last(513, 256))
+        self.assertFalse(_drop_last(1, 256))
+
     def test_module_shape(self):
         from geowombat.ml.sequence_classifiers import _TempCNNModule
 
@@ -177,6 +188,25 @@ class TestCNNBiLSTM(_SequenceClassifierTests, unittest.TestCase):
         params = dict(max_epochs=2, conv_filters=8, lstm_hidden=8, verbose=0)
         params.update(kwargs)
         return CNNBiLSTMClassifier(**params)
+
+    def test_bidirectional_readout_uses_both_directions(self):
+        # Finding 3: forward-last and backward-first, not x[:, -1, :]
+        import torch
+
+        from geowombat.ml.sequence_classifiers import _CNNBiLSTMModule
+
+        mod = _CNNBiLSTMModule(
+            in_channels=3, n_classes=4, conv_filters=8, lstm_hidden=8
+        ).eval()
+        x = torch.randn(5, 9, 3)
+        with torch.no_grad():
+            out = mod(x)
+            h = mod.relu(mod.conv(x.permute(0, 2, 1))).permute(0, 2, 1)
+            seq, _ = mod.bilstm(h)
+            expected = mod.fc(
+                torch.cat([seq[:, -1, :8], seq[:, 0, 8:]], dim=1)
+            )
+        torch.testing.assert_close(out, expected)
 
     def test_module_shape(self):
         from geowombat.ml.sequence_classifiers import _CNNBiLSTMModule

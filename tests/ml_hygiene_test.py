@@ -102,6 +102,56 @@ def _assert_prediction(test, y, src):
     test.assertTrue(np.isnan(vals[0][nd]).all())
 
 
+class TestBaseHelpers(unittest.TestCase):
+    def test_to_series_layouts(self):
+        from geowombat.ml._base import _to_series
+
+        block = np.arange(2 * 3 * 4 * 5, dtype='float32').reshape(2, 3, 4, 5)
+        block[0, 0, 0, 0] = np.nan
+        tm = _to_series(block, 'time_major', fill_nan=False)
+        bm = _to_series(block, 'band_major')
+        self.assertEqual(tm.shape, (20, 2, 3))
+        self.assertEqual(bm.shape, (20, 3, 2))
+        np.testing.assert_array_equal(
+            tm, block.transpose(2, 3, 0, 1).reshape(20, 2, 3)
+        )
+        self.assertTrue(np.isnan(tm[0, 0, 0]))
+        self.assertEqual(bm[0, 0, 0], 0.0)  # NaN guard applied
+        with self.assertRaises(ValueError):
+            _to_series(block, 'bogus')
+
+    def test_chunk_for_prediction_splits_single_block(self):
+        # Finding 5: a single dask block must still be split for map_blocks
+        from geowombat.ml._base import _chunk_for_prediction
+
+        arr = xr.DataArray(
+            np.zeros((2, 1, 1000, 1200), dtype='float32'),
+            dims=('time', 'band', 'y', 'x'),
+        ).chunk({'time': -1})
+        out = _chunk_for_prediction(arr)
+        self.assertEqual(out.chunks[0], (2,))
+        self.assertLessEqual(max(out.chunks[2]), 512)
+        self.assertLessEqual(max(out.chunks[3]), 512)
+        # an already reasonably chunked array is left alone
+        arr2 = arr.chunk({'time': -1, 'band': -1, 'y': 256, 'x': 256})
+        out2 = _chunk_for_prediction(arr2)
+        self.assertEqual(out2.chunks[2], arr2.chunks[2])
+
+    def test_prepare_fit_data_materialises_once(self):
+        # Finding 7: the training raster is read a single time
+        from geowombat.ml import _base
+
+        arr = xr.DataArray(
+            np.random.default_rng(0).random((3, 2, 40, 40)).astype('float32'),
+            dims=('time', 'band', 'y', 'x'),
+            attrs={'cloud_masked': True},
+        ).chunk({'y': 10, 'x': 10})
+        clf = _base.GeoWombatDLClassifier()
+        filled = clf._prepare_fit_data(arr)
+        self.assertFalse(hasattr(filled.data, 'dask'))
+        self.assertEqual(len(clf.fit_report_), 6)
+
+
 class TestBaseExtraction(unittest.TestCase):
     def test_no_usable_training_pixels_raises(self):
         from unittest import mock
@@ -142,6 +192,28 @@ class TestMiniRocketHygiene(unittest.TestCase):
         self.assertTrue(shift, msgs)
         self.assertIn(f"time={gap_label}", shift[0])
         _assert_prediction(self, y, src)
+
+    def test_three_d_nodata_mask_is_handled(self):
+        # Findings 1 and 8: per-date nodata must not crash and must not
+        # blank pixels that are valid on other dates
+        with gw.config.update(ref_res=300):
+            with _open_stack() as src:
+                X, Xy, clf = _quiet(fit, src, self._clf(), aoi_poly, col='lc')
+                mask2 = src.coords['_nodata_mask'].values
+                mask3 = np.repeat(mask2[None], src.sizes['time'], axis=0)
+                iy, ix = np.argwhere(~mask2)[0]
+                mask3[0, iy, ix] = True  # nodata on the first date only
+                src3 = src.assign_coords(
+                    _nodata_mask=xr.DataArray(
+                        mask3,
+                        dims=('time', 'y', 'x'),
+                        coords={'time': src.time, 'y': src.y, 'x': src.x},
+                    )
+                )
+                y = _quiet(predict, src3, X, clf).compute()
+        self.assertEqual(y.dims, ('band', 'y', 'x'))
+        self.assertTrue(np.isfinite(y.values[0, iy, ix]))
+        self.assertTrue(np.isnan(y.values[0][mask2]).all())
 
     def test_fit_report_and_filler_are_stored(self):
         with gw.config.update(ref_res=300):

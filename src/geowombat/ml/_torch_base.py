@@ -18,7 +18,7 @@ import torch.nn.functional as F
 from sklearn.metrics import f1_score
 from torch.utils.data import DataLoader, TensorDataset
 
-from ._base import GeoWombatDLClassifier
+from ._base import GeoWombatDLClassifier, _to_series
 
 LOSSES = ('ce', 'focal')
 SCHEDULERS = (None, 'cosine')
@@ -93,6 +93,15 @@ def _make_loss(loss, weights, device):
     return nn.CrossEntropyLoss(weight=w)
 
 
+def _drop_last(n, batch_size):
+    """Drop the trailing batch only when it would hold a single sample.
+
+    BatchNorm cannot train on a batch of one; any larger partial batch is kept
+    so no labelled pixel is silently excluded.
+    """
+    return n > batch_size and n % batch_size == 1
+
+
 def _predict_batches(model, X, batch_size, device):
     """Argmax predictions for a float32 array of series."""
     model.eval()
@@ -147,9 +156,7 @@ def _train_sequence_model(
         batch_size=batch_size,
         shuffle=True,
         generator=gen,
-        # BatchNorm cannot train on a lone sample; drop a trailing batch
-        # of one when there is more than one batch.
-        drop_last=len(tr_idx) > batch_size,
+        drop_last=_drop_last(len(tr_idx), batch_size),
     )
     sched = None
     if scheduler == 'cosine':
@@ -337,8 +344,7 @@ class TorchSequenceClassifier(GeoWombatDLClassifier):
 
         def _predict_block(block):
             nt, nb, cy, cx = block.shape
-            series = block.transpose(2, 3, 0, 1).reshape(cy * cx, nt, nb)
-            series = np.nan_to_num(series.astype(np.float32), nan=0.0)
+            series = _to_series(block, 'time_major')
             series = (series - feat_mean) / feat_std
             preds = _predict_batches(
                 model, series, batch_size, _resolve_device(device_str)

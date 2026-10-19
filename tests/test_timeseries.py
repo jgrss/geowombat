@@ -75,6 +75,19 @@ class TestToFloatWithNan(unittest.TestCase):
         self.assertTrue(np.isnan(out.values[:, :, 2, 3]).all())
         self.assertEqual(int(np.isnan(out.values).sum()), NT * NB)
 
+    def test_three_d_nodata_mask_coord_is_per_date(self):
+        da_ = _make_da()
+        mask = np.zeros((NT, NY, NX), dtype=bool)
+        mask[0, 2, 3] = True  # nodata on one date only
+        mask[:, 4, 4] = True  # nodata on every date
+        da_ = da_.assign_coords(
+            _nodata_mask=xr.DataArray(mask, dims=('time', 'y', 'x'))
+        )
+        out = to_float_with_nan(da_)
+        self.assertTrue(np.isnan(out.values[0, :, 2, 3]).all())
+        self.assertFalse(np.isnan(out.values[1:, :, 2, 3]).any())
+        self.assertTrue(np.isnan(out.values[:, :, 4, 4]).all())
+
     def test_no_nodata_declared_is_a_plain_cast(self):
         da_ = _make_da()
         out = to_float_with_nan(da_)
@@ -142,6 +155,16 @@ class TestMissingReport(unittest.TestCase):
         rep = missing_report(da_).set_index(['time', 'band'])
         self.assertEqual(rep.loc[(0, 'b0'), 'n_pixels'], 97)
         self.assertAlmostEqual(rep.loc[(1, 'b0'), 'frac_missing'], 5 / 97)
+
+    def test_entirely_missing_raster_reports_full_missingness(self):
+        # Finding 2: nothing valid must not read as "no gaps"
+        da_ = _make_da()
+        da_[:] = np.nan
+        rep = missing_report(da_)
+        self.assertTrue((rep['frac_missing'] == 1.0).all())
+        self.assertEqual(int(rep['n_pixels'].iloc[0]), NY * NX)
+        with self.assertRaisesRegex(ValueError, 'missing'):
+            audit_input(da_, stage='fit')
 
     def test_report_without_time(self):
         da_ = _make_da(with_time=False)

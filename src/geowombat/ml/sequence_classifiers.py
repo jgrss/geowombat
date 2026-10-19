@@ -23,6 +23,7 @@ convolutional neural network for the classification of satellite image
 time series. *Remote Sensing*, 11(5), 523.
 """
 
+import torch
 import torch.nn as nn
 
 from ._torch_base import TorchSequenceClassifier
@@ -78,7 +79,10 @@ class _TempCNNModule(nn.Module):
 
 
 class _CNNBiLSTMModule(nn.Module):
-    """1-D convolution, bidirectional LSTM, last-step linear head.
+    """1-D convolution, bidirectional LSTM, linear head.
+
+    The head reads the forward direction's last step and the backward
+    direction's first step, so both directions summarise the full series.
 
     Input ``(batch, time, bands)``; output logits ``(batch, n_classes)``.
     """
@@ -112,7 +116,10 @@ class _CNNBiLSTMModule(nn.Module):
         x = self.relu(self.conv(x))
         x = x.permute(0, 2, 1)  # (batch, time, filters)
         x, _ = self.bilstm(x)
-        x = x[:, -1, :]
+        # The forward direction has read the whole series at the last
+        # step, the backward direction at the first step.
+        hidden = x.shape[-1] // 2
+        x = torch.cat([x[:, -1, :hidden], x[:, 0, hidden:]], dim=1)
         return self.fc(self.dropout(x))
 
 
@@ -189,8 +196,8 @@ class CNNBiLSTMClassifier(TorchSequenceClassifier):
     """CNN + bidirectional LSTM classifier for satellite image time series.
 
     A temporal convolution extracts local features, a bidirectional LSTM
-    reads the sequence in both directions, and the last step feeds a
-    linear head.
+    reads the sequence in both directions, and the end states of both
+    directions feed a linear head.
 
     Parameters
     ----------

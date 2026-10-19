@@ -100,17 +100,46 @@ def _rasterize_labels(data, labels, col):
     return label_arr, n_classes
 
 
-def _to_series(block):
-    """Reshape ``(time, band, y, x)`` to ``(y * x, band, time)`` float32.
+_LAYOUTS = {
+    # (time, band, y, x) -> (y * x, time, band)
+    'time_major': (2, 3, 0, 1),
+    # (time, band, y, x) -> (y * x, band, time)
+    'band_major': (2, 3, 1, 0),
+}
+_PREDICT_CHUNK = 512
 
-    NaN and infinite values are replaced by 0 as a last-resort guard; the
-    classifiers fill gaps before reaching this point.
+
+def _to_series(block, layout, fill_nan=True):
+    """Reshape a ``(time, band, y, x)`` block to per-pixel series.
+
+    ``layout='time_major'`` gives ``(y * x, time, band)`` (the torch
+    classifiers); ``'band_major'`` gives ``(y * x, band, time)`` (aeon). With
+    ``fill_nan`` NaN and infinite values are replaced by 0 as a last-resort
+    guard; the classifiers fill gaps before reaching this point.
     """
+    if layout not in _LAYOUTS:
+        raise ValueError(f"layout must be one of {tuple(_LAYOUTS)}")
     nt, nb, ny, nx = block.shape
-    series = block.transpose(2, 3, 1, 0).reshape(ny * nx, nb, nt)
-    return np.nan_to_num(
-        series.astype(np.float32), nan=0.0, posinf=0.0, neginf=0.0
-    )
+    a, b = (nt, nb) if layout == 'time_major' else (nb, nt)
+    series = block.transpose(*_LAYOUTS[layout]).reshape(ny * nx, a, b)
+    series = series.astype(np.float32, copy=False)
+    if fill_nan:
+        series = np.nan_to_num(series, nan=0.0, posinf=0.0, neginf=0.0)
+    return series
+
+
+def _chunk_for_prediction(data, target=_PREDICT_CHUNK):
+    """Single chunks along time/band, at most ``target`` along y and x."""
+    chunks = {d: -1 for d in ('time', 'band') if d in data.dims}
+    is_dask = hasattr(data.data, 'dask')
+    for d in ('y', 'x'):
+        size = data.sizes[d]
+        if is_dask:
+            current = max(data.chunks[data.dims.index(d)])
+            if current <= target:
+                continue
+        chunks[d] = min(target, size)
+    return data.chunk(chunks)
 
 
 class GeoWombatDLClassifier:
@@ -128,6 +157,10 @@ class GeoWombatDLClassifier:
     :class:`geowombat.core.timeseries.TimeSeriesFiller`) and predictions
     are assembled into a ``(band='targ', y, x)`` DataArray with nodata and
     unfillable pixels set to NaN.
+
+    The audit reads the raster once before ``predict()`` builds its lazy
+    prediction graph, so ``predict()`` on a large stack does a full pass
+    up front; pass ``audit='off'`` to skip it.
 
     Attributes set by subclasses' ``__init__``:
 
@@ -189,6 +222,10 @@ class GeoWombatDLClassifier:
         """Audit and fill the training stack; returns the filled array."""
         self._validate_hygiene()
         floated = to_float_with_nan(data)
+        if hasattr(floated.data, 'dask'):
+            # fit() needs the whole raster in memory anyway; read it once
+            # instead of once each for the audit, the medians and .values
+            floated = floated.compute()
         self.fit_report_ = audit_input(
             floated, stage='fit', policy=self.audit, fill=self.fill
         )
@@ -207,13 +244,12 @@ class GeoWombatDLClassifier:
         arr = filled.values
         if arr.ndim == 3:
             arr = arr[None]
-        nt, nb, ny, nx = arr.shape
-        pixels = arr.transpose(2, 3, 0, 1).reshape(ny * nx, nt, nb)
+        pixels = _to_series(arr, 'time_major', fill_nan=False)
         flat_labels = label_arr.ravel()
         mask = flat_labels > 0
         if not mask.any():
             raise ValueError("No labeled pixels overlap the raster.")
-        X = pixels[mask].astype(np.float32)
+        X = pixels[mask]
         y = (flat_labels[mask] - 1).astype(np.int64)
         bad = np.isnan(X).any(axis=(1, 2))
         if bad.any():
@@ -273,14 +309,7 @@ class GeoWombatDLClassifier:
         nodata_px = floated.isnull().all(dim=series_dims)
         filled = self.filler_.transform(floated)
         residual = self.filler_.residual_mask(filled) | nodata_px
-        chunks = {'band': -1}
-        if has_time:
-            chunks['time'] = -1
-        if not hasattr(filled.data, 'dask'):
-            chunks['y'] = min(512, filled.sizes['y'])
-            chunks['x'] = min(512, filled.sizes['x'])
-        filled = filled.chunk(chunks)
-        return filled, residual
+        return _chunk_for_prediction(filled), residual
 
     def _finalize_prediction(self, result_da, data, residual_mask=None):
         """Wrap a ``(1, y, x)`` dask array as the ``(band, y, x)`` result."""
@@ -289,9 +318,12 @@ class GeoWombatDLClassifier:
             dims=("band", "y", "x"),
             coords={"band": ["targ"], "y": data.y, "x": data.x},
         )
-        for mask in (_get_nodata_mask(data), residual_mask):
-            if mask is not None:
-                result = xr.where(mask, np.nan, result)
+        # residual_mask already covers pixels that are nodata on every
+        # date (via to_float_with_nan + the all-series reduction) and
+        # pixels no fill could repair; a pixel that is nodata on some
+        # dates only is filled and predicted.
+        if residual_mask is not None:
+            result = xr.where(residual_mask, np.nan, result)
         result = result.transpose('band', 'y', 'x')
         # xr.where names the result after the mask; drop it
         result.name = None

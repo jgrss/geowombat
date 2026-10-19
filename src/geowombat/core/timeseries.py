@@ -113,7 +113,11 @@ def missing_report(data):
     # footprint; they are not gaps and are excluded from the fractions.
     footprint = ~missing.all(dim=list(_series_dims(data)))
     n_valid = footprint.sum()
-    denom = xr.where(n_valid > 0, n_valid, 1)
+    # If nothing is valid at all, report over every pixel so the result
+    # reads as 100% missing rather than 0%.
+    total = data.sizes['y'] * data.sizes['x']
+    footprint = footprint | (n_valid == 0)
+    denom = xr.where(n_valid > 0, n_valid, total)
 
     def frac(flag):
         return (flag & footprint).sum(dim=_PIXEL_DIMS) / denom
@@ -124,7 +128,7 @@ def missing_report(data):
             'frac_nodata': frac(nd),
             'frac_zero': frac(is_zero),
             'frac_missing': frac(missing),
-            'n_valid': n_valid,
+            'n_valid': denom,
         }
     ).compute()
     n_valid = int(stats['n_valid'])
