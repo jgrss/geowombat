@@ -132,6 +132,111 @@ To disable nodata masking, pass ``mask_nodataval=False``. This is useful
 when you want to handle masking yourself or inspect raw predictions.
 
 
+.. _ml-data-hygiene:
+
+Data hygiene for time series
+----------------------------
+
+Missing values decide more than model choice. A multi-date stack usually
+has gaps from clouds, shadows and scene edges, and how those gaps are
+handled can move accuracy by more than the difference between two models.
+Filling gaps with zeros before scaling is the most common mistake: a zero
+reflectance lies far outside anything the model saw in training.
+
+GeoWombat's time-series classifiers (``MiniRocketClassifier``,
+``LTAEClassifier``, ``TempCNNClassifier``, ``CNNBiLSTMClassifier`` and
+``TabNetClassifier``) therefore audit their inputs and fill gaps for you.
+The recommended order is:
+
+1. Open with the file's nodata value so scene edges are known:
+   ``gw.open(files, stack_dim='time', nodata=0)``.
+2. Mask clouds and shadows. ``src.gw.mask_clouds(mask)`` accepts the code
+   arrays from :class:`geowombat.radiometry.QAMasker` or
+   :func:`geowombat.radiometry.mask_s2`, or any boolean cloud mask, and
+   tags the result so the classifiers know clouds were handled.
+3. Inspect what is missing with ``src.gw.missing_report()``.
+4. Fill gaps, either up front with ``src.gw.fill_time()`` or by letting the
+   classifier do it (the ``fill`` option).
+5. Classify.
+
+.. code-block:: python
+
+    from geowombat.radiometry import QAMasker
+    from geowombat.ml import fit_predict, TempCNNClassifier
+
+    with gw.open(qa_files, stack_dim='time') as qa:
+        cloud = QAMasker(qa, 'hls', ['cloud', 'shadow']).to_mask()
+
+    with gw.open(files, stack_dim='time', nodata=0) as src:
+        clean = src.gw.mask_clouds(cloud)
+        print(clean.gw.missing_report())
+        #          time   band  n_pixels  frac_nan  frac_nodata  frac_zero  frac_missing
+        # 0  2020-05-18   blue    151776     0.031          0.0        0.0         0.031
+        # ...
+        y = fit_predict(clean, TempCNNClassifier(seed=0), labels, col='lc')
+
+The report has one row per time step and band. ``frac_missing`` counts NaN
+and nodata; ``frac_zero`` counts exact zeros that are *not* the declared
+nodata value, which usually means unmasked nodata. Pixels that are missing
+in every time step and band lie outside the image footprint and are not
+counted as gaps.
+
+What the classifiers check
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+At ``fit()`` and ``predict()`` the data is audited, and a
+``GeoWombatInputWarning`` is issued when:
+
+- a time step or band has more than 5% missing values;
+- exact zeros appear in a band and zero is not the nodata value;
+- at ``predict()``, a time step is missing far more often than it was in
+  the training data (the model never saw gaps there, so those predictions
+  rest on the fill);
+- a stack of three or more dates has no gaps at all and was never tagged as
+  cloud masked, which usually means clouds were not masked. Silence this by
+  masking with ``src.gw.mask_clouds()`` or, if the data really is clean,
+  ``src.attrs['cloud_masked'] = True``.
+
+A time step that is entirely missing in the training data raises an error:
+drop it (``src.isel(time=...)``) or use ``fill='interpolate'``.
+
+Every time-series classifier takes two hygiene options:
+
+- ``audit``: ``'warn'`` (default), ``'raise'`` to turn findings into
+  errors, or ``'off'``.
+- ``fill``: how gaps are filled before scaling.
+
+.. list-table::
+   :header-rows: 1
+   :widths: 22 60
+
+   * - ``fill``
+     - Behaviour
+   * - ``'train_median'`` (default)
+     - Per band and time step median of the training raster, stored on the
+       classifier and reused at ``predict()``. No prediction-time statistic
+       is ever used.
+   * - ``'interpolate'``
+     - Linear interpolation along time per pixel; the ends take the nearest
+       valid value. Pixels with no valid value stay NaN.
+   * - ``'zero'``
+     - Legacy behaviour; warns. Only for reproducing old results.
+   * - ``'none'``
+     - No filling. ``fit()`` raises if labelled pixels contain gaps.
+
+Pixels that cannot be filled, and pixels that are nodata in every time
+step, are NaN in the prediction. They are never predicted from zeros.
+
+To silence the warnings selectively:
+
+.. code-block:: python
+
+    import warnings
+    from geowombat.core.timeseries import GeoWombatInputWarning
+
+    warnings.simplefilter('ignore', GeoWombatInputWarning)
+
+
 Supervised classification
 -------------------------
 
@@ -405,6 +510,12 @@ There are two ways to classify ``(time, band, y, x)`` stacks:
 - :class:`~geowombat.ml.MiniRocketClassifier` keeps the series structure of
   each pixel (``band`` × ``time``) and extracts ~10,000 convolutional
   features from it before a linear classifier.
+- The PyTorch sequence classifiers ``LTAEClassifier``,
+  ``TempCNNClassifier`` and ``CNNBiLSTMClassifier`` (see :ref:`dl`) learn
+  the temporal features end to end.
+
+All of them audit their inputs and fill gaps before training; see
+:ref:`ml-data-hygiene`.
 
 MiniRocket (Dempster, Schmidt and Webb, 2021) applies 84 fixed dilated
 convolution kernels of length 9 to each series and records the proportion
@@ -431,8 +542,8 @@ How it works:
 - Training uses the pixels covered by the label polygons or points.
 - Prediction runs lazily, block by block, transforming ``batch_size``
   pixels at a time to bound memory.
-- NaN values are replaced by 0 before the transform. Fill or interpolate
-  gaps (e.g. cloud masks) beforehand for best results.
+- Inputs are audited and gaps are filled before the transform (training
+  medians by default); see :ref:`ml-data-hygiene`.
 
 Key parameters:
 
@@ -449,6 +560,8 @@ Key parameters:
   ``batch_size × n_kernels × 4`` bytes)
 - ``n_jobs``: threads for the transform (``-1`` for all cores)
 - ``random_state``: seed for the kernel biases and subsampling
+- ``audit`` and ``fill``: input checks and gap filling, see
+  :ref:`ml-data-hygiene`
 
 MiniRocket fit_predict with time-stacked data
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

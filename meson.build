@@ -115,6 +115,7 @@ py3.install_sources(
         'src/geowombat/ml/classifiers.py',
         'src/geowombat/ml/dl_classifiers.py',
         'src/geowombat/ml/rocket_classifiers.py',
+        'src/geowombat/ml/sequence_classifiers.py',
         'src/geowombat/ml/transformers.py',
     ],
     subdir: 'geowombat/ml',

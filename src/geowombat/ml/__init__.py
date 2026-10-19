@@ -15,12 +15,15 @@ try:
         TabNetClassifier,
         TorchGeoClassifier,
     )
+    from .sequence_classifiers import CNNBiLSTMClassifier, TempCNNClassifier
 
     __all__ += [
         'TorchSequenceClassifier',
         'TabNetClassifier',
         'LTAEClassifier',
         'TorchGeoClassifier',
+        'TempCNNClassifier',
+        'CNNBiLSTMClassifier',
     ]
 except ImportError:
     pass
