@@ -613,8 +613,15 @@ Notes
 
 - **n_classes is auto-inferred** from the label column during ``fit()``.
   You never need to specify it.
-- **Feature normalization** is handled internally — raw DN values are
-  standardized before training and prediction.
+- **Feature normalization** is handled internally by TabNet and the
+  sequence classifiers (L-TAE, TempCNN, CNN-BiLSTM): raw DN values are
+  standardized per band before training and prediction. TorchGeo
+  segmentation models do not scale their inputs.
+- **Missing values**: the time-series classifiers audit their inputs and
+  fill gaps before scaling (``fill='train_median'`` by default). Watch for
+  ``GeoWombatInputWarning`` and mask clouds first; see
+  :ref:`ml-data-hygiene`.
+- **Reproducibility**: pass ``seed=`` to the sequence classifiers.
 - **Labels use 1-based encoding** internally (0 = nodata). The classifiers
   convert to 0-based for PyTorch and back automatically.
 - **Device**: Pass ``device='cuda'`` or ``device='auto'`` for GPU acceleration.

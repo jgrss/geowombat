@@ -9,6 +9,10 @@ API reference
     :no-inheritance-diagram:
     :no-inherited-members:
 
+.. automodapi:: geowombat.core.timeseries
+    :no-inheritance-diagram:
+    :no-inherited-members:
+
 .. automodapi:: geowombat
     :no-inheritance-diagram:
     :no-inherited-members:

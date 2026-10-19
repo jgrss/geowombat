@@ -262,6 +262,14 @@ class TestAuditInput(unittest.TestCase):
         self.assertIn('11', shift[0])
         self.assertIn('10% missing at fit', shift[0])
 
+    def test_messages_render_plain_labels(self):
+        da_ = _make_da().assign_coords(time=np.arange(4, dtype='float64'))
+        da_[1, 0, :4, :] = np.nan
+        _, msgs = _caught(audit_input, da_, stage='fit', fill='train_median')
+        heavy = [m for m in msgs if 'missing' in m.lower()][0]
+        self.assertNotIn('np.', heavy)
+        self.assertIn("time=1, band='b0'", heavy)
+
     def test_policy_off_and_raise(self):
         da_ = _make_da()
         da_[1, 0, :4, :] = np.nan

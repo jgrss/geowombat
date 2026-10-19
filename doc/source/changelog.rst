@@ -65,6 +65,10 @@ Unreleased
 * New "Data hygiene for time series" section in the machine learning
   guide, and TempCNN, CNN-BiLSTM and shared-training-options sections in
   the deep learning guide.
+* Updated the ``ml_classifiers`` and ``dl_classifiers`` notebooks with
+  data-hygiene, MiniRocket, TempCNN, CNN-BiLSTM, shared-options and custom
+  module sections; ``geowombat.core.timeseries`` added to the API
+  reference; cloud/QA mask section in the radiometry guide.
 * New "Time series classifiers" section in the machine learning guide.
 * New :ref:`object-detection` walkthrough with a recommended
   DOTA-v1 + OBB setup callout, AABB-vs-OBB explainer, and

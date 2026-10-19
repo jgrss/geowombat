@@ -30,6 +30,7 @@ Like a wombat, GeoWombat has a simple interface (for raster I/O) with a strong b
 * Time series analysis
 * Band math (NDVI, Tasseled cap, EVI etc)
 * Image classification and regression
+* Time series classification (MiniRocket, L-TAE, TempCNN, CNN-BiLSTM) with built-in input checks and gap filling
 * Radiometry (BRDF normalization)
 * Distributed processing
 

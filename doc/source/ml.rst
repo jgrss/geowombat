@@ -10,7 +10,9 @@ will be applied to the raster data as an xarray DataArray.
 
 For satellite image time series, the module also ships
 :class:`~geowombat.ml.MiniRocketClassifier`, a fast CPU time-series
-classifier (see :ref:`ml-time-series`).
+classifier (see :ref:`ml-time-series`), alongside the PyTorch sequence
+classifiers in :ref:`dl`. All of them check their inputs and fill gaps
+before training (see :ref:`ml-data-hygiene`).
 
 To install ML dependencies::
 
@@ -47,6 +49,10 @@ Supervised
    * - k-Nearest Neighbors
      - ``sklearn.neighbors.KNeighborsClassifier``
      - Non-parametric; useful for complex class boundaries
+   * - L-TAE, TempCNN, CNN-BiLSTM
+     - ``geowombat.ml`` (see :ref:`dl`)
+     - PyTorch sequence classifiers for satellite image time series;
+       learn the temporal features end to end, GPU optional
    * - MiniRocket
      - ``geowombat.ml.MiniRocketClassifier``
      - Satellite image time series (9+ dates); fixed convolution kernels
@@ -390,6 +396,13 @@ time is handled during classification:
      - T × B
      - ``(band='targ', y, x)``
 
+.. note::
+
+   The scikit-learn path does not audit or fill missing values. Mask clouds
+   and fill gaps first (``src.gw.mask_clouds()``, ``src.gw.fill_time()``),
+   or use one of the time-series classifiers, which do this for you; see
+   :ref:`ml-data-hygiene`.
+
 Panel mode
 ~~~~~~~~~~
 
@@ -502,7 +515,7 @@ Compare panel vs flatten
 Time series classifiers
 -----------------------
 
-There are two ways to classify ``(time, band, y, x)`` stacks:
+There are three ways to classify ``(time, band, y, x)`` stacks:
 
 - ``temporal_mode='flatten'`` (above) turns the T×B values of each pixel
   into one feature vector and hands it to any scikit-learn model. The model
@@ -578,6 +591,10 @@ MiniRocket fit_predict with time-stacked data
             nodata=0,
         ) as src:
             print(src.dims)  # ('time', 'band', 'y', 'x')
+            # Nine copies of one date have no cloud gaps and no cloud
+            # mask, so the audit would warn; tag the demo stack. With real
+            # imagery, mask clouds instead (src.gw.mask_clouds()).
+            src.attrs['cloud_masked'] = True
             y = fit_predict(
                 src,
                 MiniRocketClassifier(n_kernels=2000, random_state=42),

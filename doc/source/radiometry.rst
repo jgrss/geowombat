@@ -88,3 +88,29 @@ In the example below, we use :func:`geowombat.radiometry.BRDF.norm_brdf` to norm
             )
 
 .. image:: _static/sr_srem.png
+
+
+Cloud and QA masks
+------------------
+
+:class:`geowombat.radiometry.QAMasker` decodes bit-packed quality bands
+(HLS Fmask, Landsat ``qa_pixel``, MODIS, Sentinel-2 SCL) into an integer
+mask (0 = clear, 2 = shadow, 4 = cloud, ...). Apply it with
+``src.gw.mask_clouds()``, which sets the masked pixels to NaN and tags the
+data as cloud masked so the time-series classifiers know the gaps are real
+(see :ref:`ml-data-hygiene`).
+
+.. code-block:: python
+
+    import geowombat as gw
+    from geowombat.radiometry import QAMasker
+
+    with gw.open(qa_files, stack_dim='time') as qa:
+        cloud = QAMasker(qa, 'hls', ['cloud', 'shadow']).to_mask()
+
+    with gw.open(files, stack_dim='time', nodata=0) as src:
+        clean = src.gw.mask_clouds(cloud)
+        print(clean.gw.missing_report())
+
+For Sentinel-2 L1C data without a QA band, ``CloudShadowMasker.mask_s2``
+runs s2cloudless and returns the same kind of code array.

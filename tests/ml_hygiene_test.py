@@ -135,11 +135,12 @@ class TestMiniRocketHygiene(unittest.TestCase):
             with _open_stack() as src:
                 X, Xy, clf = _quiet(fit, src, self._clf(), aoi_poly, col='lc')
                 gappy = _with_gap(src)
+                gap_label = int(src.time.values[GAP_TIME])
                 y, msgs = _gw_warnings(predict, gappy, X, clf)
                 y = y.compute()
         shift = [m for m in msgs if 'training' in m.lower()]
         self.assertTrue(shift, msgs)
-        self.assertIn(str(GAP_TIME), shift[0])
+        self.assertIn(f"time={gap_label}", shift[0])
         _assert_prediction(self, y, src)
 
     def test_fit_report_and_filler_are_stored(self):

@@ -139,10 +139,21 @@ def missing_report(data):
     return df[_REPORT_COLUMNS].reset_index(drop=True)
 
 
+def _fmt(value):
+    """Render a coordinate value without numpy/pandas reprs."""
+    if hasattr(value, 'item'):
+        value = value.item()
+    if isinstance(value, float) and value.is_integer():
+        value = int(value)
+    if isinstance(value, str):
+        return repr(value)
+    return str(value)
+
+
 def _label(row):
     if pd.isna(row['time']):
-        return f"band={row['band']!r}"
-    return f"time={row['time']!r}, band={row['band']!r}"
+        return f"band={_fmt(row['band'])}"
+    return f"time={_fmt(row['time'])}, band={_fmt(row['band'])}"
 
 
 def _pct(x):
