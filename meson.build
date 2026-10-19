@@ -60,6 +60,7 @@ py3.install_sources(
         'src/geowombat/core/series.py',
         'src/geowombat/core/sops.py',
         'src/geowombat/core/stac.py',
+        'src/geowombat/core/timeseries.py',
         'src/geowombat/core/util.py',
         'src/geowombat/core/vi.py',
         'src/geowombat/core/windows.py',
