@@ -9,16 +9,21 @@ predict = _classifier.predict
 __all__ = ['fit', 'fit_predict', 'predict']
 
 try:
+    from ._torch_base import TorchSequenceClassifier
     from .dl_classifiers import (
         LTAEClassifier,
         TabNetClassifier,
         TorchGeoClassifier,
     )
+    from .sequence_classifiers import CNNBiLSTMClassifier, TempCNNClassifier
 
     __all__ += [
+        'TorchSequenceClassifier',
         'TabNetClassifier',
         'LTAEClassifier',
         'TorchGeoClassifier',
+        'TempCNNClassifier',
+        'CNNBiLSTMClassifier',
     ]
 except ImportError:
     pass

@@ -35,6 +35,7 @@ from . import norm_diff as gw_norm_diff
 from . import recode, replace, sample, save, subset
 from . import tasseled_cap as gw_tasseled_cap
 from . import to_netcdf, to_raster, to_vrt
+from . import timeseries as _timeseries
 from . import transform_crs as _transform_crs
 from . import wi as gw_wi
 from .properties import DataProperties as _DataProperties
@@ -228,6 +229,83 @@ class GeoWombatAccessor(_UpdateConfig, _DataProperties):
                             break
 
         return self._obj.where(lambda x: x != nodata_value)
+
+    def missing_report(self) -> pd.DataFrame:
+        """Reports the fraction of missing values per time step and band.
+
+        Missing means NaN or the declared 'no data' value. Exact zeros that
+        are not the 'no data' value are reported separately because they
+        usually indicate unmasked nodata.
+
+        Returns:
+            ``pandas.DataFrame`` with columns ``time, band, n_pixels,
+            frac_nan, frac_nodata, frac_zero, frac_missing``.
+
+        Example:
+            >>> with gw.open(files, stack_dim='time', nodata=0) as src:
+            >>>     print(src.gw.missing_report())
+        """
+        return _timeseries.missing_report(self._obj)
+
+    def fill_time(
+        self, method: str = 'interpolate', max_gap: T.Optional[int] = None
+    ) -> xr.DataArray:
+        """Fills missing values along the time dimension.
+
+        Args:
+            method (Optional[str]): ``'interpolate'`` (linear along time,
+                ends filled with the nearest value) or ``'median'`` (per
+                band and time step median over the raster).
+            max_gap (Optional[int]): For ``'interpolate'``, the maximum
+                number of consecutive missing time steps to fill.
+
+        Returns:
+            ``xarray.DataArray``
+
+        Example:
+            >>> with gw.open(files, stack_dim='time', nodata=0) as src:
+            >>>     filled = src.gw.fill_time(method='interpolate', max_gap=2)
+        """
+        return _timeseries.fill_time(
+            self._obj, method=method, max_gap=max_gap
+        )
+
+    def mask_clouds(
+        self,
+        mask: xr.DataArray,
+        clear_values: T.Sequence[int] = (0,),
+        broadcast_time: bool = False,
+    ) -> xr.DataArray:
+        """Sets cloudy pixels to NaN and tags the data as cloud masked.
+
+        Args:
+            mask (DataArray): A boolean array (``True`` = cloud) or an
+                integer code array such as the output of
+                :class:`geowombat.radiometry.QAMasker` or
+                :func:`geowombat.radiometry.mask_s2`.
+            clear_values (Optional[sequence]): Codes treated as clear in an
+                integer mask.
+            broadcast_time (Optional[bool]): Apply a mask without a
+                ``time`` dimension to every time step.
+
+        Returns:
+            ``xarray.DataArray`` with ``attrs['cloud_masked'] = True``,
+            which silences the classifiers' unmasked-cloud warning.
+
+        Example:
+            >>> from geowombat.radiometry import QAMasker
+            >>>
+            >>> with gw.open(qa_files, stack_dim='time') as qa:
+            >>>     cloud = QAMasker(qa, 'hls', ['cloud', 'shadow']).to_mask()
+            >>> with gw.open(files, stack_dim='time', nodata=0) as src:
+            >>>     clean = src.gw.mask_clouds(cloud)
+        """
+        return _timeseries.mask_clouds(
+            self._obj,
+            mask,
+            clear_values=clear_values,
+            broadcast_time=broadcast_time,
+        )
 
     def assign_nodata_attrs(self, nodata: T.Union[float, int]) -> xr.DataArray:
         """Assigns 'no data' attributes.

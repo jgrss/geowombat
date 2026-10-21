@@ -14,6 +14,18 @@ Unreleased
 
 **Features**
 
+* Added ``TempCNNClassifier`` and ``CNNBiLSTMClassifier``, lightweight
+  PyTorch sequence classifiers for satellite image time series, and the
+  ``TorchSequenceClassifier`` base they share with ``LTAEClassifier``
+  (AdamW, optional cosine schedule, cross-entropy or focal loss, class
+  weights, seeded validation split with early stopping).
+* Added input hygiene to all time-series classifiers: an audit that warns
+  (``GeoWombatInputWarning``) on heavy missingness, suspicious zeros,
+  train-vs-predict missingness shifts and unmasked optical stacks, and a
+  ``fill`` option (``'train_median'`` default, ``'interpolate'``,
+  ``'zero'``, ``'none'``) applied before scaling.
+* Added ``src.gw.missing_report()``, ``src.gw.fill_time()`` and
+  ``src.gw.mask_clouds()`` (``geowombat.core.timeseries``).
 * Added ``MiniRocketClassifier`` (``geowombat.ml.rocket_classifiers``,
   exported from ``geowombat.ml``), a fast CPU time-series classifier
   based on MiniRocket via ``aeon``. It works with ``fit`` / ``predict`` /
@@ -50,6 +62,13 @@ Unreleased
 
 **Documentation**
 
+* New "Data hygiene for time series" section in the machine learning
+  guide, and TempCNN, CNN-BiLSTM and shared-training-options sections in
+  the deep learning guide.
+* Updated the ``ml_classifiers`` and ``dl_classifiers`` notebooks with
+  data-hygiene, MiniRocket, TempCNN, CNN-BiLSTM, shared-options and custom
+  module sections; ``geowombat.core.timeseries`` added to the API
+  reference; cloud/QA mask section in the radiometry guide.
 * New "Time series classifiers" section in the machine learning guide.
 * New :ref:`object-detection` walkthrough with a recommended
   DOTA-v1 + OBB setup callout, AABB-vs-OBB explainer, and
@@ -62,6 +81,8 @@ Unreleased
 
 **Bug Fixes**
 
+* ``LTAEClassifier`` and ``TabNetClassifier`` predictions now have the
+  ``(band, y, x)`` dimension order and no leaked ``_nodata_mask`` name.
 * Improved block usage and nodata handling
   (`#348 <https://github.com/jgrss/geowombat/pull/348>`_).
 

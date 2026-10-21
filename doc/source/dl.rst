@@ -5,7 +5,7 @@ Deep learning classifiers
 
 GeoWombat provides deep learning classifiers that follow the same
 ``fit()`` / ``predict()`` / ``fit_predict()`` API as the sklearn-based
-classifiers in the :ref:`ml` module. Three architectures are included:
+classifiers in the :ref:`ml` module. Five classifiers are included:
 
 .. list-table::
    :header-rows: 1
@@ -20,6 +20,12 @@ classifiers in the :ref:`ml` module. Three architectures are included:
    * - ``LTAEClassifier``
      - Lightweight Temporal Attention Encoder
      - Satellite image time series (requires ``time`` dimension)
+   * - ``TempCNNClassifier``
+     - Temporal 1-D CNN
+     - Satellite image time series; fast, strong baseline (requires ``time`` dimension)
+   * - ``CNNBiLSTMClassifier``
+     - 1-D CNN + bidirectional LSTM
+     - Satellite image time series with longer-range temporal patterns (requires ``time`` dimension)
    * - ``TorchGeoClassifier``
      - U-Net, DeepLabV3+, FPN segmentation
      - Spatial-context classification with optional pre-trained encoders
@@ -111,6 +117,7 @@ Key parameters:
 - ``patience``: Early stopping patience (default 10)
 - ``device``: ``'cpu'``, ``'cuda'``, or ``'auto'``
 - ``verbose``: 0 = silent, 1 = progress
+- ``audit`` and ``fill``: input checks and gap filling, see :ref:`ml-data-hygiene`
 
 fit_predict (one step)
 ~~~~~~~~~~~~~~~~~~~~~~
@@ -177,6 +184,11 @@ Key parameters:
 - ``max_epochs``: Training epochs (default 50)
 - ``lr``: Learning rate (default 1e-3)
 - ``device``: ``'cpu'``, ``'cuda'``, or ``'auto'``
+- ``seed``: reproducible training
+- ``val_fraction`` and ``patience``: early stopping on held-out labelled pixels
+- ``audit`` and ``fill``: input checks and gap filling, see :ref:`ml-data-hygiene`
+
+All options are listed under :ref:`dl-shared-options`.
 
 fit_predict with time-stacked data
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -242,8 +254,135 @@ L-TAE raises a clear error if the data is missing the ``time`` dimension:
     with gw.open(l8_224078_20200518, nodata=0) as src:
         clf = LTAEClassifier()
         fit(src, clf, labels, col='lc')
-    # ValueError: LTAEClassifier requires multi-temporal data
-    # with a 'time' dimension. Open data with stack_dim='time'.
+    # ValueError: LTAEClassifier.fit() requires multi-temporal data
+    # with a 'time' dimension (time, band, y, x). Open data with
+    # stack_dim='time'.
+
+
+TempCNN (Temporal CNN)
+----------------------
+
+TempCNN (Pelletier et al., 2019) applies three 1-D convolution blocks
+along the time axis of each pixel's series, pools over time and
+classifies with a small MLP. It trains in minutes on a CPU and is a
+strong baseline for crop and land-cover mapping from multi-date imagery.
+
+**Requires** multi-temporal data with a ``time`` dimension (open with
+``stack_dim='time'``).
+
+Key parameters:
+
+- ``hidden``: channels of the three convolution blocks (default ``(64, 128, 256)``)
+- ``kernel_size``: temporal kernel size (default 3)
+- ``dropout``: dropout rate (default 0.3)
+- Shared options (:ref:`dl-shared-options`); the defaults are
+  ``loss='focal'``, ``scheduler='cosine'``, ``weight_decay=1e-4`` and
+  ``val_fraction=0.2``
+
+.. code-block:: python
+
+    from geowombat.ml import TempCNNClassifier
+
+    with gw.config.update(ref_res=150):
+        with gw.open(
+            [l8_224078_20200518, l8_224078_20200518],
+            stack_dim='time',
+            nodata=0,
+        ) as src:
+            y = fit_predict(
+                src,
+                TempCNNClassifier(max_epochs=50, seed=0),
+                labels,
+                col='lc',
+            )
+
+.. note::
+
+   This demo stacks the same image twice. In practice, use imagery from
+   different acquisition dates, mask clouds, and check
+   ``src.gw.missing_report()`` first (see :ref:`ml-data-hygiene`).
+
+CNN-BiLSTM
+----------
+
+A temporal convolution extracts local features from each pixel's series
+and a bidirectional LSTM reads the sequence in both directions; the last
+step feeds a linear head. It captures longer-range temporal patterns than
+TempCNN at a slightly higher cost.
+
+**Requires** multi-temporal data with a ``time`` dimension.
+
+Key parameters:
+
+- ``conv_filters``: convolution channels (default 64)
+- ``lstm_hidden``: hidden size per LSTM direction (default 64)
+- ``kernel_size``: temporal kernel size (default 5)
+- ``dropout``: dropout before the head (default 0.3)
+- Shared options (:ref:`dl-shared-options`), same defaults as TempCNN
+
+.. code-block:: python
+
+    from geowombat.ml import CNNBiLSTMClassifier
+
+    with gw.config.update(ref_res=150):
+        with gw.open(
+            [l8_224078_20200518, l8_224078_20200518],
+            stack_dim='time',
+            nodata=0,
+        ) as src:
+            clf = CNNBiLSTMClassifier(max_epochs=50, seed=0)
+            X, Xy, clf = fit(src, clf, labels, col='lc')
+            y = predict(src, X, clf)
+
+.. _dl-shared-options:
+
+Shared training options
+-----------------------
+
+``LTAEClassifier``, ``TempCNNClassifier`` and ``CNNBiLSTMClassifier``
+share one set of options, so switching models never changes how you
+train:
+
+- ``max_epochs`` (50), ``batch_size`` (256), ``lr`` (1e-3),
+  ``weight_decay`` (AdamW)
+- ``scheduler``: ``None`` or ``'cosine'``
+- ``loss``: ``'ce'`` (cross-entropy) or ``'focal'`` (gamma 2, helps with
+  imbalanced classes)
+- ``class_weight``: ``None``, ``'balanced'`` or a sequence of per-class
+  weights
+- ``val_fraction`` and ``patience``: hold out a share of the labelled
+  pixels, track validation macro-F1 and stop early; the best weights are
+  restored and ``clf.best_epoch_`` records the epoch
+- ``device``: ``'cpu'``, ``'cuda'`` or ``'auto'``
+- ``seed``: reproducible splits, shuffling and initialisation
+- ``audit`` and ``fill``: input checks and gap filling, see
+  :ref:`ml-data-hygiene`
+
+Inputs are standardised per band using the training pixels. Predictions
+are ``(band='targ', y, x)`` with 1-based class ids; nodata and unfillable
+pixels are NaN.
+
+Advanced users can subclass :class:`~geowombat.ml.TorchSequenceClassifier`
+and implement ``_build_module(in_channels, n_classes)`` to plug in any
+``nn.Module`` whose ``forward`` takes ``(batch, time, bands)`` and returns
+logits. The audit, gap filling, training loop and block-wise prediction
+come for free:
+
+.. code-block:: python
+
+    import torch.nn as nn
+    from geowombat.ml import TorchSequenceClassifier
+
+    class FlatMLPClassifier(TorchSequenceClassifier):
+        def _build_module(self, in_channels, n_classes):
+            return nn.Sequential(
+                nn.Flatten(),            # (batch, time * bands)
+                nn.LazyLinear(64),
+                nn.ReLU(),
+                nn.Linear(64, n_classes),
+            )
+
+    y = fit_predict(src, FlatMLPClassifier(seed=0), labels, col='lc')
 
 
 Comparison with sklearn classifiers
@@ -474,8 +613,15 @@ Notes
 
 - **n_classes is auto-inferred** from the label column during ``fit()``.
   You never need to specify it.
-- **Feature normalization** is handled internally — raw DN values are
-  standardized before training and prediction.
+- **Feature normalization** is handled internally by TabNet and the
+  sequence classifiers (L-TAE, TempCNN, CNN-BiLSTM): raw DN values are
+  standardized per band before training and prediction. TorchGeo
+  segmentation models do not scale their inputs.
+- **Missing values**: the time-series classifiers audit their inputs and
+  fill gaps before scaling (``fill='train_median'`` by default). Watch for
+  ``GeoWombatInputWarning`` and mask clouds first; see
+  :ref:`ml-data-hygiene`.
+- **Reproducibility**: pass ``seed=`` to the sequence classifiers.
 - **Labels use 1-based encoding** internally (0 = nodata). The classifiers
   convert to 0-based for PyTorch and back automatically.
 - **Device**: Pass ``device='cuda'`` or ``device='auto'`` for GPU acceleration.

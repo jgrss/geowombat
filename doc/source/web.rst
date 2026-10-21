@@ -274,6 +274,12 @@ or ``scl`` in your ``bands`` list.
         mask_data=True,  # <-- auto-loads Fmask, masks clouds
     )
 
+Masked pixels are NaN. Before classifying a multi-date stack, inspect the
+gaps with ``data.gw.missing_report()`` and fill them with
+``data.gw.fill_time()`` or the classifiers' ``fill`` option; see
+:ref:`ml-data-hygiene`. For imagery opened from files, apply your own
+QA mask with ``data.gw.mask_clouds()``.
+
 You can customize which classes are masked with the ``mask_items``
 parameter:
 

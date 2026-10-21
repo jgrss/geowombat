@@ -226,7 +226,8 @@ GeoWombat provides optional dependency groups for specific functionality.
      - Machine learning, classification and MiniRocket time-series
        classification (dask-ml, lightgbm, sklearn-xarray, numba, aeon)
    * - ``dl``
-     - Deep learning (PyTorch, pytorch-tabnet, torchgeo, segmentation-models-pytorch)
+     - Deep learning classifiers TabNet, L-TAE, TempCNN, CNN-BiLSTM and
+       TorchGeo (PyTorch, pytorch-tabnet, torchgeo, segmentation-models-pytorch)
    * - ``detect``
      - Object detection (ultralytics/YOLO, torchmetrics, pycocotools, pillow, opencv-python)
    * - ``sam``
@@ -325,7 +326,8 @@ with Conda; see :ref:`optional-extras`).
 .. note::
 
    With Conda, ``geowombat-dl`` omits ``pytorch-tabnet``
-   (``pip install pytorch-tabnet`` if you need TabNet), and the
+   (``pip install pytorch-tabnet`` if you need TabNet), ``aeon`` for
+   MiniRocket is on conda-forge (``conda install -c conda-forge aeon``), and the
    ``object_detection`` notebook's SAM-refiner section additionally needs
    ``pip install segment-anything``. See :ref:`optional-extras` for details.
 
