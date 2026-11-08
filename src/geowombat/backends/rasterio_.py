@@ -82,10 +82,9 @@ def get_window_from_bounds(
 
 
 def get_file_info(
-    src_obj: T.Union[rio.io.DatasetReader, rio.io.DatasetWriter]
+    src_obj: T.Union[rio.io.DatasetReader, rio.io.DatasetWriter],
 ) -> namedtuple:
     """Gets image file information."""
-
     src_bounds = src_obj.bounds
     src_res = src_obj.res
     src_width = src_obj.width
@@ -464,7 +463,7 @@ def check_res(
         T.Sequence[T.Union[float, int]],
         float,
         int,
-    ]
+    ],
 ) -> T.Tuple[float, float]:
     """Checks an image's resolution.
 
@@ -488,7 +487,7 @@ def check_res(
 
 
 def check_src_crs(
-    src: T.Union[rio.io.DatasetReader, rio.io.DatasetWriter]
+    src: T.Union[rio.io.DatasetReader, rio.io.DatasetWriter],
 ) -> rio.crs.CRS:
     """Checks a rasterio open() instance.
 
@@ -772,8 +771,12 @@ def get_file_bounds(
             )
 
         else:
-            bounds_width = int(round((bounds_right - bounds_left) / abs(dst_res[0])))
-            bounds_height = int(round((bounds_top - bounds_bottom) / abs(dst_res[1])))
+            bounds_width = int(
+                round((bounds_right - bounds_left) / abs(dst_res[0]))
+            )
+            bounds_height = int(
+                round((bounds_top - bounds_bottom) / abs(dst_res[1]))
+            )
 
             bounds_transform = transform_from_bounds(
                 bounds_left,
@@ -896,7 +899,8 @@ def warp(
         bounds (Optional[tuple]): The extent bounds to warp to.
         crs (Optional[``CRS`` | int | dict | str]): The CRS to warp to.
         res (Optional[tuple]): The cell resolution to warp to.
-        nodata (Optional[int or float]): The 'no data' value.
+        nodata (Optional[int or float]): The source and destination 'no data'
+            value. When given, overrides the source file's 'no data' value.
         warp_mem_limit (Optional[int]): The memory limit (in MB) for the ``rasterio.vrt.WarpedVRT`` function.
         num_threads (Optional[int]): The number of warp worker threads.
         tap (Optional[bool]): Whether to target align pixels.
@@ -919,11 +923,30 @@ def warp(
             dst_res = check_res(res)
         else:
             # Check for CRS unit mismatch (e.g., projected meters -> geographic degrees)
-            if crs is not None and src_crs.is_projected != dst_crs.is_projected:
-                src_label = f"EPSG:{src_crs.to_epsg()}" if src_crs.to_epsg() else str(src_crs)
-                dst_label = f"EPSG:{dst_crs.to_epsg()}" if dst_crs.to_epsg() else str(dst_crs)
-                src_units = 'projected (meters)' if src_crs.is_projected else 'geographic (degrees)'
-                dst_units = 'projected (meters)' if dst_crs.is_projected else 'geographic (degrees)'
+            if (
+                crs is not None
+                and src_crs.is_projected != dst_crs.is_projected
+            ):
+                src_label = (
+                    f"EPSG:{src_crs.to_epsg()}"
+                    if src_crs.to_epsg()
+                    else str(src_crs)
+                )
+                dst_label = (
+                    f"EPSG:{dst_crs.to_epsg()}"
+                    if dst_crs.to_epsg()
+                    else str(dst_crs)
+                )
+                src_units = (
+                    'projected (meters)'
+                    if src_crs.is_projected
+                    else 'geographic (degrees)'
+                )
+                dst_units = (
+                    'projected (meters)'
+                    if dst_crs.is_projected
+                    else 'geographic (degrees)'
+                )
                 raise ValueError(
                     f"Cannot reproject from {src_label} ({src_units}) to "
                     f"{dst_label} ({dst_units}) without specifying the target "
@@ -1047,6 +1070,11 @@ def warp(
                 'nodata': nodata,
                 'warp_mem_limit': warp_mem_limit,
             }
+
+        if nodata is not None:
+            # Exclude the override from interpolation as well as setting
+            # destination nodata; otherwise GDAL uses only the file metadata.
+            vrt_options['src_nodata'] = nodata
 
         with _gdal_threads_env(num_threads):
             output = WarpedVRT(src, **vrt_options)
